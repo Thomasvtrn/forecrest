@@ -382,17 +382,17 @@ function SidebarInsight({ totalRevenue, monthlyCosts, collapsed, onClick, t, lan
 }
 
 var PROFILE_CHECKS_FR = [
+  { key: "_onboarding", label: "Créer un compte", always: true },
   { key: "companyName", label: "Nom de l'entreprise" },
   { key: "legalForm", label: "Forme juridique" },
-  { key: "tvaNumber", label: "Numéro de TVA" },
-  { key: "firstName", label: "Prénom du dirigeant" },
+  { key: "firstName", label: "Responsable légal" },
   { key: "email", label: "Email de contact" },
 ];
 var PROFILE_CHECKS_EN = [
+  { key: "_onboarding", label: "Create account", always: true },
   { key: "companyName", label: "Company name" },
   { key: "legalForm", label: "Legal form" },
-  { key: "tvaNumber", label: "VAT number" },
-  { key: "firstName", label: "Director first name" },
+  { key: "firstName", label: "Legal representative" },
   { key: "email", label: "Contact email" },
 ];
 
@@ -400,35 +400,31 @@ function ProfileCompletion({ cfg, collapsed, onClick, lang }) {
   if (collapsed) return null;
   var checks = lang === "fr" ? PROFILE_CHECKS_FR : PROFILE_CHECKS_EN;
   var done = 0;
-  checks.forEach(function (c) { if (cfg[c.key]) done++; });
+  checks.forEach(function (c) { if (c.always || cfg[c.key]) done++; });
   if (done === checks.length) return null;
 
-  var step = done + 1;
   var pct = (done / checks.length) * 100;
 
   return (
-    <button
-      onClick={onClick}
-      style={{
-        width: "100%", padding: "var(--sp-3)", marginBottom: 8,
-        background: "var(--bg-accordion)", border: "1px solid var(--border-light)",
-        borderRadius: 10, cursor: "pointer", textAlign: "left",
-      }}
-    >
+    <div style={{
+      width: "100%", padding: "var(--sp-3)", marginBottom: 8,
+      background: "var(--bg-accordion)", border: "1px solid var(--border-light)",
+      borderRadius: 10, textAlign: "left",
+    }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>
           {lang === "fr" ? "Compléter le profil" : "Complete profile"}
         </span>
         <span style={{ fontSize: 10, fontWeight: 600, color: "var(--text-faint)" }}>
-          {step + "/" + checks.length}
+          {done + "/" + checks.length}
         </span>
       </div>
       <div style={{ height: 5, background: "var(--border)", borderRadius: 3, overflow: "hidden", marginBottom: 8 }}>
         <div style={{ height: "100%", width: pct + "%", background: "var(--brand)", borderRadius: 3, transition: "width 0.4s ease" }} />
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 10 }}>
         {checks.map(function (c) {
-          var ok = !!cfg[c.key];
+          var ok = c.always || !!cfg[c.key];
           return (
             <div key={c.key} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: ok ? "var(--text-faint)" : "var(--text-secondary)" }}>
               <div style={{
@@ -444,7 +440,18 @@ function ProfileCompletion({ cfg, collapsed, onClick, lang }) {
           );
         })}
       </div>
-    </button>
+      <button
+        onClick={onClick}
+        style={{
+          width: "100%", height: 32, display: "flex", alignItems: "center", justifyContent: "center",
+          border: "1px solid var(--border-strong)", borderRadius: "var(--r-md)",
+          background: "var(--bg-card)", color: "var(--text-secondary)",
+          fontSize: 12, fontWeight: 600, cursor: "pointer",
+        }}
+      >
+        {lang === "fr" ? "Continuer" : "Continue setup"}
+      </button>
+    </div>
   );
 }
 
@@ -594,11 +601,11 @@ export default function Sidebar({ tab, setTab, onOpenExport, onOpenSearch, colla
           ) : null}
         </div>
 
-        {/* ── Scrollable area: nav + footer ── */}
+        {/* ── Scrollable area: nav + cards ── */}
         <div
           onScroll={function (e) { setScrolled(e.target.scrollTop > 0); }}
           className="sidebar-scroll"
-          style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column", minHeight: 0, scrollbarWidth: isCollapsed ? "none" : "thin" }}
+          style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column", minHeight: 0, scrollbarWidth: "none" }}
         >
           {/* Navigation */}
           <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -612,30 +619,23 @@ export default function Sidebar({ tab, setTab, onOpenExport, onOpenSearch, colla
 
           {/* Insight cards */}
           <div style={{ paddingTop: 8 }}>
-            <SidebarInsight
-              totalRevenue={totalRevenue} monthlyCosts={monthlyCosts}
-              collapsed={isCollapsed}
-              onClick={function () { setTab("overview"); if (mobileOpen) setMobileOpen(false); }}
-              t={t} lang={lang}
-            />
             <ProfileCompletion
               cfg={cfg} collapsed={isCollapsed}
               onClick={function () { setTab("profile"); if (mobileOpen) setMobileOpen(false); }}
               lang={lang}
             />
-            <UpgradeTeaser collapsed={isCollapsed} lang={lang} />
           </div>
-
-          {/* Profile */}
-          <ProfileFooter
-            cfg={cfg} collapsed={isCollapsed}
-            dark={dark} toggle={toggle}
-            lang={lang} toggleLang={toggleLang}
-            onOpenExport={onOpenExport}
-            setTab={function (id) { setTab(id); if (mobileOpen) setMobileOpen(false); }}
-            t={t}
-          />
         </div>
+
+        {/* Profile — sticky bottom */}
+        <ProfileFooter
+          cfg={cfg} collapsed={isCollapsed}
+          dark={dark} toggle={toggle}
+          lang={lang} toggleLang={toggleLang}
+          onOpenExport={onOpenExport}
+          setTab={function (id) { setTab(id); if (mobileOpen) setMobileOpen(false); }}
+          t={t}
+        />
       </>
     );
   }
