@@ -4,6 +4,32 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.6.0",
+    date: "2026-03-18",
+    entries: [
+      { type: "feature", key: "changelog_breakeven_chart" },
+      { type: "feature", key: "changelog_overview_redesign" },
+      { type: "improvement", key: "changelog_unified_buttons" },
+      { type: "improvement", key: "changelog_wizard_inputs" },
+      { type: "improvement", key: "changelog_tooltip_cleanup" },
+    ],
+  },
+  {
+    version: "0.1.5.0",
+    date: "2026-03-18",
+    entries: [
+      { type: "feature", key: "changelog_pcmn_complete" },
+      { type: "feature", key: "changelog_treasury_wizard" },
+      { type: "feature", key: "changelog_per_user_pricing" },
+      { type: "feature", key: "changelog_biz_revenue_defaults" },
+      { type: "feature", key: "changelog_print_copyright" },
+      { type: "improvement", key: "changelog_ratios_generic" },
+      { type: "improvement", key: "changelog_revenue_simplified" },
+      { type: "improvement", key: "changelog_sidebar_profile" },
+      { type: "improvement", key: "changelog_print_unified" },
+    ],
+  },
+  {
     version: "0.1.4.0",
     date: "2026-03-18",
     entries: [
