@@ -9,7 +9,7 @@ export { default as PactPage } from "./PactPage";
 export { default as DebtPage } from "./DebtPage";
 export { default as AccountingPage } from "./AccountingPage";
 export { default as RatiosPage } from "./RatiosPage";
-export { default as FinancialPlanPage } from "./FinancialPlanPage";
+
 export { default as SharedLinkPage } from "./SharedLinkPage";
 export { default as SalaryPage } from "./SalaryPage";
 export { default as AmortissementPage } from "./AmortissementPage";

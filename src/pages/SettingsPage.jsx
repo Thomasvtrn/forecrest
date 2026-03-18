@@ -166,15 +166,18 @@ export default function SettingsPage({
   var [activeSection, setActiveSection] = useState("fiscal");
 
   /* Resolve theme mode: stored preference or "auto" */
-  var themeMode = "auto";
-  try {
-    var stored = localStorage.getItem("theme");
-    if (stored === "dark" || stored === "light") themeMode = stored;
-  } catch (e) {}
+  var [themeMode, setThemeModeState] = useState(function () {
+    try {
+      var pref = localStorage.getItem("themeMode");
+      if (pref === "dark" || pref === "light" || pref === "auto") return pref;
+    } catch (e) {}
+    return dark ? "dark" : "light";
+  });
 
   function setThemeMode(mode) {
+    setThemeModeState(mode);
+    try { localStorage.setItem("themeMode", mode); } catch (e) {}
     if (mode === "auto") {
-      try { localStorage.removeItem("theme"); } catch (e) {}
       var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
       if ((prefersDark && !dark) || (!prefersDark && dark)) {
         toggleTheme(window.innerWidth / 2, window.innerHeight / 2);
@@ -231,7 +234,6 @@ export default function SettingsPage({
                 {[
                   ["vat", t.fiscal_vat, 0.01, 0.30, t.tip_vat, true],
                   ["capitalSocial", t.fiscal_capital, 1000, 500000, t.tip_capital],
-                  ["stripeThresh", t.fiscal_stripe_thresh, 10000, 1000000, t.tip_stripe],
                 ].map(function (f) {
                   return (
                     <SettingRow key={f[0]} label={f[1]} tip={f[4]}>
@@ -285,7 +287,6 @@ export default function SettingsPage({
                 {[
                   ["arr", t.targets_arr, 10000, 10000000, t.tip_target_arr],
                   ["mrr", t.targets_mrr, 1000, 1000000, t.tip_target_mrr],
-                  ["clients", t.targets_clients, 1, 10000, t.tip_target_clients],
                   ["runway", t.targets_runway, 1, 60, t.tip_target_runway],
                   ["ebitdaMargin", t.targets_ebitda, 0.01, 1, t.tip_target_ebitda, true],
                 ].map(function (f) {

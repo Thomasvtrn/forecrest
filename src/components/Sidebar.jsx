@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   MagnifyingGlass, CaretDown, CaretUp, CaretLeft, CaretRight,
-  ChartBar, CurrencyCircleDollar, Article, Wallet, Bank, Receipt,
+  ChartBar, CurrencyCircleDollar, Wallet, Bank, Receipt,
   Users, ChartPie, UsersThree, ShieldCheck, Scales, BookOpen,
   HourglassSimple, ClockCounterClockwise, Translate,
   GearSix, Sun, Moon, UploadSimple, List, X,
@@ -43,7 +43,6 @@ var BTN_H = 44; // sidebar button height — min 44px per WCAG touch target
 
 var NAV_ICON_MAP = {
   overview: ChartBar,
-  plan: Article,
   streams: CurrencyCircleDollar,
   opex: Receipt,
   salaries: Users,
@@ -66,7 +65,7 @@ var GROUP_ICON_MAP = {
 
 var NAV_SECTIONS = [
   { id: "overview", type: "item" },
-  { id: "finances", type: "group", items: ["plan", "streams", "opex", "salaries"] },
+  { id: "finances", type: "group", items: ["streams", "opex", "salaries"] },
   { id: "tresorerie", type: "group", items: ["cashflow", "debt", "amortissement"] },
   { id: "comptabilite", type: "group", items: ["accounting", "ratios"] },
   { id: "gouvernance", type: "group", items: ["equity", "captable", "pact"] },

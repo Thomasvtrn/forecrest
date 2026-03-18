@@ -41,6 +41,16 @@ import { eur, pct, salCalc } from "../utils";
 import { useT } from "../context";
 import { CloudArrowUp, Megaphone } from "@phosphor-icons/react";
 
+var PCMN_SUB_MAP = {
+  "6100": "Loyers", "6120": "Cloud", "6125": "Software",
+  "6130": "Commissions", "6131": "Legal", "6132": "Legal",
+  "6135": "Commissions", "6140": "Marketing", "6141": "Assurances",
+  "6150": "Divers", "6160": "Divers",
+  "2110": "Brevets", "2400": "Materiel", "2410": "Materiel",
+  "6200": "Remunerations", "6210": "Remunerations",
+  "6302": "Amortissement", "6500": "Divers", "6700": "Divers",
+};
+
 var COST_TEMPLATES = [
   { l: "Comptable", a: 200, pcmn: "6131", sub: "Legal" },
   { l: "Assurances", a: 60, pcmn: "6141", sub: "Assurances" },
@@ -82,6 +92,7 @@ export default function OperatingCostsPage({
   var [confirmDel, setConfirmDel] = useState(null);
   var [skipDeleteConfirm, setSkipDeleteConfirm] = useState(false);
   var [skipNextChecked, setSkipNextChecked] = useState(false);
+  var [pcmnChange, setPcmnChange] = useState(null);
   var [forceOpen, setForceOpen] = useState({ state: false, rev: 0 });
   var [dragIdx, setDragIdx] = useState(null);
   var [dragOverIdx, setDragOverIdx] = useState(null);
@@ -165,6 +176,31 @@ export default function OperatingCostsPage({
         />
       ) : null}
 
+      {pcmnChange ? (
+        <ConfirmDeleteModal
+          onConfirm={function () {
+            var nc = JSON.parse(JSON.stringify(costs));
+            nc[pcmnChange.ci].items[pcmnChange.ii].pcmn = pcmnChange.pcmn;
+            nc[pcmnChange.ci].items[pcmnChange.ii].sub = pcmnChange.newSub;
+            setCosts(nc);
+            setPcmnChange(null);
+          }}
+          onCancel={function () {
+            var nc = JSON.parse(JSON.stringify(costs));
+            nc[pcmnChange.ci].items[pcmnChange.ii].pcmn = pcmnChange.pcmn;
+            setCosts(nc);
+            setPcmnChange(null);
+          }}
+          skipNext={false}
+          setSkipNext={function () {}}
+          t={{
+            confirm_delete_title: t.pcmn_change_title || "Changer la sous-catégorie ?",
+            confirm_delete_msg: (t.pcmn_change_msg || "Le code PCMN sélectionné correspond à la sous-catégorie \"{sub}\". Mettre à jour ?").replace("{sub}", pcmnChange.newSub),
+            confirm_delete_yes: t.pcmn_change_yes || "Oui, mettre à jour",
+            confirm_delete_no: t.pcmn_change_no || "Non, garder l'actuelle",
+          }}
+        />
+      ) : null}
 
       {/* ── SECTION: CHARGES D'EXPLOITATION ─────────────────── */}
       <SectionLabel title={t.title} sub={eur(opCosts) + t.per_month} />
@@ -221,22 +257,12 @@ export default function OperatingCostsPage({
                             onChange={function (e) { var nc = JSON.parse(JSON.stringify(costs)); nc[ci].items[ii].l = e.target.value; setCosts(nc); }}
                             style={{ flex: 1, fontSize: 13, border: "none", outline: "none", background: "transparent", color: "var(--text-primary)" }}
                           />
-                          <button
+                          <ButtonUtility
+                            variant={it.pu ? "brand" : "default"}
+                            icon={<Users size={14} />}
                             onClick={function () { var nc = JSON.parse(JSON.stringify(costs)); nc[ci].items[ii].pu = !nc[ci].items[ii].pu; if (!nc[ci].items[ii].u) nc[ci].items[ii].u = 2; setCosts(nc); }}
                             title={it.pu ? t.per_user : t.fixed_cost}
-                            style={{
-                              fontSize: 10, fontWeight: 600, padding: "3px 8px",
-                              borderRadius: "var(--r-full)", cursor: "pointer",
-                              border: it.pu ? "1px solid var(--brand)" : "1px solid var(--border)",
-                              background: it.pu ? "var(--brand-bg)" : "transparent",
-                              color: it.pu ? "var(--brand)" : "var(--text-faint)",
-                              whiteSpace: "nowrap", height: 22,
-                              display: "inline-flex", alignItems: "center", gap: 4,
-                            }}
-                          >
-                            <Users size={11} color={it.pu ? "var(--brand)" : "var(--text-faint)"} />
-                            {it.pu ? t.per_user : t.fixed_cost}
-                          </button>
+                          />
                           {it.pu ? (
                             <NumberField value={it.u || 1} onChange={function (v) { var nc = JSON.parse(JSON.stringify(costs)); nc[ci].items[ii].u = v; setCosts(nc); }} min={1} max={50} step={1} width="52px" suf={t.users} />
                           ) : null}
@@ -259,7 +285,18 @@ export default function OperatingCostsPage({
                           />
                           <Select
                             value={it.pcmn || ""}
-                            onChange={function (v) { var nc = JSON.parse(JSON.stringify(costs)); nc[ci].items[ii].pcmn = v; setCosts(nc); }}
+                            onChange={function (v) {
+                              var mapped = PCMN_SUB_MAP[v];
+                              var currentSub = it.sub || "";
+                              if (mapped && currentSub && currentSub !== mapped) {
+                                setPcmnChange({ ci: ci, ii: ii, pcmn: v, newSub: mapped, oldSub: currentSub });
+                              } else {
+                                var nc = JSON.parse(JSON.stringify(costs));
+                                nc[ci].items[ii].pcmn = v;
+                                if (mapped) nc[ci].items[ii].sub = mapped;
+                                setCosts(nc);
+                              }
+                            }}
                             options={PCMN_OPTS.map(function (p) { return { value: p.c, label: p.c + " · " + p.l }; })}
                             placeholder={t.pcmn_code}
                             width="210px"
@@ -270,20 +307,19 @@ export default function OperatingCostsPage({
                   })}
 
                   <div style={{ display: "flex", gap: "var(--sp-2)", marginTop: "var(--sp-3)", alignItems: "center" }}>
-                    <select
-                      onChange={function (e) {
-                        if (!e.target.value) return;
-                        var tmpl = COST_TEMPLATES[parseInt(e.target.value)];
+                    <Select
+                      value=""
+                      onChange={function (v) {
+                        if (!v) return;
+                        var tmpl = COST_TEMPLATES[parseInt(v)];
                         var nc = JSON.parse(JSON.stringify(costs));
                         nc[ci].items.push({ l: tmpl.l, a: tmpl.a, pu: false, u: 1, pcmn: tmpl.pcmn, sub: tmpl.sub });
                         setCosts(nc);
-                        e.target.value = "";
                       }}
-                      style={{ fontSize: 13, border: "1px solid var(--border-strong)", borderRadius: "var(--r-md)", height: 36, color: "var(--brand)", cursor: "pointer", background: "var(--brand-bg)" }}
-                    >
-                      <option value="">{t.add_line}</option>
-                      {COST_TEMPLATES.map(function (tmpl, i) { return <option key={i} value={String(i)}>{tmpl.l}</option>; })}
-                    </select>
+                      options={COST_TEMPLATES.map(function (tmpl, i) { return { value: String(i), label: tmpl.l }; })}
+                      placeholder={t.add_line}
+                      width="220px"
+                    />
                     <div style={{ flex: 1 }} />
                     <ButtonUtility
                       variant="danger"

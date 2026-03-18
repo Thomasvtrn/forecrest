@@ -27,7 +27,7 @@ import { CashFlowPage } from "./pages";
 import { RevenueStreamsPage } from "./pages";
 import { AccountingPage } from "./pages";
 import { RatiosPage } from "./pages";
-import { FinancialPlanPage } from "./pages";
+
 import SharedLinkPage from "./pages/SharedLinkPage";
 import { SalaryPage } from "./pages";
 import { AmortissementPage } from "./pages";
@@ -82,7 +82,7 @@ export default function App() {
     return function () { clearTimeout(id); };
   }, [devMode]);
   // Hash-based routing: /#/overview, /#/streams, etc.
-  var VALID_TABS = ["overview","plan","streams","opex","salaries","cashflow","debt","amortissement","accounting","ratios","equity","captable","pact","set","profile","changelog","credits"];
+  var VALID_TABS = ["overview","streams","opex","salaries","cashflow","debt","amortissement","accounting","ratios","equity","captable","pact","set","profile","changelog","credits"];
   function getTabFromHash() {
     var h = window.location.hash.replace(/^#\/?/, "");
     return VALID_TABS.indexOf(h) >= 0 ? h : "overview";
@@ -383,7 +383,7 @@ export default function App() {
   }
 
   // Global keyboard shortcuts
-  var tabMap = useRef({ "1": "overview", "2": "plan", "3": "streams", "4": "opex", "5": "salaries", "6": "cashflow", "7": "debt", "8": "accounting", "9": "ratios" });
+  var tabMap = useRef({ "1": "overview", "2": "streams", "3": "opex", "4": "salaries", "5": "cashflow", "6": "debt", "7": "accounting", "8": "ratios" });
   var hotkeyOpts = { preventDefault: true, enableOnFormTags: false };
 
   useHotkeys("mod+z", function () { history.undo(); }, hotkeyOpts, [history]);
@@ -550,16 +550,6 @@ export default function App() {
                 annVatC={annVatC} annVatD={annVatD} vatBalance={vatBalance}
                 streams={streams} debts={debts} onPrint={handlePrint} profs={[]} setTab={setTab}
                 marketingData={{ monthly: 0, annual: 0, channels: [] }}
-              />
-            ) : null}
-
-            {tab === "plan" ? (
-              <FinancialPlanPage
-                totalRevenue={totalRevenue}
-                monthlyCosts={monthlyCosts} opCosts={opCosts} salCosts={salCosts}
-                ebitda={ebitda} netP={netP}
-                sals={sals} cfg={cfg}
-                planSections={planSections} setPlanSections={setPlanSections}
               />
             ) : null}
 
