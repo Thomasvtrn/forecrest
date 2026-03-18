@@ -39,7 +39,7 @@ function randomizeCosts() {
 import { Card, NumberField, Row, Accordion, PageLayout, Select } from "../components";
 import { eur, pct, salCalc } from "../utils";
 import { useT } from "../context";
-import { CloudArrowUp, Megaphone } from "@phosphor-icons/react";
+
 
 var PCMN_SUB_MAP = {
   "6100": "Loyers", "6120": "Cloud", "6125": "Software",
@@ -86,7 +86,7 @@ function SectionLabel({ title, sub }) {
 export default function OperatingCostsPage({
   costs, setCosts, sals, cfg,
   monthlyCosts, salCosts, opCosts,
-  arrV, resLeg, isoc, setTab, infraData, marketingData,
+  resLeg, isoc, setTab,
 }) {
   var t = useT().opex;
   var [confirmDel, setConfirmDel] = useState(null);
@@ -341,57 +341,6 @@ export default function OperatingCostsPage({
       >
         <Plus size={14} />{t.add_category}
       </button>
-
-      {/* ── SECTION: INFRASTRUCTURE CLOUD ─────────────────────── */}
-      {infraData && infraData.monthly > 0 ? (
-        <>
-          <SectionLabel title={t.infra_title || "Infrastructure Cloud"} sub={eur(infraData.monthly) + t.per_month} />
-          <Accordion
-            title={t.infra_title || "Infrastructure Cloud"}
-            sub={eur(infraData.monthly) + t.per_month + " · " + eur(infraData.monthly * 12) + t.per_year}
-            forceOpen={forceOpen}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-3)", fontSize: 12, color: "var(--text-muted)" }}>
-              <CloudArrowUp size={14} weight="bold" style={{ color: "var(--brand)" }} />
-              {t.infra_note || "Coûts estimés Cloudflare (Workers, D1, KV, R2, Queues). Configurez dans l'onglet Infrastructure."}
-            </div>
-            <Row label={t.infra_plan_base || "Coût fixe du plan"} value={eur(infraData.planBaseCost)} />
-            {infraData.workersCost > 0 ? <Row label="Workers" value={eur(infraData.workersCost)} /> : null}
-            {infraData.d1Cost > 0 ? <Row label="D1 (SQL)" value={eur(infraData.d1Cost)} /> : null}
-            {infraData.kvCost > 0 ? <Row label="KV" value={eur(infraData.kvCost)} /> : null}
-            {infraData.r2Cost > 0 ? <Row label="R2 (CDN + Storage)" value={eur(infraData.r2Cost)} /> : null}
-            {infraData.queuesCost > 0 ? <Row label="Queues" value={eur(infraData.queuesCost)} /> : null}
-            {infraData.logsCost > 0 ? <Row label="Logs" value={eur(infraData.logsCost)} /> : null}
-            {infraData.doCost > 0 ? <Row label="Durable Objects" value={eur(infraData.doCost)} /> : null}
-            {infraData.imagesCost > 0 ? <Row label="Cloudflare Images" value={eur(infraData.imagesCost)} /> : null}
-            {infraData.authCost > 0 ? <Row label="Auth" value={eur(infraData.authCost)} /> : null}
-            <Row label={t.infra_total || "Total infrastructure"} value={eur(infraData.monthly)} last />
-          </Accordion>
-        </>
-      ) : null}
-
-      {/* ── SECTION: MARKETING DIGITAL ─────────────────────────── */}
-      {marketingData && marketingData.monthly > 0 ? (
-        <>
-          <SectionLabel title={t.marketing_title || "Marketing Digital"} sub={eur(marketingData.monthly) + t.per_month} />
-          <Accordion
-            title={t.marketing_title || "Marketing Digital"}
-            sub={eur(marketingData.monthly) + t.per_month + " · " + eur(marketingData.annual) + t.per_year}
-            forceOpen={forceOpen}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-3)", fontSize: 12, color: "var(--text-muted)" }}>
-              <Megaphone size={14} weight="bold" style={{ color: "var(--brand)" }} />
-              {t.marketing_note || "Coûts d'acquisition estimés (Meta, Google, Influenceurs, SEO, Email). Configurez dans l'onglet Marketing."}
-            </div>
-            {marketingData.channels.meta.budget > 0 ? <Row label="Meta Ads" value={eur(marketingData.channels.meta.budget)} /> : null}
-            {marketingData.channels.google.budget > 0 ? <Row label="Google Ads" value={eur(marketingData.channels.google.budget)} /> : null}
-            {marketingData.channels.influencers.budget > 0 ? <Row label="Influenceurs" value={eur(marketingData.channels.influencers.budget)} /> : null}
-            {marketingData.channels.seo.budget > 0 ? <Row label="SEO / Content" value={eur(marketingData.channels.seo.budget)} /> : null}
-            {marketingData.channels.email.budget > 0 ? <Row label="Email / CRM" value={eur(marketingData.channels.email.budget)} /> : null}
-            <Row label={t.marketing_total || "Total marketing"} value={eur(marketingData.monthly)} last />
-          </Accordion>
-        </>
-      ) : null}
 
       {/* ── SECTION: RÉMUNÉRATIONS (summary — detail in SalaryPage) ── */}
       {salCosts > 0 ? (

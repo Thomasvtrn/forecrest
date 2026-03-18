@@ -238,6 +238,7 @@ export var BUSINESS_TYPES = [
   { id: "ecommerce" },
   { id: "retail" },
   { id: "services" },
+  { id: "freelancer" },
   { id: "other" },
 ];
 
