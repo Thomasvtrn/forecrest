@@ -25,46 +25,55 @@ var BEHAVIOR_META = {
     icon: ArrowsClockwise, badge: "brand",
     label: { fr: "Récurrent", en: "Recurring" },
     desc: { fr: "Revenu mensuel prévisible : abonnement, retainer, maintenance.", en: "Predictable monthly revenue: subscription, retainer, maintenance." },
+    tvaRate: 0.21,
   },
   per_transaction: {
     icon: ShoppingCart, badge: "info",
     label: { fr: "Par transaction", en: "Per transaction" },
     desc: { fr: "Montant gagné à chaque vente ou commande.", en: "Amount earned per sale or order." },
+    tvaRate: 0.21,
   },
   per_user: {
     icon: Users, badge: "info",
     label: { fr: "Par utilisateur", en: "Per user" },
     desc: { fr: "Tarif par siège, compte ou utilisateur actif.", en: "Price per seat, account or active user." },
+    tvaRate: 0.21,
   },
   project: {
     icon: Briefcase, badge: "warning",
     label: { fr: "Par projet", en: "Per project" },
     desc: { fr: "Facturation au forfait par mission ou contrat.", en: "Fixed-price billing per mission or contract." },
+    tvaRate: 0.21,
   },
   daily_rate: {
     icon: Clock, badge: "warning",
     label: { fr: "Taux journalier", en: "Daily rate" },
     desc: { fr: "Facturation à la journée de travail.", en: "Billing per working day." },
+    tvaRate: 0.21,
   },
   hourly: {
     icon: Timer, badge: "warning",
     label: { fr: "Par heure", en: "Hourly" },
     desc: { fr: "Facturation au temps passé.", en: "Billing based on time spent." },
+    tvaRate: 0.21,
   },
   commission: {
     icon: Percent, badge: "info",
     label: { fr: "Commission", en: "Commission" },
     desc: { fr: "Courtage, apport d'affaires ou frais de marketplace.", en: "Brokerage, referral or marketplace fee." },
+    tvaRate: 0.21,
   },
   royalty: {
     icon: CurrencyCircleDollar, badge: "success",
     label: { fr: "Redevance", en: "Royalty" },
     desc: { fr: "Revenu passif par utilisation d'un actif : brevet, contenu, template.", en: "Passive income from asset usage: patent, content, template." },
+    tvaRate: 0.21,
   },
   one_time: {
     icon: Sparkle, badge: "gray",
     label: { fr: "Ponctuel", en: "One-time" },
     desc: { fr: "Montant unique : frais d'installation, subside, vente exceptionnelle.", en: "One-off amount: setup fee, grant, exceptional sale." },
+    tvaRate: 0.21,
   },
 };
 

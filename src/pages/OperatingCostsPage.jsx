@@ -19,21 +19,21 @@ var COST_CATEGORY_META = {
     icon: Buildings, badge: "warning",
     label: { fr: "Locaux", en: "Premises" },
     desc: { fr: "Loyer, coworking, charges locatives et entretien des espaces de travail.", en: "Rent, coworking, facility charges and workspace maintenance." },
-    pcmn: "6100", type: "exploitation", defaultFreq: "monthly",
+    pcmn: "6100", type: "exploitation", defaultFreq: "monthly", tvaRate: 0,
     suggestions: [
       { l: "Loyer", a: 800 },
       { l: "Coworking", a: 250 },
       { l: "Domiciliation", a: 50 },
       { l: "Charges locatives", a: 150 },
       { l: "Entretien", a: 100 },
-      { l: "Électricité", a: 80 },
+      { l: "Électricité", a: 80, tva: 0.21 },
     ],
   },
   software: {
     icon: Desktop, badge: "info",
     label: { fr: "Logiciels & outils", en: "Software & tools" },
     desc: { fr: "Abonnements SaaS, outils de productivité et infrastructure digitale.", en: "SaaS subscriptions, productivity tools and digital infrastructure." },
-    pcmn: "6125", type: "exploitation", defaultFreq: "monthly", perUserDefault: true,
+    pcmn: "6125", type: "exploitation", defaultFreq: "monthly", perUserDefault: true, tvaRate: 0.21,
     suggestions: [
       { l: "Design", a: 12 },
       { l: "Gestion de projet", a: 8 },
@@ -49,7 +49,7 @@ var COST_CATEGORY_META = {
     icon: Megaphone, badge: "brand",
     label: { fr: "Marketing", en: "Marketing" },
     desc: { fr: "Acquisition, visibilité et communication pour développer votre activité.", en: "Acquisition, visibility and communication to grow your business." },
-    pcmn: "6140", type: "exploitation", defaultFreq: "monthly",
+    pcmn: "6140", type: "exploitation", defaultFreq: "monthly", tvaRate: 0.21,
     suggestions: [
       { l: "Publicité en ligne", a: 300 },
       { l: "SEO & contenu", a: 200 },
@@ -63,7 +63,7 @@ var COST_CATEGORY_META = {
     icon: Scales, badge: "gray",
     label: { fr: "Légaux & comptabilité", en: "Legal & accounting" },
     desc: { fr: "Services professionnels externes pour la gestion administrative et juridique.", en: "External professional services for administrative and legal management." },
-    pcmn: "6130", type: "exploitation", defaultFreq: "monthly",
+    pcmn: "6130", type: "exploitation", defaultFreq: "monthly", tvaRate: 0.21,
     suggestions: [
       { l: "Comptable", a: 250, pcmn: "6131" },
       { l: "Avocat", a: 150, pcmn: "6132" },
@@ -76,7 +76,7 @@ var COST_CATEGORY_META = {
     icon: ShieldCheck, badge: "warning",
     label: { fr: "Assurances", en: "Insurance" },
     desc: { fr: "Protection de l'activité, des personnes et des biens professionnels.", en: "Protection for your business, people and professional assets." },
-    pcmn: "6141", type: "exploitation", defaultFreq: "monthly",
+    pcmn: "6141", type: "exploitation", defaultFreq: "monthly", tvaRate: 0,
     suggestions: [
       { l: "RC professionnelle", a: 80 },
       { l: "Assurance incendie", a: 50 },
@@ -89,7 +89,7 @@ var COST_CATEGORY_META = {
     icon: Car, badge: "gray",
     label: { fr: "Transport", en: "Travel" },
     desc: { fr: "Déplacements professionnels et mobilité au quotidien.", en: "Business travel and daily mobility." },
-    pcmn: "6150", type: "exploitation", defaultFreq: "monthly",
+    pcmn: "6150", type: "exploitation", defaultFreq: "monthly", tvaRate: 0.21,
     suggestions: [
       { l: "Carburant", a: 150 },
       { l: "Transports en commun", a: 60 },
@@ -102,7 +102,7 @@ var COST_CATEGORY_META = {
     icon: Briefcase, badge: "info",
     label: { fr: "Équipement", en: "Equipment" },
     desc: { fr: "Investissements matériels et immatériels, souvent ponctuels ou amortis.", en: "Tangible and intangible investments, often one-off or depreciated." },
-    pcmn: "2400", type: "non_recurring", defaultFreq: "once",
+    pcmn: "2400", type: "non_recurring", defaultFreq: "once", tvaRate: 0.21,
     suggestions: [
       { l: "Ordinateur portable", a: 1200, pcmn: "2410" },
       { l: "Écran", a: 400, pcmn: "2410" },
@@ -115,7 +115,7 @@ var COST_CATEGORY_META = {
     icon: Wrench, badge: "gray",
     label: { fr: "Autre", en: "Other" },
     desc: { fr: "Dépenses diverses non classées dans les autres catégories.", en: "Miscellaneous expenses not classified in other categories." },
-    pcmn: "6160", type: "exploitation", defaultFreq: "monthly",
+    pcmn: "6160", type: "exploitation", defaultFreq: "monthly", tvaRate: 0.21,
     suggestions: [
       { l: "Fournitures de bureau", a: 30 },
       { l: "Abonnement téléphone", a: 25 },
@@ -127,14 +127,14 @@ var COST_CATEGORY_META = {
     icon: Briefcase, badge: "info",
     label: { fr: "Amortissements", en: "Depreciation" },
     desc: { fr: "Dotations aux amortissements des immobilisations.", en: "Depreciation charges on fixed assets." },
-    pcmn: "6302", type: "exploitation", defaultFreq: "monthly",
+    pcmn: "6302", type: "exploitation", defaultFreq: "monthly", tvaRate: null,
     suggestions: [],
   },
   financial_auto: {
     icon: Receipt, badge: "warning",
     label: { fr: "Charges financières", en: "Financial costs" },
     desc: { fr: "Intérêts sur emprunts et frais bancaires.", en: "Loan interest and banking fees." },
-    pcmn: "6500", type: "financial", defaultFreq: "monthly",
+    pcmn: "6500", type: "financial", defaultFreq: "monthly", tvaRate: null,
     suggestions: [],
   },
 };

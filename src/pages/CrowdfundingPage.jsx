@@ -4,7 +4,7 @@ import {
   Package, Lightning, CalendarCheck, FileText, Heart,
   Handshake, ToggleRight, Power,
 } from "@phosphor-icons/react";
-import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, ActionBtn, SelectDropdown, FinanceLink } from "../components";
+import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, ActionBtn, SelectDropdown, FinanceLink, SearchInput, FilterDropdown } from "../components";
 import Modal, { ModalFooter } from "../components/Modal";
 import CurrencyInput from "../components/CurrencyInput";
 import NumberField from "../components/NumberField";
@@ -17,7 +17,7 @@ var PLATFORM_META = {
   kkbb:     { label: "KissKissBankBank", commission: 0.08, payment: 0, url: "kisskissbankbank.com" },
   kickstarter: { label: "Kickstarter", commission: 0.05, payment: 0.035, url: "kickstarter.com" },
   indiegogo:   { label: "Indiegogo", commission: 0.05, payment: 0, url: "indiegogo.com" },
-  gofundme:    { label: "GoFundMe", commission: 0, payment: 0.029, url: "gofundme.com" },
+  gofundme:    { label: "GoFundMe", commission: 0, payment: 0.029, url: "gofundme.com", note: { fr: "Frais de paiement uniquement", en: "Payment fees only" } },
   other:       { label: "Autre", commission: 0.05, payment: 0, url: "" },
 };
 var PLATFORM_KEYS = Object.keys(PLATFORM_META);
@@ -199,6 +199,8 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
   var [editingTier, setEditingTier] = useState(null);
   var [pendingDelete, setPendingDelete] = useState(null);
   var [skipDeleteConfirm, setSkipDeleteConfirm] = useState(false);
+  var [search, setSearch] = useState("");
+  var [filter, setFilter] = useState("all");
 
   var cfg = crowdfunding || { enabled: false, name: "", platform: "ulule", goal: 0, url: "", tiers: [] };
   var tiers = cfg.tiers || [];
@@ -227,6 +229,26 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
     cfgSet("tiers", nc);
   }
   function requestDelete(idx) { if (skipDeleteConfirm) { removeTier(idx); } else { setPendingDelete(idx); } }
+
+  /* Filter options */
+  var filterOptions = useMemo(function () {
+    var cats = {};
+    tiers.forEach(function (ti) { var ck = ti.category || "product"; if (TIER_CAT_META[ck]) cats[ck] = TIER_CAT_META[ck]; });
+    var opts = [{ value: "all", label: t.filter_all || "Toutes les catégories" }];
+    Object.keys(cats).forEach(function (ck) { opts.push({ value: ck, label: cats[ck].label[lk] }); });
+    return opts;
+  }, [tiers, lk, t]);
+
+  var filteredTiers = useMemo(function () {
+    var items = tiers;
+    if (filter !== "all") items = items.filter(function (ti) { return (ti.category || "product") === filter; });
+    if (search.trim()) {
+      var q = search.trim().toLowerCase();
+      items = items.filter(function (ti) { return (ti.name || "").toLowerCase().indexOf(q) !== -1; });
+    }
+    return items;
+  }, [tiers, filter, search]);
+
 
   function randomize() {
     cfgSet("enabled", true);
@@ -307,7 +329,10 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
 
   var toolbarNode = (
     <>
-      <div />
+      <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center", flexWrap: "wrap" }}>
+        <SearchInput value={search} onChange={setSearch} placeholder={t.search_placeholder || "Rechercher..."} />
+        <FilterDropdown value={filter} onChange={setFilter} options={filterOptions} />
+      </div>
       <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center" }}>
         {devMode ? (
           <>
@@ -587,6 +612,7 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
           @keyframes crowdLaunchIn { from { opacity: 0; } to { opacity: 1; } }\
           @keyframes crowdPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }\
           @keyframes crowdFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }\
+          @keyframes cfSlideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }\
         "}</style>
       </PageLayout>
     );
@@ -619,7 +645,7 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
             <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
               {t.config_title || "Configuration"}
             </div>
-            <Button color="tertiary-destructive" size="sm" onClick={function () { cfgSet("enabled", false); cfgSet("tiers", []); cfgSet("goal", 0); }} iconLeading={<Power size={14} weight="bold" />}>
+            <Button color="tertiary" size="lg" onClick={function () { cfgSet("enabled", false); cfgSet("tiers", []); cfgSet("goal", 0); }} iconLeading={<Power size={14} weight="bold" />}>
               {t.disable || "Désactiver"}
             </Button>
           </div>
@@ -630,13 +656,19 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
                 style={{ width: "100%", height: 40, padding: "0 var(--sp-3)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, fontFamily: "inherit", outline: "none" }}
               />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-3)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: cfg.platform === "other" ? "1fr 1fr 1fr" : "1fr 1fr", gap: "var(--sp-3)" }}>
               <div>
                 <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>{t.field_platform || "Plateforme"}</label>
                 <SelectDropdown value={cfg.platform || "ulule"} onChange={function (v) { cfgSet("platform", v); }}
-                  options={PLATFORM_KEYS.map(function (k) { var p = PLATFORM_META[k]; return { value: k, label: p.label + (p.commission > 0 ? " (" + pct(p.commission + p.payment) + ")" : " (gratuit)") }; })}
+                  options={PLATFORM_KEYS.map(function (k) { var p = PLATFORM_META[k]; var fee = p.commission + p.payment; return { value: k, label: k === "other" ? p.label : p.label + " (" + (fee > 0 ? pct(fee) : "0%") + ")" }; })}
                 />
               </div>
+              {cfg.platform === "other" ? (
+                <div style={{ animation: "cfSlideIn 0.25s ease" }}>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>{t.wizard_custom_rate || "Commission"}</label>
+                  <NumberField value={cfg.customCommission || 0.05} onChange={function (v) { cfgSet("customCommission", v); }} min={0} max={0.30} step={0.01} width="100%" pct />
+                </div>
+              ) : null}
               <div>
                 <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>{t.field_goal || "Objectif"}</label>
                 <CurrencyInput value={cfg.goal || 0} onChange={function (v) { cfgSet("goal", v); }} suffix="€" width="100%" />
@@ -674,7 +706,7 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
 
       {/* Tiers DataTable */}
       <DataTable
-        data={tiers}
+        data={filteredTiers}
         columns={columns}
         toolbar={toolbarNode}
         emptyState={emptyNode}

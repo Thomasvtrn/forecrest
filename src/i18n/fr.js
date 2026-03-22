@@ -1969,6 +1969,8 @@ export default {
     tier_no_cost: "Gratuit",
     footer_total: "Total",
     footer_tiers: "paliers",
+    search_placeholder: "Rechercher...",
+    filter_all: "Toutes les catégories",
     add_tier: "Ajouter un palier",
     no_tiers: "Aucun palier",
     no_tiers_hint: "Ajoutez les contreparties de votre campagne pour estimer les charges associées.",

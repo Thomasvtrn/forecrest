@@ -76,7 +76,7 @@ var BENEFIT_META = {
     chargeLabel: { fr: "Leasing + carburant + assurance", en: "Leasing + fuel + insurance" },
     purchaseChargeLabel: { fr: "Carburant + assurance + entretien", en: "Fuel + insurance + maintenance" },
     purchaseLabel: { fr: "Achat véhicule", en: "Vehicle purchase" },
-    defaultAmount: 500, purchaseChargeAmount: 200, pcmn: "6150",
+    defaultAmount: 500, purchaseChargeAmount: 200, pcmn: "6150", tvaRate: 0.21,
     canPurchase: true, assetCategory: "vehicle", assetPcmn: "2400", defaultAssetAmount: 25000,
   },
   phone: {
@@ -85,7 +85,7 @@ var BENEFIT_META = {
     chargeLabel: { fr: "Abonnement téléphonique", en: "Phone subscription" },
     purchaseChargeLabel: { fr: "Abonnement téléphonique", en: "Phone subscription" },
     purchaseLabel: { fr: "Achat téléphone", en: "Phone purchase" },
-    defaultAmount: 50, purchaseChargeAmount: 30, pcmn: "6131",
+    defaultAmount: 50, purchaseChargeAmount: 30, pcmn: "6131", tvaRate: 0.21,
     canPurchase: true, assetCategory: "it", assetPcmn: "2410", defaultAssetAmount: 600,
   },
   laptop: {
@@ -94,21 +94,21 @@ var BENEFIT_META = {
     chargeLabel: { fr: "Abonnement logiciels + maintenance", en: "Software subscriptions + maintenance" },
     purchaseChargeLabel: { fr: "Logiciels + maintenance", en: "Software + maintenance" },
     purchaseLabel: { fr: "Achat ordinateur", en: "Laptop purchase" },
-    defaultAmount: 40, purchaseChargeAmount: 20, pcmn: "6131",
+    defaultAmount: 40, purchaseChargeAmount: 20, pcmn: "6131", tvaRate: 0.21,
     canPurchase: true, assetCategory: "it", assetPcmn: "2410", defaultAssetAmount: 1200,
   },
   wifi: {
     icon: WifiHigh,
     label: { fr: "Internet domicile", en: "Home internet" },
     chargeLabel: { fr: "Remboursement forfaitaire", en: "Flat-rate reimbursement" },
-    defaultAmount: 20, pcmn: "6131",
+    defaultAmount: 20, pcmn: "6131", tvaRate: 0.21,
     canPurchase: false,
   },
   meal: {
     icon: ForkKnife,
     label: { fr: "Titres-repas", en: "Meal vouchers" },
     chargeLabel: { fr: "Part employeur (~6,91 € × 20 jours)", en: "Employer share (~6.91 × 20 days)" },
-    defaultAmount: 138, pcmn: "6120",
+    defaultAmount: 138, pcmn: "6120", tvaRate: null,
     canPurchase: false,
   },
 };

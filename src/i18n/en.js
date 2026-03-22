@@ -1964,6 +1964,8 @@ export default {
     tier_no_cost: "Free",
     footer_total: "Total",
     footer_tiers: "tiers",
+    search_placeholder: "Search...",
+    filter_all: "All categories",
     add_tier: "Add a tier",
     no_tiers: "No tiers",
     no_tiers_hint: "Add your campaign rewards to estimate associated costs.",
