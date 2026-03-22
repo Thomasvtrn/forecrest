@@ -19,7 +19,7 @@ import CommandPalette from "./components/KeyboardShortcuts";
 import DevCommandPalette from "./components/DevCommandPalette";
 import useHistory from "./hooks/useHistory";
 
-import { salCalc, calcIsoc, grantCalc, calcBusinessKpis, calcTotalRevenue, migrateStreamsV1ToV2, load, save, setCurrencyDisplay } from "./utils";
+import { salCalc, calcIsoc, grantCalc, calcBusinessKpis, calcTotalRevenue, calcStreamAnnual, migrateStreamsV1ToV2, load, save, setCurrencyDisplay } from "./utils";
 import { OverviewPage } from "./pages";
 import { OperatingCostsPage } from "./pages";
 import { SettingsPage } from "./pages";
@@ -411,8 +411,27 @@ export default function App() {
   });
   var dirOk = dirRem >= 45000;
   var divGross = netP > 0 ? Math.max(netP - resLeg, 0) : 0;
-  var annVatC = cfg.vat > 0 ? totalRevenue * cfg.vat / (1 + cfg.vat) : 0;
-  var annVatD = cfg.vat > 0 ? monthlyCosts * 12 * cfg.vat / (1 + cfg.vat) : 0;
+  /* Per-line TVA calculation */
+  function costAnnualForVat(item) {
+    var a = item.a || 0;
+    var total = item.pu ? a * (item.u || 1) : a;
+    var freqMap = { monthly: 12, quarterly: 4, annual: 1, once: 1 };
+    return total * (freqMap[item.freq] || 12);
+  }
+  var annVatC = 0;
+  (streams || []).forEach(function (cat) {
+    (cat.items || []).forEach(function (item) {
+      var rate = item.tva != null ? item.tva : (cfg.vat || 0.21);
+      if (rate > 0) annVatC += calcStreamAnnual(item) * rate;
+    });
+  });
+  var annVatD = 0;
+  (costs || []).forEach(function (cat) {
+    (cat.items || []).forEach(function (item) {
+      var rate = item.tva != null ? item.tva : (cfg.vat || 0.21);
+      if (rate > 0) annVatD += costAnnualForVat(item) * rate;
+    });
+  });
   var vatBalance = annVatC - annVatD;
 
   var bizKpis = useMemo(function () {

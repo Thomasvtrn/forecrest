@@ -287,6 +287,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
   var [perUser, setPerUser] = useState(isEdit ? !!initialData.pu : false);
   var [units, setUnits] = useState(isEdit ? (initialData.u || 1) : 1);
   var [pcmn, setPcmn] = useState(isEdit ? (initialData.pcmn || "6160") : COST_CATEGORY_META.premises.pcmn);
+  var [tva, setTva] = useState(isEdit && initialData.tva !== undefined ? initialData.tva : null);
 
   var lk = lang === "en" ? "en" : "fr";
   var meta = COST_CATEGORY_META[selected] || COST_CATEGORY_META.other;
@@ -323,6 +324,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
       pcmn: pcmn,
       sub: "",
       type: meta.type || "exploitation",
+      tva: tva,
     };
     PCMN_OPTS.forEach(function (o) { if (o.c === pcmn) data.sub = o.l; });
     if (isEdit && onSave) { onSave(data); } else if (onAdd) { onAdd(data); }
@@ -487,6 +489,25 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
                 </div>
               ) : null}
             </div>
+
+            {/* TVA rate */}
+            {meta.tvaRate !== null ? (
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>
+                  {t.field_tva || "Taux de TVA"}
+                </label>
+                <SelectDropdown
+                  value={tva !== null ? String(tva) : String(meta.tvaRate)}
+                  onChange={function (v) { setTva(parseFloat(v)); }}
+                  options={[
+                    { value: "0", label: "0% — " + (t.tva_exempt || "Exempté") },
+                    { value: "0.06", label: "6% — " + (t.tva_reduced || "Réduit") },
+                    { value: "0.12", label: "12% — " + (t.tva_intermediate || "Intermédiaire") },
+                    { value: "0.21", label: "21% — " + (t.tva_standard || "Standard") },
+                  ]}
+                />
+              </div>
+            ) : null}
 
             {/* PCMN (optional — only when showPcmn) */}
             {showPcmn ? (

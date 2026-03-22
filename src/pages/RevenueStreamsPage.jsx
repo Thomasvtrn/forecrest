@@ -148,6 +148,7 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
   var [qty, setQty] = useState(isEdit ? (initialData.qty || 0) : 0);
   var defaultSeason = SEASONALITY_DEFAULT[businessType] || "flat";
   var [seasonProfile, setSeasonProfile] = useState(isEdit ? (initialData.seasonProfile || defaultSeason) : defaultSeason);
+  var [tva, setTva] = useState(isEdit && initialData.tva !== undefined ? initialData.tva : null);
 
   var suggestions = (REVENUE_BEHAVIOR_TEMPLATES[businessType] || REVENUE_BEHAVIOR_TEMPLATES.other || []).filter(function (tpl) {
     return tpl.behavior === selected;
@@ -177,6 +178,7 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
       qty: qty,
       seasonProfile: seasonProfile,
       growthRate: isEdit ? (initialData.growthRate || 0) : 0,
+      tva: tva,
     };
     if (isEdit && onSave) {
       onSave(data);
@@ -315,6 +317,23 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
                 </div>
                 <SeasonSpark coefs={SEASONALITY_PROFILES[seasonProfile].coefs} width={100} height={28} />
               </div>
+            </div>
+
+            {/* TVA rate */}
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-muted)", marginBottom: "var(--sp-1)" }}>
+                {rt.field_tva || "Taux de TVA"}
+              </label>
+              <SelectDropdown
+                value={tva !== null ? String(tva) : String(meta.tvaRate)}
+                onChange={function (v) { setTva(parseFloat(v)); }}
+                options={[
+                  { value: "0", label: "0% — " + (rt.tva_exempt || "Exempté") },
+                  { value: "0.06", label: "6% — " + (rt.tva_reduced || "Réduit") },
+                  { value: "0.12", label: "12% — " + (rt.tva_intermediate || "Intermédiaire") },
+                  { value: "0.21", label: "21% — " + (rt.tva_standard || "Standard") },
+                ]}
+              />
             </div>
 
             {price > 0 && qty > 0 ? (
