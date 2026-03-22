@@ -558,8 +558,7 @@ export default function App() {
                 totalRevenue={totalRevenue}
                 monthlyCosts={monthlyCosts} annC={annC}
                 ebitda={ebitda}
-                cfg={cfg} setCfg={setCfg}
-                debts={debts} assets={assets} setTab={setTab}
+                cfg={cfg} setCfg={setCfg} setTab={setTab}
               />
             ) : null}
 
