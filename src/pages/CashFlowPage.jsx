@@ -208,26 +208,10 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, annC, ebitda,
 
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-        <KpiCard
-          label={t.kpi_initial || "Trésorerie initiale"}
-          value={initialCash > 0 ? eur(initialCash) : (t.kpi_initial_empty || "À saisir")}
-          color={initialCash > 0 ? undefined : "var(--text-faint)"}
-        />
-        <KpiCard
-          label={t.kpi_net || "Flux net mensuel"}
-          value={eur(monthlyNet)}
-          color={isBurning ? "var(--color-error)" : "var(--color-success)"}
-        />
-        <KpiCard
-          label={t.kpi_runway || "Runway"}
-          value={isBurning ? (runway !== null ? runway + " " + (t.kpi_runway_months || "mois") : (t.kpi_runway_unknown || "—")) : (t.kpi_profitable || "Rentable")}
-          color={isBurning ? "var(--color-error)" : "var(--color-success)"}
-        />
-        <KpiCard
-          label={t.kpi_proj_y1 || "Trésorerie fin Y1"}
-          value={eur(projY1)}
-          color={projY1 >= 0 ? undefined : "var(--color-error)"}
-        />
+        <KpiCard label={t.kpi_initial || "Trésorerie initiale"} value={initialCash > 0 ? eur(initialCash) : (t.kpi_initial_empty || "À saisir")} />
+        <KpiCard label={t.kpi_net || "Flux net mensuel"} value={eur(monthlyNet)} />
+        <KpiCard label={t.kpi_runway || "Runway"} value={isBurning ? (runway !== null ? runway + " " + (t.kpi_runway_months || "mois") : (t.kpi_runway_unknown || "—")) : (t.kpi_profitable || "Rentable")} />
+        <KpiCard label={t.kpi_proj_y1 || "Trésorerie fin Y1"} value={eur(projY1)} />
       </div>
 
       {/* Tabs */}
@@ -255,12 +239,6 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, annC, ebitda,
       {/* ═══ Tab 1: Cash Flow ═══ */}
       {activeTab === "cashflow" ? (
         <>
-          {/* Explainer */}
-          <ExplainerBox variant="info" title={t.explainer_title || "La trésorerie, c'est quoi ?"}>
-            {t.explainer_body || "C'est l'argent disponible sur vos comptes. Le runway indique combien de mois vous pouvez tenir."}{" "}
-            <FinanceLink term="treasury" /> <FinanceLink term="burn_rate" /> <FinanceLink term="runway" />
-          </ExplainerBox>
-
           {/* Projection controls */}
           <div style={{ display: "flex", alignItems: "center", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)", flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 4 }}>
@@ -406,10 +384,10 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, annC, ebitda,
 
           {/* BFR KPIs */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-            <KpiCard label={t.bfr_kpi_fr || "Fonds de roulement"} value={eur(fr)} color={fr >= 0 ? "var(--color-success)" : "var(--color-error)"} />
+            <KpiCard label={t.bfr_kpi_fr || "Fonds de roulement"} value={eur(fr)} />
             <KpiCard label={t.bfr_kpi_bfr || "BFR"} value={eur(bfr)} />
-            <KpiCard label={t.bfr_kpi_tn || "Trésorerie nette"} value={eur(tn)} color={tn >= 0 ? "var(--color-success)" : "var(--color-error)"} />
-            <KpiCard label={t.bfr_kpi_liquidity || "Ratio de liquidité"} value={liquidityRatio !== null ? liquidityRatio.toFixed(2) : "—"} color={liquidityRatio !== null && liquidityRatio < 1 ? "var(--color-error)" : undefined} />
+            <KpiCard label={t.bfr_kpi_tn || "Trésorerie nette"} value={eur(tn)} />
+            <KpiCard label={t.bfr_kpi_liquidity || "Ratio de liquidité"} value={liquidityRatio !== null ? liquidityRatio.toFixed(2) : "—"} />
           </div>
 
           {/* BFR Visual */}
