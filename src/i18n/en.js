@@ -1947,8 +1947,37 @@ export default {
     wizard_back: "Back",
     wizard_next: "Next",
     wizard_launch: "Launch campaign",
+    wizard_dates_title: "When are you launching?",
+    wizard_dates_desc: "Set your campaign duration. Most campaigns last 30 to 60 days.",
+    wizard_start_date: "Start date",
+    wizard_end_date: "End date",
+    wizard_duration: "Campaign duration",
+    wizard_days: "days",
     launch_title: "Campaign created!",
     launch_desc: "Now add your reward tiers.",
+
+    // Tabs
+    tab_campaign: "Campaign",
+    tab_results: "Results",
+
+    // Config
+    field_url: "Campaign link",
+    view_campaign: "View",
+
+    // Results tab
+    result_start: "Start",
+    result_end: "End",
+    result_status: "Status",
+    status_planning: "Planning",
+    status_active: "Active",
+    status_completed: "Completed",
+    status_failed: "Failed",
+    result_raised: "Amount raised",
+    result_progress: "Progress",
+    result_comparison: "Projected vs Actual",
+    result_goal: "Goal",
+    result_projected: "Projected",
+    result_actual: "Actual",
     disable: "Disable",
     config_title: "Configuration",
     field_name: "Campaign name",
@@ -4074,6 +4103,10 @@ export default {
     changelog_calculations_cleanup: "Calculations cleanup: 1107 → 220 lines, removed 20 dead functions, new revenueCalc.js module.",
     changelog_foreach_guard: "Fix: forEach error when navigating between pages (undefined streams).",
     changelog_footer_sticky: "Sticky page footer when content doesn't fill the screen.",
+    // v0.1.12.0
+    changelog_tva_per_line: "Per-line VAT: pre-set rate by category (0% rent/insurance, 21% services), adjustable per item in revenue and cost modals.",
+    changelog_crowd_lifecycle: "Crowdfunding: Campaign/Results tabs, start/end dates, amount raised, progress bar, projected vs actual comparison.",
+    changelog_crowd_wizard_dates: "Crowdfunding wizard: new 'When are you launching?' step with dates and duration calculation.",
     // v0.1.11.0
     changelog_crowdfunding_page: "New dedicated Crowdfunding page with activation wizard, tier management, commission calculator and breakdown chart.",
     changelog_debt_refactor: "Financing page restructured: DataTable, split-panel modal, tabs (Loans / Grants / Convertibles), convertible notes.",

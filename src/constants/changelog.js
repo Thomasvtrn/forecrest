@@ -4,6 +4,15 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.12.0",
+    date: "2026-03-22",
+    entries: [
+      { type: "feature", key: "changelog_tva_per_line" },
+      { type: "feature", key: "changelog_crowd_lifecycle" },
+      { type: "improvement", key: "changelog_crowd_wizard_dates" },
+    ],
+  },
+  {
     version: "0.1.11.0",
     date: "2026-03-22",
     entries: [

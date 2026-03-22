@@ -1952,8 +1952,37 @@ export default {
     wizard_back: "Retour",
     wizard_next: "Suivant",
     wizard_launch: "Lancer la campagne",
+    wizard_dates_title: "Quand lancez-vous ?",
+    wizard_dates_desc: "Définissez la durée de votre campagne. La plupart durent entre 30 et 60 jours.",
+    wizard_start_date: "Date de début",
+    wizard_end_date: "Date de fin",
+    wizard_duration: "Durée de la campagne",
+    wizard_days: "jours",
     launch_title: "Campagne créée !",
     launch_desc: "Ajoutez maintenant vos paliers de contrepartie.",
+
+    // Tabs
+    tab_campaign: "Campagne",
+    tab_results: "Résultats",
+
+    // Config
+    field_url: "Lien de la campagne",
+    view_campaign: "Voir",
+
+    // Results tab
+    result_start: "Début",
+    result_end: "Fin",
+    result_status: "Statut",
+    status_planning: "En préparation",
+    status_active: "En cours",
+    status_completed: "Terminée",
+    status_failed: "Échouée",
+    result_raised: "Montant levé",
+    result_progress: "Progression",
+    result_comparison: "Projeté vs Réel",
+    result_goal: "Objectif",
+    result_projected: "Projeté",
+    result_actual: "Réel",
     disable: "Désactiver",
     config_title: "Configuration",
     field_name: "Nom de la campagne",
@@ -4087,6 +4116,10 @@ export default {
     changelog_calculations_cleanup: "Nettoyage calculs : 1107 → 220 lignes, suppression de 20 fonctions mortes, nouveau module revenueCalc.js.",
     changelog_foreach_guard: "Correction : erreur forEach lors de la navigation entre pages (streams undefined).",
     changelog_footer_sticky: "Footer de page sticky en bas quand le contenu ne remplit pas l'écran.",
+    // v0.1.12.0
+    changelog_tva_per_line: "TVA par ligne : taux prédéfini par catégorie (0% loyers/assurances, 21% services), modifiable par élément dans les modals revenus et charges.",
+    changelog_crowd_lifecycle: "Crowdfunding : tabs Campagne/Résultats, dates début/fin, montant levé, barre de progression, comparaison projeté vs réel.",
+    changelog_crowd_wizard_dates: "Wizard crowdfunding : nouvelle étape 'Quand lancez-vous ?' avec dates et calcul de durée.",
     // v0.1.11.0
     changelog_crowdfunding_page: "Nouvelle page Crowdfunding dédiée avec wizard d'activation, gestion des paliers, calcul des commissions et graphique de répartition.",
     changelog_debt_refactor: "Page Financement restructurée : DataTable, modal split-panel, tabs (Emprunts / Aides / Convertibles), prêt convertible.",

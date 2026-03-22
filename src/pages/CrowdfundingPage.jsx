@@ -201,6 +201,7 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
   var [skipDeleteConfirm, setSkipDeleteConfirm] = useState(false);
   var [search, setSearch] = useState("");
   var [filter, setFilter] = useState("all");
+  var [dashTab, setDashTab] = useState("campaign");
 
   var cfg = crowdfunding || { enabled: false, name: "", platform: "ulule", goal: 0, url: "", tiers: [] };
   var tiers = cfg.tiers || [];
@@ -372,6 +373,8 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
   var [wizardGoal, setWizardGoal] = useState(10000);
   var [wizardName, setWizardName] = useState("");
   var [wizardCustomRate, setWizardCustomRate] = useState(0.05);
+  var [wizardStartDate, setWizardStartDate] = useState("");
+  var [wizardEndDate, setWizardEndDate] = useState("");
 
   /* Wizard keyboard shortcuts */
   var wizardFinishRef = useRef(null);
@@ -381,13 +384,13 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
       if (e.key === "ArrowRight") {
         e.preventDefault();
-        setWizardStep(function (s) { return Math.min(s + 1, 2); });
+        setWizardStep(function (s) { return Math.min(s + 1, 3); });
       }
       if (e.key === "Enter") {
         e.preventDefault();
         setWizardStep(function (s) {
-          if (s >= 2 && wizardFinishRef.current) { wizardFinishRef.current(); return s; }
-          return Math.min(s + 1, 2);
+          if (s >= 3 && wizardFinishRef.current) { wizardFinishRef.current(); return s; }
+          return Math.min(s + 1, 3);
         });
       }
       if (e.key === "ArrowLeft" || e.key === "Backspace") {
@@ -404,6 +407,7 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
     var WIZARD_STEPS = [
       { key: "intro" },
       { key: "platform" },
+      { key: "dates" },
       { key: "goal" },
     ];
     var totalSteps = WIZARD_STEPS.length;
@@ -417,6 +421,10 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
       cfgSet("goal", wizardGoal);
       cfgSet("name", wizardName);
       cfgSet("tiers", []);
+      cfgSet("startDate", wizardStartDate);
+      cfgSet("endDate", wizardEndDate);
+      cfgSet("status", "planning");
+      cfgSet("raised", 0);
       if (wizardPlatform === "other") cfgSet("customCommission", wizardCustomRate);
       setJustLaunched(true);
     }
@@ -508,8 +516,43 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
             </div>
           ) : null}
 
-          {/* Step 3: Goal */}
+          {/* Step 3: Dates */}
           {wizardStep === 2 ? (
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: "var(--sp-2)", textAlign: "center" }}>
+                {t.wizard_dates_title || "Quand lancez-vous ?"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "var(--sp-4)", textAlign: "center" }}>
+                {t.wizard_dates_desc || "Définissez la durée de votre campagne. La plupart durent entre 30 et 60 jours."}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-3)" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>{t.wizard_start_date || "Date de début"}</label>
+                  <input type="date" value={wizardStartDate} onChange={function (e) { setWizardStartDate(e.target.value); }}
+                    style={{ width: "100%", height: 44, padding: "0 var(--sp-3)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, fontFamily: "inherit", outline: "none" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>{t.wizard_end_date || "Date de fin"}</label>
+                  <input type="date" value={wizardEndDate} onChange={function (e) { setWizardEndDate(e.target.value); }}
+                    style={{ width: "100%", height: 44, padding: "0 var(--sp-3)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, fontFamily: "inherit", outline: "none" }}
+                  />
+                </div>
+              </div>
+              {wizardStartDate && wizardEndDate ? (function () {
+                var days = Math.round((new Date(wizardEndDate) - new Date(wizardStartDate)) / (1000 * 60 * 60 * 24));
+                return days > 0 ? (
+                  <div style={{ marginTop: "var(--sp-3)", padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{t.wizard_duration || "Durée de la campagne"}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif" }}>{days} {t.wizard_days || "jours"}</span>
+                  </div>
+                ) : null;
+              })() : null}
+            </div>
+          ) : null}
+
+          {/* Step 4: Goal */}
+          {wizardStep === 3 ? (
             <div>
               <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: "var(--sp-2)", textAlign: "center" }}>
                 {t.wizard_goal_title || "Quel est votre objectif ?"}
@@ -637,6 +680,22 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
         <KpiCard label={t.kpi_margin || "Marge nette"} value={cfg.goal > 0 ? eurShort(netMargin) : "—"} fullValue={cfg.goal > 0 ? eur(netMargin) : undefined} />
       </div>
 
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border-light)", marginBottom: "var(--gap-md)" }}>
+        {["campaign", "results"].map(function (tabKey) {
+          var isActive = dashTab === tabKey;
+          var labels = { campaign: t.tab_campaign || "Campagne", results: t.tab_results || "Résultats" };
+          return (
+            <button key={tabKey} type="button" onClick={function () { setDashTab(tabKey); }}
+              style={{ padding: "var(--sp-2) var(--sp-4)", border: "none", borderBottom: isActive ? "2px solid var(--brand)" : "2px solid transparent", marginBottom: -2, background: "transparent", color: isActive ? "var(--brand)" : "var(--text-muted)", fontSize: 13, fontWeight: isActive ? 600 : 500, cursor: "pointer", fontFamily: "inherit", transition: "color 0.12s, border-color 0.12s" }}>
+              {labels[tabKey]}
+            </button>
+          );
+        })}
+      </div>
+
+      {dashTab === "campaign" ? (
+      <>
       {/* Insights: Config + Donut */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
         {/* Campaign config */}
@@ -672,6 +731,19 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
               <div>
                 <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>{t.field_goal || "Objectif"}</label>
                 <CurrencyInput value={cfg.goal || 0} onChange={function (v) { cfgSet("goal", v); }} suffix="€" width="100%" />
+              </div>
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>{t.field_url || "Lien de la campagne"}</label>
+              <div style={{ display: "flex", gap: "var(--sp-2)" }}>
+                <input value={cfg.url || ""} onChange={function (e) { cfgSet("url", e.target.value); }} placeholder="https://"
+                  style={{ flex: 1, height: 40, padding: "0 var(--sp-3)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 13, fontFamily: "inherit", outline: "none" }}
+                />
+                {cfg.url ? (
+                  <Button color="secondary" size="lg" onClick={function () { window.open(cfg.url, "_blank"); }}>
+                    {t.view_campaign || "Voir"}
+                  </Button>
+                ) : null}
               </div>
             </div>
           </div>
@@ -714,6 +786,92 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
         pageSize={20}
         getRowId={function (row) { return String(row.id); }}
       />
+      </>
+      ) : null}
+
+      {/* ═══ Tab: Results ═══ */}
+      {dashTab === "results" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-md)" }}>
+          {/* Campaign dates */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--gap-md)" }}>
+            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-2)", textTransform: "uppercase", letterSpacing: "0.04em" }}>{t.result_start || "Début"}</div>
+              <input type="date" value={cfg.startDate || ""} onChange={function (e) { cfgSet("startDate", e.target.value); }}
+                style={{ width: "100%", height: 40, padding: "0 var(--sp-3)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, fontFamily: "inherit", outline: "none" }}
+              />
+            </div>
+            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-2)", textTransform: "uppercase", letterSpacing: "0.04em" }}>{t.result_end || "Fin"}</div>
+              <input type="date" value={cfg.endDate || ""} onChange={function (e) { cfgSet("endDate", e.target.value); }}
+                style={{ width: "100%", height: 40, padding: "0 var(--sp-3)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", background: "var(--input-bg)", color: "var(--text-primary)", fontSize: 14, fontFamily: "inherit", outline: "none" }}
+              />
+            </div>
+            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-2)", textTransform: "uppercase", letterSpacing: "0.04em" }}>{t.result_status || "Statut"}</div>
+              <SelectDropdown value={cfg.status || "planning"} onChange={function (v) { cfgSet("status", v); }}
+                options={[
+                  { value: "planning", label: t.status_planning || "En préparation" },
+                  { value: "active", label: t.status_active || "En cours" },
+                  { value: "completed", label: t.status_completed || "Terminée" },
+                  { value: "failed", label: t.status_failed || "Échouée" },
+                ]}
+              />
+            </div>
+          </div>
+
+          {/* Amount raised */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)" }}>
+            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-2)", textTransform: "uppercase", letterSpacing: "0.04em" }}>{t.result_raised || "Montant levé"}</div>
+              <CurrencyInput value={cfg.raised || 0} onChange={function (v) { cfgSet("raised", v); }} suffix="€" width="100%" />
+              {cfg.goal > 0 ? (
+                <div style={{ marginTop: "var(--sp-3)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-faint)", marginBottom: 4 }}>
+                    <span>{t.result_progress || "Progression"}</span>
+                    <span style={{ fontWeight: 600, color: "var(--text-secondary)" }}>{Math.round((cfg.raised || 0) / cfg.goal * 100)}%</span>
+                  </div>
+                  <div style={{ height: 8, borderRadius: 4, background: "var(--bg-hover)", overflow: "hidden" }}>
+                    <div style={{ height: "100%", borderRadius: 4, background: (cfg.raised || 0) >= cfg.goal ? "var(--color-success)" : "var(--brand)", width: Math.min((cfg.raised || 0) / cfg.goal * 100, 100) + "%", transition: "width 0.3s" }} />
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Margin comparison */}
+            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-3)", textTransform: "uppercase", letterSpacing: "0.04em" }}>{t.result_comparison || "Projeté vs Réel"}</div>
+              {[
+                { label: t.result_goal || "Objectif", projected: eur(cfg.goal), actual: eur(cfg.raised || 0) },
+                { label: t.kpi_commission || "Commission", projected: eur(cfg.goal * commissionPct), actual: eur((cfg.raised || 0) * commissionPct) },
+                { label: t.kpi_tiers_cost || "Contreparties", projected: eur(tiersCost), actual: eur(tiersCost) },
+                { label: t.kpi_margin || "Marge nette", projected: eur(netMargin), actual: eur((cfg.raised || 0) - (cfg.raised || 0) * commissionPct - tiersCost), bold: true },
+              ].map(function (row, i) {
+                return (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--sp-2)", padding: "var(--sp-1) 0", borderBottom: i < 3 ? "1px solid var(--border-light)" : "none" }}>
+                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{row.label}</span>
+                    <span style={{ fontSize: 12, textAlign: "right", color: "var(--text-faint)", fontVariantNumeric: "tabular-nums" }}>{row.projected}</span>
+                    <span style={{ fontSize: 12, textAlign: "right", fontWeight: row.bold ? 700 : 500, color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{row.actual}</span>
+                  </div>
+                );
+              })}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--sp-2)", marginTop: 2 }}>
+                <span />
+                <span style={{ fontSize: 10, textAlign: "right", color: "var(--text-faint)" }}>{t.result_projected || "Projeté"}</span>
+                <span style={{ fontSize: 10, textAlign: "right", color: "var(--text-faint)" }}>{t.result_actual || "Réel"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* URL */}
+          {cfg.url ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+              <Button color="secondary" size="lg" onClick={function () { window.open(cfg.url, "_blank"); }}>
+                {t.view_campaign || "Voir la campagne"}
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </PageLayout>
   );
 }

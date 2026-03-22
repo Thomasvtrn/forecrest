@@ -151,7 +151,7 @@ export default function App() {
   var [streams, setStreams] = useState(JSON.parse(JSON.stringify(REVENUE_DEF)));
   var [esopEnabled, setEsopEnabled] = useState(false);
   var [debts, setDebts] = useState(JSON.parse(JSON.stringify(DEBT_DEF)));
-  var [crowdfunding, setCrowdfunding] = useState({ enabled: false, name: "", platform: "ulule", goal: 0, url: "", tiers: [] });
+  var [crowdfunding, setCrowdfunding] = useState({ enabled: false, name: "", platform: "ulule", goal: 0, url: "", tiers: [], startDate: "", endDate: "", raised: 0, status: "planning" });
   var [assets, setAssets] = useState([]);
   var [planSections, setPlanSections] = useState(JSON.parse(JSON.stringify(PLAN_SECTIONS_DEF)));
   var [showOnboarding, setShowOnboarding] = useState(false);
