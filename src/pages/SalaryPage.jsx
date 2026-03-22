@@ -5,7 +5,7 @@ import {
   Crown, User, UserSwitch, ArrowRight,
   Car, DeviceMobile, Laptop, WifiHigh, ForkKnife, X,
 } from "@phosphor-icons/react";
-import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, FinanceLink } from "../components";
+import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, FinanceLink, PaletteToggle } from "../components";
 import Modal, { ModalFooter } from "../components/Modal";
 import CurrencyInput from "../components/CurrencyInput";
 import { eur, eurShort, pct, makeId, salCalc, indepCalc } from "../utils";
@@ -134,14 +134,8 @@ var DURATION_OPTIONS = [
   { value: "part_time", label: { fr: "Temps partiel", en: "Part-time" } },
 ];
 
-/* ── Donut colors per type ── */
-var TYPE_DONUT_COLORS = {
-  employee: "#6B7280", director: "#E8431A", independant: "#3B82F6",
-  interim: "#8B5CF6", student: "#F59E0B", intern: "#9CA3AF",
-};
-
 /* ── SVG Donut ── */
-function TypeDonut({ data }) {
+function TypeDonut({ data, palette }) {
   var total = 0;
   var entries = [];
   Object.keys(data).forEach(function (k) { total += data[k]; entries.push({ key: k, value: data[k] }); });
@@ -159,7 +153,7 @@ function TypeDonut({ data }) {
   return (
     <svg width={size} height={size} viewBox="0 0 80 80" style={{ flexShrink: 0 }} role="img" aria-hidden="true">
       {segs.map(function (s) {
-        return <circle key={s.key} cx={cx} cy={cy} r={r} fill="none" stroke={TYPE_DONUT_COLORS[s.key] || "#9CA3AF"} strokeWidth={sw} strokeDasharray={(s.pct * circ) + " " + (circ - s.pct * circ)} strokeDashoffset={-s.start * circ} transform="rotate(-90 40 40)" style={{ transition: "stroke-dasharray 0.3s" }} />;
+        return <circle key={s.key} cx={cx} cy={cy} r={r} fill="none" stroke={(palette || [])[segs.indexOf(s) % (palette || []).length] || "#9CA3AF"} strokeWidth={sw} strokeDasharray={(s.pct * circ) + " " + (circ - s.pct * circ)} strokeDashoffset={-s.start * circ} transform="rotate(-90 40 40)" style={{ transition: "stroke-dasharray 0.3s" }} />;
       })}
     </svg>
   );
@@ -616,7 +610,7 @@ function SalaryModal({ onAdd, onSave, onClose, lang, initialData, cfg, setAssets
 }
 
 /* ── Main Page ── */
-export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets, setAssets, setTab }) {
+export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets, setAssets, setTab, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb }) {
   var { lang } = useLang();
   var t = useT().salaries || {};
   var [activeTab, setActiveTab] = useState("all");
@@ -998,10 +992,10 @@ export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets,
       /> : null}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-        <KpiCard label={t.kpi_total_cost || "Coût employeur total"} value={eurShort(breakdown.monthly)} fullValue={eur(breakdown.monthly) + "/mois"} />
+        <KpiCard label={t.kpi_total_cost || "Coût employeur total"} value={eurShort(breakdown.monthly)} fullValue={eur(breakdown.monthly) + "/mois"} glossaryKey="salary_cost" />
         <KpiCard label={t.kpi_headcount || "Effectif"} value={String(breakdown.count)} />
         <KpiCard label={t.kpi_avg_cost || "Coût moyen / employé"} value={breakdown.count > 0 ? eurShort(avgCost) : "—"} fullValue={breakdown.count > 0 ? eur(avgCost) + "/mois" : undefined} />
-        <KpiCard label={t.kpi_mass_pct || "Poids dans le CA"} value={arrV > 0 ? pct(massPct) : "—"} color={massPct > 0.6 ? "var(--color-warning)" : massPct > 0.8 ? "var(--color-error)" : undefined} />
+        <KpiCard label={t.kpi_mass_pct || "Poids dans le CA"} value={arrV > 0 ? pct(massPct) : "—"} color={massPct > 0.6 ? "var(--color-warning)" : massPct > 0.8 ? "var(--color-error)" : undefined} glossaryKey="salary_cost" />
       </div>
 
       {/* Payroll alert */}
@@ -1024,19 +1018,22 @@ export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets,
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
         {/* Donut: répartition par type */}
         <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-3)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            {t.distribution_title || "Répartition par type"}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              {t.distribution_title || "Répartition par type"}
+            </div>
+            <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-4)" }}>
-            <TypeDonut data={typeDistribution} />
+            <TypeDonut data={typeDistribution} palette={chartPalette} />
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-              {Object.keys(typeDistribution).length > 0 ? Object.keys(typeDistribution).map(function (tk) {
+              {Object.keys(typeDistribution).length > 0 ? Object.keys(typeDistribution).map(function (tk, ti) {
                 var m = SAL_TYPE_META[tk];
                 if (!m) return null;
                 var typePct = breakdown.monthly > 0 ? Math.round(typeDistribution[tk] / breakdown.monthly * 100) : 0;
                 return (
                   <div key={tk} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: TYPE_DONUT_COLORS[tk] || "var(--text-muted)", flexShrink: 0 }} />
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: chartPalette[ti % chartPalette.length] || "var(--text-muted)", flexShrink: 0 }} />
                     <span style={{ color: "var(--text-secondary)", flex: 1 }}>{m.label[lk]}</span>
                     <span style={{ color: "var(--text-primary)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{typePct}%</span>
                   </div>

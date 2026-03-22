@@ -18,3 +18,4 @@ export { default as CreditsPage } from "./CreditsPage";
 export { default as ProfilePage } from "./ProfilePage";
 export { default as SensitivityPage } from "./SensitivityPage";
 export { default as CrowdfundingPage } from "./CrowdfundingPage";
+export { default as StocksPage } from "./StocksPage";

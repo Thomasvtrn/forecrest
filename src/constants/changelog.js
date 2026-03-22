@@ -4,6 +4,23 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.13.0",
+    date: "2026-03-22",
+    entries: [
+      { type: "feature", key: "changelog_stocks_page" },
+      { type: "feature", key: "changelog_datepicker" },
+      { type: "feature", key: "changelog_chart_palette" },
+      { type: "feature", key: "changelog_roadmap_sitemap" },
+      { type: "feature", key: "changelog_kpi_glossary" },
+      { type: "improvement", key: "changelog_tva_hidden" },
+      { type: "improvement", key: "changelog_pcmn_60_64_66_73" },
+      { type: "improvement", key: "changelog_crowd_backers" },
+      { type: "improvement", key: "changelog_crowd_status" },
+      { type: "improvement", key: "changelog_chart_legend_blur" },
+      { type: "fix", key: "changelog_code_review_v12" },
+    ],
+  },
+  {
     version: "0.1.12.0",
     date: "2026-03-22",
     entries: [

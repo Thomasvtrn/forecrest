@@ -110,9 +110,9 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, annC, ebitda,
 
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-        <KpiCard label={t.kpi_initial || "Trésorerie initiale"} value={initialCash > 0 ? eur(initialCash) : "—"} />
-        <KpiCard label={t.kpi_net || "Flux net mensuel"} value={eur(monthlyNet)} />
-        <KpiCard label={t.kpi_remaining || "Mois restants"} value={isBurning ? (runway !== null ? String(runway) : "—") : (t.kpi_profitable || "Rentable")} />
+        <KpiCard label={t.kpi_initial || "Trésorerie initiale"} value={initialCash > 0 ? eur(initialCash) : "—"} glossaryKey="treasury" />
+        <KpiCard label={t.kpi_net || "Flux net mensuel"} value={eur(monthlyNet)} glossaryKey="burn_rate" />
+        <KpiCard label={t.kpi_remaining || "Mois restants"} value={isBurning ? (runway !== null ? String(runway) : "—") : (t.kpi_profitable || "Rentable")} glossaryKey="runway" />
         <KpiCard label={t.kpi_proj_y1 || "Trésorerie fin d'année"} value={eur(projY1)} />
       </div>
 

@@ -316,3 +316,22 @@ Sidebar
 - **Keep up to date:** When adding or removing a dependency in `package.json`, update the
   credits page (`CreditsPage.jsx`) to reflect the change. Include: library name, version,
   author, licence type, and usage
+
+---
+
+## Roadmap (MANDATORY)
+
+- **Dev-only pages:** accessible via Ctrl+Shift+D (dev command palette)
+  - `src/pages/RoadmapPage.jsx` — 8 phases, 35+ items with priority and status tracking
+  - `src/pages/SitemapPage.jsx` — full architecture: pages, components, utils, data flows
+- **Check regularly:** Before starting any new feature, check the Roadmap to see what's
+  planned and prioritized. Work on the highest-priority items first.
+- **Update on completion:** When a roadmap item is implemented, change its `status` from
+  `"todo"` to `"done"` in `RoadmapPage.jsx`. Remove items only when fully shipped and tested.
+- **Update sitemap:** When adding/removing pages or components, update the PAGES, COMPONENTS,
+  or UTILS arrays in `SitemapPage.jsx`. Keep it in sync with each version bump.
+- **Product positioning:** Forecrest is a **financial planning tool for startups** (not a
+  simulator). The output is a structured business plan that founders fill in and accountants
+  validate. Use simple, beginner-friendly terms — avoid financial jargon in the UI.
+- **Target users:** Founders with no financial expertise, Belgian accountants (PCMN), and
+  startup advisors/incubators. Every label should be understandable without a finance degree.

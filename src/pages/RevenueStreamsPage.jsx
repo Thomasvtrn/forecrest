@@ -4,8 +4,9 @@ import {
   ShoppingCart, Users, Briefcase, Clock, Sparkle,
   ArrowsClockwise, TrendUp,
   PencilSimple, Copy, Timer, Percent, CurrencyCircleDollar, Shuffle, Eraser,
+  HandCoins,
 } from "@phosphor-icons/react";
-import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, FinanceLink, SearchInput, FilterDropdown, SelectDropdown, ActionBtn } from "../components";
+import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, FinanceLink, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, PaletteToggle, ChartLegend } from "../components";
 import Modal, { ModalFooter } from "../components/Modal";
 import CurrencyInput from "../components/CurrencyInput";
 import { eur, eurShort, makeId } from "../utils";
@@ -72,8 +73,15 @@ var BEHAVIOR_META = {
   one_time: {
     icon: Sparkle, badge: "gray",
     label: { fr: "Ponctuel", en: "One-time" },
-    desc: { fr: "Montant unique : frais d'installation, subside, vente exceptionnelle.", en: "One-off amount: setup fee, grant, exceptional sale." },
+    desc: { fr: "Montant unique : frais d'installation, vente exceptionnelle.", en: "One-off amount: setup fee, exceptional sale." },
     tvaRate: 0.21,
+  },
+  subsidy: {
+    icon: HandCoins, badge: "success",
+    label: { fr: "Subside", en: "Subsidy" },
+    desc: { fr: "Aide publique, subvention d'exploitation, prime à l'emploi.", en: "Public aid, operating grant, employment premium." },
+    tvaRate: 0,
+    pcmn: "7300",
   },
 };
 
@@ -138,7 +146,7 @@ function RequiredLabel({ text, htmlFor }) {
 }
 
 /* ── Split-panel Creation / Edit Modal ── */
-function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, defaultBehavior }) {
+function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, defaultBehavior, showTva }) {
   var rt = useT().revenue || {};
   var isEdit = !!initialData;
   var primary = PRIMARY_BEHAVIOR[businessType] || "recurring";
@@ -319,22 +327,24 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
               </div>
             </div>
 
-            {/* TVA rate */}
-            <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-muted)", marginBottom: "var(--sp-1)" }}>
-                {rt.field_tva || "Taux de TVA"}
-              </label>
-              <SelectDropdown
-                value={tva !== null ? String(tva) : String(meta.tvaRate)}
-                onChange={function (v) { setTva(parseFloat(v)); }}
-                options={[
-                  { value: "0", label: "0% — " + (rt.tva_exempt || "Exempté") },
-                  { value: "0.06", label: "6% — " + (rt.tva_reduced || "Réduit") },
-                  { value: "0.12", label: "12% — " + (rt.tva_intermediate || "Intermédiaire") },
-                  { value: "0.21", label: "21% — " + (rt.tva_standard || "Standard") },
-                ]}
-              />
-            </div>
+            {/* TVA rate — visible only in accounting mode */}
+            {showTva ? (
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-muted)", marginBottom: "var(--sp-1)" }}>
+                  {rt.field_tva || "Taux de TVA"}
+                </label>
+                <SelectDropdown
+                  value={tva !== null ? String(tva) : String(meta.tvaRate)}
+                  onChange={function (v) { setTva(parseFloat(v)); }}
+                  options={[
+                    { value: "0", label: "0% — " + (rt.tva_exempt || "Exempté") },
+                    { value: "0.06", label: "6% — " + (rt.tva_reduced || "Réduit") },
+                    { value: "0.12", label: "12% — " + (rt.tva_intermediate || "Intermédiaire") },
+                    { value: "0.21", label: "21% — " + (rt.tva_standard || "Standard") },
+                  ]}
+                />
+              </div>
+            ) : null}
 
             {price > 0 && qty > 0 ? (
               <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -363,21 +373,8 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
 }
 
 
-/* ── Donut colors per behavior — aligned with badge semantics ── */
-var DONUT_COLORS = {
-  recurring: "#E8431A",
-  per_transaction: "#3B82F6",
-  per_user: "#60A5FA",
-  project: "#F59E0B",
-  daily_rate: "#FBBF24",
-  hourly: "#D97706",
-  commission: "#2563EB",
-  royalty: "#22C55E",
-  one_time: "#9CA3AF",
-};
-
 /* ── SVG Donut chart ── */
-function DonutChart({ data }) {
+function DonutChart({ data, palette }) {
   var total = 0;
   var entries = [];
   Object.keys(data).forEach(function (k) { total += data[k]; entries.push({ key: k, value: data[k] }); });
@@ -412,7 +409,7 @@ function DonutChart({ data }) {
         var dashLen = seg.pct * circumference;
         return (
           <circle key={seg.key} cx={cx} cy={cy} r={r} fill="none"
-            stroke={DONUT_COLORS[seg.key] || "#9CA3AF"} strokeWidth={strokeW}
+            stroke={(palette || [])[segments.indexOf(seg) % (palette || []).length] || "#9CA3AF"} strokeWidth={strokeW}
             strokeDasharray={dashLen + " " + (circumference - dashLen)}
             strokeDashoffset={-seg.startOffset * circumference}
             transform={"rotate(-90 " + cx + " " + cy + ")"}
@@ -482,7 +479,7 @@ function MonthlyBarChart({ data, lang }) {
 }
 
 /* ── Main Page ── */
-export default function RevenueStreamsPage({ streams, setStreams, annC, businessType }) {
+export default function RevenueStreamsPage({ streams, setStreams, annC, businessType, debts, showPcmn, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb }) {
   var { lang } = useLang();
   var t = useT().revenue || {};
   var [showCreate, setShowCreate] = useState(null);
@@ -502,6 +499,26 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
     lineHeight: "14px", verticalAlign: "middle",
   };
 
+  /* Auto-generated subsidy items from DebtPage (class 73) */
+  var subsidyItems = useMemo(function () {
+    var items = [];
+    (debts || []).forEach(function (d) {
+      if (d.type === "subsidy" && d.amount > 0) {
+        items.push({
+          l: d.name || t.auto_subsidy || "Subside",
+          behavior: "subsidy",
+          price: d.amount,
+          qty: 1,
+          tva: 0,
+          _readOnly: true,
+          _linkedPage: "debt",
+          _linkedLabel: t.auto_subsidy_link || "Financement",
+        });
+      }
+    });
+    return items;
+  }, [debts, t]);
+
   /* flatten streams for table */
   var flatItems = useMemo(function () {
     var items = [];
@@ -510,8 +527,8 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
         items.push(Object.assign({}, item, { _ci: ci, _ii: ii }));
       });
     });
-    return items;
-  }, [streams]);
+    return subsidyItems.concat(items);
+  }, [streams, subsidyItems]);
 
   /* filtered items — by tab, then by type filter, then by search */
   var filteredItems = useMemo(function () {
@@ -886,7 +903,7 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
       title={t.title || (lang === "fr" ? "Sources de revenus" : "Revenue Sources")}
       subtitle={t.subtitle || (lang === "fr" ? "Définissez comment votre entreprise gagne de l'argent." : "Define how your business makes money.")}
     >
-      {showCreate ? <StreamModal onAdd={addStream} onClose={function () { setShowCreate(null); }} businessType={businessType || "other"} lang={lang} defaultBehavior={typeof showCreate === "string" ? showCreate : undefined} /> : null}
+      {showCreate ? <StreamModal onAdd={addStream} onClose={function () { setShowCreate(null); }} businessType={businessType || "other"} lang={lang} defaultBehavior={typeof showCreate === "string" ? showCreate : undefined} showTva={showPcmn} /> : null}
 
       {editingStream ? <StreamModal
         initialData={editingStream.item}
@@ -894,6 +911,7 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
         onClose={function () { setEditingStream(null); }}
         businessType={businessType || "other"}
         lang={lang}
+        showTva={showPcmn}
       /> : null}
 
       {pendingDelete ? <ConfirmDeleteModal
@@ -905,11 +923,11 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
       /> : null}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-        <KpiCard label={t.kpi_monthly || "Monthly revenue"} value={eurShort(totals.mrr)} fullValue={eur(totals.mrr)} />
-        <KpiCard label={t.kpi_annual || "Annual revenue"} value={eurShort(totals.arr)} fullValue={eur(totals.arr)} />
-        <KpiCard label={t.kpi_active || "Active sources"} value={String(totals.count)} />
+        <KpiCard label={t.kpi_monthly || "Monthly revenue"} value={eurShort(totals.mrr)} fullValue={eur(totals.mrr)} glossaryKey="monthly_revenue" />
+        <KpiCard label={t.kpi_annual || "Annual revenue"} value={eurShort(totals.arr)} fullValue={eur(totals.arr)} glossaryKey="annual_revenue" />
+        <KpiCard label={t.kpi_active || "Active sources"} value={String(totals.count)} glossaryKey="active_sources" />
         <KpiCard
-          label={t.kpi_coverage || "Cost coverage"}
+          label={t.kpi_coverage || "Cost coverage"} glossaryKey="cost_coverage"
           value={annC > 0 ? Math.round(totals.arr / annC * 100) + " %" : "—"}
           color={annC > 0 && totals.arr >= annC ? "var(--color-success)" : annC > 0 ? "var(--color-error)" : undefined}
         />
@@ -920,37 +938,15 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
 
         {/* Donut: répartition par type */}
         <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-3)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            {t.distribution_title || "Distribution by type"}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-4)" }}>
-            <DonutChart data={typeDistribution} />
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-              {Object.keys(typeDistribution).length > 0 ? Object.keys(typeDistribution).map(function (b) {
-                var m = BEHAVIOR_META[b];
-                if (!m) return null;
-                var pct = totals.arr > 0 ? Math.round(typeDistribution[b] / totals.arr * 100) : 0;
-                return (
-                  <div key={b} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: DONUT_COLORS[b] || "var(--text-muted)", flexShrink: 0 }} />
-                    <span style={{ color: "var(--text-secondary)", flex: 1 }}>{m.label[lk]}</span>
-                    <span style={{ color: "var(--text-primary)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
-                  </div>
-                );
-              }) : (
-                /* skeleton legend */
-                [0, 1, 2].map(function (i) {
-                  return (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--bg-hover)", flexShrink: 0 }} />
-                      <span style={{ height: 10, borderRadius: 4, background: "var(--bg-hover)", flex: 1 }} />
-                      <span style={{ width: 24, height: 10, borderRadius: 4, background: "var(--bg-hover)" }} />
-                    </div>
-                  );
-                })
-              )}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              {t.distribution_title || "Distribution by type"}
             </div>
+            <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
           </div>
+          <ChartLegend palette={chartPalette} distribution={typeDistribution} meta={BEHAVIOR_META} total={totals.arr} lk={lk}>
+            <DonutChart data={typeDistribution} palette={chartPalette} />
+          </ChartLegend>
 
           {/* Recurring vs non-recurring bar */}
           <div style={{ marginTop: "var(--sp-3)", paddingTop: "var(--sp-3)", borderTop: "1px solid var(--border-light)" }}>

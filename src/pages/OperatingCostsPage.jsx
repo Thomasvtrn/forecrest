@@ -3,9 +3,9 @@ import {
   Plus, Trash, Shuffle, Eraser, ArrowRight,
   Buildings, Receipt, Desktop, Scales,
   Megaphone, ShieldCheck, Wrench, Briefcase, Car,
-  PencilSimple, Copy,
+  PencilSimple, Copy, ShoppingCart, Bank,
 } from "@phosphor-icons/react";
-import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, FinanceLink } from "../components";
+import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, FinanceLink, PaletteToggle, ChartLegend } from "../components";
 import Modal, { ModalFooter } from "../components/Modal";
 import CurrencyInput from "../components/CurrencyInput";
 import { eur, eurShort, makeId } from "../utils";
@@ -123,6 +123,42 @@ var COST_CATEGORY_META = {
       { l: "Formation", a: 100 },
     ],
   },
+  non_recurring: {
+    icon: Wrench, badge: "warning",
+    label: { fr: "Non récurrent", en: "Non-recurring" },
+    desc: { fr: "Charges ponctuelles : frais de constitution, pénalités, pertes sur créances.", en: "One-off charges: incorporation costs, penalties, bad debts." },
+    pcmn: "6600", type: "non_recurring", defaultFreq: "once", tvaRate: 0.21,
+    suggestions: [
+      { l: "Frais de constitution", a: 1500, tva: 0.21 },
+      { l: "Publication Moniteur belge", a: 200, tva: 0 },
+      { l: "Inscription BCE", a: 90, tva: 0 },
+      { l: "Pénalité / amende", a: 0, tva: 0 },
+    ],
+  },
+  purchases: {
+    icon: ShoppingCart, badge: "brand",
+    label: { fr: "Achats & marchandises", en: "Purchases & goods" },
+    desc: { fr: "Achats de matières premières, marchandises et fournitures pour la production ou la revente.", en: "Raw materials, merchandise and supplies for production or resale." },
+    pcmn: "6000", type: "exploitation", defaultFreq: "monthly", tvaRate: 0.21,
+    suggestions: [
+      { l: "Matières premières", a: 500, pcmn: "6000" },
+      { l: "Marchandises", a: 800, pcmn: "6040" },
+      { l: "Emballages", a: 100, pcmn: "6010" },
+      { l: "Fournitures de production", a: 200, pcmn: "6020" },
+    ],
+  },
+  taxes: {
+    icon: Bank, badge: "gray",
+    label: { fr: "Taxes & cotisations", en: "Taxes & fees" },
+    desc: { fr: "Taxes communales, provinciales, cotisations professionnelles et contributions obligatoires.", en: "Municipal taxes, professional contributions and mandatory fees." },
+    pcmn: "6400", type: "exploitation", defaultFreq: "annual", tvaRate: 0,
+    suggestions: [
+      { l: "Taxe communale", a: 300, freq: "annual" },
+      { l: "Cotisation CCI", a: 200, freq: "annual" },
+      { l: "Droit d'inscription BCE", a: 90, freq: "once" },
+      { l: "Taxe bureaux", a: 150, freq: "annual" },
+    ],
+  },
   depreciation: {
     icon: Briefcase, badge: "info",
     label: { fr: "Amortissements", en: "Depreciation" },
@@ -140,19 +176,12 @@ var COST_CATEGORY_META = {
 };
 
 /* Categories available in the modal (exclude auto-generated + equipment moves to Immobilisations) */
-var COST_CATEGORIES_MODAL = ["premises", "software", "marketing", "professional", "insurance", "travel", "other"];
+var COST_CATEGORIES_MODAL = ["premises", "software", "marketing", "professional", "insurance", "travel", "purchases", "taxes", "non_recurring", "other"];
 /* All categories including auto-generated (for display/filter) */
 var COST_CATEGORIES = Object.keys(COST_CATEGORY_META);
 
-var COST_DONUT_COLORS = {
-  premises: "#F59E0B", software: "#3B82F6", marketing: "#E8431A",
-  professional: "#6B7280", insurance: "#FBBF24", travel: "#9CA3AF",
-  equipment: "#60A5FA", other: "#D1D5DB",
-  depreciation: "#8B5CF6", financial_auto: "#EF4444",
-};
-
 /* ── SVG Donut ── */
-function CostDonut({ data }) {
+function CostDonut({ data, palette }) {
   var total = 0;
   var entries = [];
   Object.keys(data).forEach(function (k) { total += data[k]; entries.push({ key: k, value: data[k] }); });
@@ -170,7 +199,7 @@ function CostDonut({ data }) {
   return (
     <svg width={size} height={size} viewBox="0 0 80 80" style={{ flexShrink: 0 }} role="img" aria-hidden="true">
       {segs.map(function (s) {
-        return <circle key={s.key} cx={cx} cy={cy} r={r} fill="none" stroke={COST_DONUT_COLORS[s.key] || "#9CA3AF"} strokeWidth={sw} strokeDasharray={(s.pct * circ) + " " + (circ - s.pct * circ)} strokeDashoffset={-s.start * circ} transform="rotate(-90 40 40)" style={{ transition: "stroke-dasharray 0.3s" }} />;
+        return <circle key={s.key} cx={cx} cy={cy} r={r} fill="none" stroke={(palette || [])[segs.indexOf(s) % (palette || []).length] || "#9CA3AF"} strokeWidth={sw} strokeDasharray={(s.pct * circ) + " " + (circ - s.pct * circ)} strokeDashoffset={-s.start * circ} transform="rotate(-90 40 40)" style={{ transition: "stroke-dasharray 0.3s" }} />;
       })}
     </svg>
   );
@@ -490,8 +519,8 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
               ) : null}
             </div>
 
-            {/* TVA rate */}
-            {meta.tvaRate !== null ? (
+            {/* TVA rate — visible only in accounting mode */}
+            {meta.tvaRate !== null && cfg.showPcmn ? (
               <div>
                 <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>
                   {t.field_tva || "Taux de TVA"}
@@ -560,7 +589,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
 }
 
 /* ── Main Page ── */
-export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue, debts, assets, sals, crowdfunding, setTab }) {
+export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue, debts, assets, sals, crowdfunding, setTab, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb }) {
   var { lang } = useLang();
   var t = useT().opex || {};
   var [showCreate, setShowCreate] = useState(null); /* null = closed, string = default category key */
@@ -1127,11 +1156,11 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
 
       {/* KPI cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-        <KpiCard label={t.kpi_monthly_costs || "Monthly costs"} value={eurShort(totals.monthly)} fullValue={eur(totals.monthly)} />
-        <KpiCard label={t.kpi_annual_costs || "Annual costs"} value={eurShort(totals.annual)} fullValue={eur(totals.annual)} />
+        <KpiCard label={t.kpi_monthly_costs || "Monthly costs"} value={eurShort(totals.monthly)} fullValue={eur(totals.monthly)} glossaryKey="total_costs" />
+        <KpiCard label={t.kpi_annual_costs || "Annual costs"} value={eurShort(totals.annual)} fullValue={eur(totals.annual)} glossaryKey="total_costs" />
         <KpiCard label={t.kpi_active_items || "Active items"} value={String(totals.count)} />
         <KpiCard
-          label={t.kpi_cost_ratio || "Cost/revenue ratio"}
+          label={t.kpi_cost_ratio || "Cost/revenue ratio"} glossaryKey="cost_coverage"
           value={costRatio !== null ? costRatio + " %" : "—"}
           color={costRatio !== null && costRatio > 100 ? "var(--color-error)" : costRatio !== null && costRatio > 80 ? "var(--color-warning)" : undefined}
         />
@@ -1141,34 +1170,15 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
         {/* Donut: répartition par catégorie */}
         <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-3)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            {t.distribution_title || "Distribution by category"}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-4)" }}>
-            <CostDonut data={categoryDistribution} />
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-              {Object.keys(categoryDistribution).length > 0 ? Object.keys(categoryDistribution).map(function (catKey) {
-                var m = COST_CATEGORY_META[catKey];
-                if (!m) return null;
-                var pct = totals.annual > 0 ? Math.round(categoryDistribution[catKey] / totals.annual * 100) : 0;
-                return (
-                  <div key={catKey} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: COST_DONUT_COLORS[catKey] || "var(--text-muted)", flexShrink: 0 }} />
-                    <span style={{ color: "var(--text-secondary)", flex: 1 }}>{m.label[lk]}</span>
-                    <span style={{ color: "var(--text-primary)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{pct}%</span>
-                  </div>
-                );
-              }) : [0, 1, 2].map(function (i) {
-                return (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--bg-hover)", flexShrink: 0 }} />
-                    <span style={{ height: 10, borderRadius: 4, background: "var(--bg-hover)", flex: 1 }} />
-                    <span style={{ width: 24, height: 10, borderRadius: 4, background: "var(--bg-hover)" }} />
-                  </div>
-                );
-              })}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              {t.distribution_title || "Distribution by category"}
             </div>
+            <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
           </div>
+          <ChartLegend palette={chartPalette} distribution={categoryDistribution} meta={COST_CATEGORY_META} total={totals.annual} lk={lk}>
+            <CostDonut data={categoryDistribution} palette={chartPalette} />
+          </ChartLegend>
 
           {/* Fixed vs variable bar */}
           <div style={{ marginTop: "var(--sp-3)", paddingTop: "var(--sp-3)", borderTop: "1px solid var(--border-light)" }}>

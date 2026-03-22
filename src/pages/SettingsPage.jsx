@@ -189,8 +189,33 @@ export default function SettingsPage({
                     <span style={{ fontSize: 11, fontWeight: 600, background: "var(--bg-page)", padding: "2px 6px", borderRadius: 4 }}>{Math.round((cfg.fontScale || 1) * 100)}%</span>
                   </div>
                 </SettingRow>
-                <SettingRow label={lang === "fr" ? "Animations" : "Animations"} desc={lang === "fr" ? "Désactiver réduit les mouvements." : "Disabling reduces motion."} last>
+                <SettingRow label={lang === "fr" ? "Animations" : "Animations"} desc={lang === "fr" ? "Désactiver réduit les mouvements." : "Disabling reduces motion."}>
                   <Toggle on={cfg.animationsEnabled !== false} onChange={function () { cfgSet(setCfg, "animationsEnabled", cfg.animationsEnabled === false); }} />
+                </SettingRow>
+                <SettingRow label={lang === "fr" ? "Palette des charts" : "Chart palette"} desc={lang === "fr" ? "Dégradé de la brand color ou couleurs distinctes." : "Brand color gradient or distinct colors."} last>
+                  <div style={{ display: "flex", gap: "var(--sp-2)" }}>
+                    {[
+                      { value: "brand", label: lang === "fr" ? "Brand" : "Brand" },
+                      { value: "multi", label: lang === "fr" ? "Multi" : "Multi" },
+                    ].map(function (opt) {
+                      var active = (cfg.chartPalette || "brand") === opt.value;
+                      return (
+                        <button key={opt.value} type="button" onClick={function () { cfgSet(setCfg, "chartPalette", opt.value); }}
+                          style={{
+                            height: 32, padding: "0 12px",
+                            border: "1px solid " + (active ? "var(--brand)" : "var(--border)"),
+                            borderRadius: "var(--r-md)",
+                            background: active ? "var(--brand-bg)" : "transparent",
+                            color: active ? "var(--brand)" : "var(--text-secondary)",
+                            fontSize: 12, fontWeight: active ? 600 : 400, fontFamily: "inherit",
+                            cursor: "pointer", transition: "all 0.12s",
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </SettingRow>
               </SectionBlock>
             </>

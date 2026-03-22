@@ -6,7 +6,7 @@ import { useT, useLang, useDevMode, useGlossary } from "./context";
 import { openInvestorReport } from "./utils/printReport";
 
 import { DEFAULT_CONFIG, STORAGE_KEY, VERSION } from "./constants/config";
-import { ACCENT_PALETTE } from "./constants/colors";
+import { ACCENT_PALETTE, getChartPalette } from "./constants/colors";
 import { COST_DEF, SAL_DEF, GRANT_DEF, CAPTABLE_DEF, ROUND_SIM_DEF, POOL_SIZE_DEF, STREAMS_DEF, REVENUE_DEF, DEBT_DEF, PLAN_SECTIONS_DEF, applyCostPreset } from "./constants/defaults";
 import { Banner, PageTransition, DevBanner } from "./components";
 import GlossaryDrawer, { GlossaryFab } from "./components/GlossaryDrawer";
@@ -19,7 +19,7 @@ import CommandPalette from "./components/KeyboardShortcuts";
 import DevCommandPalette from "./components/DevCommandPalette";
 import useHistory from "./hooks/useHistory";
 
-import { salCalc, calcIsoc, grantCalc, calcBusinessKpis, calcTotalRevenue, calcStreamAnnual, migrateStreamsV1ToV2, load, save, setCurrencyDisplay } from "./utils";
+import { salCalc, calcIsoc, grantCalc, calcBusinessKpis, calcTotalRevenue, calcStreamAnnual, migrateStreamsV1ToV2, load, save, setCurrencyDisplay, calcVatCollected, calcVatDeductible } from "./utils";
 import { OverviewPage } from "./pages";
 import { OperatingCostsPage } from "./pages";
 import { SettingsPage } from "./pages";
@@ -28,6 +28,7 @@ import { CapTablePage } from "./pages";
 import { PactPage } from "./pages";
 import { DebtPage } from "./pages";
 import { CrowdfundingPage } from "./pages";
+import { StocksPage } from "./pages";
 import { CashFlowPage } from "./pages";
 import { RevenueStreamsPage } from "./pages";
 import { AccountingPage } from "./pages";
@@ -40,6 +41,8 @@ import { ChangelogPage, CreditsPage, ProfilePage, SensitivityPage } from "./page
 import TooltipRegistryPage from "./pages/TooltipRegistryPage";
 import DebugCalculationsPage from "./pages/DebugCalculationsPage";
 import DesignTokensPage from "./pages/DesignTokensPage";
+import RoadmapPage from "./pages/RoadmapPage";
+import SitemapPage from "./pages/SitemapPage";
 
 function migrateStreams(streams) {
   try {
@@ -142,6 +145,15 @@ export default function App() {
       "[data-theme=\"dark\"]{--brand:" + c.hex + ";--brand-bg:rgba(" + r + "," + g + "," + b + ",0.14);--brand-bg-hover:rgba(" + r + "," + g + "," + b + ",0.24);--brand-border:rgba(" + r + "," + g + "," + b + ",0.30);--brand-hover:" + c.hoverDark + ";--brand-gradient-end:" + c.gradient + "}";
   }, [cfg.accentColor]);
 
+  // Compute chart palette based on accent color + palette mode
+  var accentObj = ACCENT_PALETTE.find(function (p) { return p.id === (cfg.accentColor || "coral"); }) || ACCENT_PALETTE[0];
+  var chartPaletteMode = cfg.chartPalette || "brand";
+  var chartPalette = useMemo(function () {
+    return getChartPalette(chartPaletteMode, accentObj.rgb, accentObj.hex);
+  }, [chartPaletteMode, cfg.accentColor]);
+  var onChartPaletteChange = function (mode) { setCfg(function (prev) { return Object.assign({}, prev, { chartPalette: mode }); }); };
+  var accentRgb = accentObj.rgb;
+
   var [costs, setCosts] = useState(JSON.parse(JSON.stringify(COST_DEF)));
   var [sals, setSals] = useState(JSON.parse(JSON.stringify(SAL_DEF)));
   var [grants, setGrants] = useState(JSON.parse(JSON.stringify(GRANT_DEF)));
@@ -152,6 +164,7 @@ export default function App() {
   var [esopEnabled, setEsopEnabled] = useState(false);
   var [debts, setDebts] = useState(JSON.parse(JSON.stringify(DEBT_DEF)));
   var [crowdfunding, setCrowdfunding] = useState({ enabled: false, name: "", platform: "ulule", goal: 0, url: "", tiers: [], startDate: "", endDate: "", raised: 0, status: "planning" });
+  var [stocks, setStocks] = useState([]);
   var [assets, setAssets] = useState([]);
   var [planSections, setPlanSections] = useState(JSON.parse(JSON.stringify(PLAN_SECTIONS_DEF)));
   var [showOnboarding, setShowOnboarding] = useState(false);
@@ -182,6 +195,7 @@ export default function App() {
     if (d.esopEnabled !== undefined) setEsopEnabled(d.esopEnabled);
     if (d.debts) setDebts(d.debts);
     if (d.crowdfunding) setCrowdfunding(d.crowdfunding);
+    if (d.stocks) setStocks(d.stocks);
     if (d.assets) setAssets(d.assets);
     if (d.planSections) setPlanSections(d.planSections);
   }, []);
@@ -259,7 +273,7 @@ export default function App() {
   }, []);
 
   useEffect(function () {
-    if (ready && !showOnboarding) save(STORAGE_KEY, { cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, crowdfunding });
+    if (ready && !showOnboarding) save(STORAGE_KEY, { cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, crowdfunding, stocks });
   }, [cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, ready, showOnboarding]);
 
   // ── Salary → Cap Table sync ──
@@ -412,26 +426,8 @@ export default function App() {
   var dirOk = dirRem >= 45000;
   var divGross = netP > 0 ? Math.max(netP - resLeg, 0) : 0;
   /* Per-line TVA calculation */
-  function costAnnualForVat(item) {
-    var a = item.a || 0;
-    var total = item.pu ? a * (item.u || 1) : a;
-    var freqMap = { monthly: 12, quarterly: 4, annual: 1, once: 1 };
-    return total * (freqMap[item.freq] || 12);
-  }
-  var annVatC = 0;
-  (streams || []).forEach(function (cat) {
-    (cat.items || []).forEach(function (item) {
-      var rate = item.tva != null ? item.tva : (cfg.vat || 0.21);
-      if (rate > 0) annVatC += calcStreamAnnual(item) * rate;
-    });
-  });
-  var annVatD = 0;
-  (costs || []).forEach(function (cat) {
-    (cat.items || []).forEach(function (item) {
-      var rate = item.tva != null ? item.tva : (cfg.vat || 0.21);
-      if (rate > 0) annVatD += costAnnualForVat(item) * rate;
-    });
-  });
+  var annVatC = calcVatCollected(streams, cfg.vat || 0.21);
+  var annVatD = calcVatDeductible(costs, cfg.vat || 0.21);
   var vatBalance = annVatC - annVatD;
 
   var bizKpis = useMemo(function () {
@@ -572,7 +568,7 @@ export default function App() {
             ) : null}
 
             {tab === "streams" ? (
-              <RevenueStreamsPage streams={streams} setStreams={setStreams} annC={annC} businessType={cfg.businessType} />
+              <RevenueStreamsPage streams={streams} setStreams={setStreams} annC={annC} businessType={cfg.businessType} debts={debts} showPcmn={cfg.showPcmn} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
             ) : null}
 
             {tab === "cashflow" ? (
@@ -588,16 +584,16 @@ export default function App() {
               <OperatingCostsPage
                 costs={costs} setCosts={setCosts}
                 cfg={cfg}
-                totalRevenue={totalRevenue} debts={debts} assets={assets} sals={sals} crowdfunding={crowdfunding} setTab={setTab}
+                totalRevenue={totalRevenue} debts={debts} assets={assets} sals={sals} crowdfunding={crowdfunding} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb}
               />
             ) : null}
 
             {tab === "salaries" ? (
-              <SalaryPage sals={sals} setSals={setSals} cfg={cfg} salCosts={salCosts} arrV={totalRevenue} assets={assets} setAssets={setAssets} setTab={setTab} />
+              <SalaryPage sals={sals} setSals={setSals} cfg={cfg} salCosts={salCosts} arrV={totalRevenue} assets={assets} setAssets={setAssets} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
             ) : null}
 
             {tab === "equipment" ? (
-              <AmortissementPage assets={assets} setAssets={setAssets} cfg={cfg} setTab={setTab} />
+              <AmortissementPage assets={assets} setAssets={setAssets} cfg={cfg} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
             ) : null}
 
             {tab === "changelog" ? (
@@ -634,11 +630,15 @@ export default function App() {
             ) : null}
 
             {tab === "debt" ? (
-              <DebtPage debts={debts} setDebts={setDebts} ebitda={ebitda} capitalSocial={cfg.capitalSocial} setTab={setTab} crowdfunding={crowdfunding} />
+              <DebtPage debts={debts} setDebts={setDebts} ebitda={ebitda} capitalSocial={cfg.capitalSocial} setTab={setTab} crowdfunding={crowdfunding} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
             ) : null}
 
             {tab === "crowdfunding" ? (
-              <CrowdfundingPage crowdfunding={crowdfunding} setCrowdfunding={setCrowdfunding} setTab={setTab} />
+              <CrowdfundingPage crowdfunding={crowdfunding} setCrowdfunding={setCrowdfunding} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
+            ) : null}
+
+            {tab === "stocks" ? (
+              <StocksPage stocks={stocks} setStocks={setStocks} cfg={cfg} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
             ) : null}
 
             {tab === "profile" ? (
@@ -675,6 +675,14 @@ export default function App() {
 
             {tab === "dev-tokens" && devMode ? (
               <DesignTokensPage />
+            ) : null}
+
+            {tab === "dev-roadmap" && devMode ? (
+              <RoadmapPage />
+            ) : null}
+
+            {tab === "dev-sitemap" && devMode ? (
+              <SitemapPage />
             ) : null}
 
           </PageTransition>

@@ -6,7 +6,7 @@ import {
   Users, ChartPie, UsersThree, ShieldCheck, Scales, BookOpen,
   HourglassSimple, ClockCounterClockwise, Translate,
   GearSix, Sun, Moon, UploadSimple, List, X,
-  CurrencyEur, TreeStructure, Gavel, Buildings, SquaresFour,
+  CurrencyEur, TreeStructure, Gavel, Buildings, SquaresFour, Package,
 } from "@phosphor-icons/react";
 import { useTheme, useGlossary } from "../context";
 import { useT, useLang } from "../context";
@@ -51,6 +51,7 @@ var NAV_ICON_MAP = {
   debt: Bank,
   crowdfunding: UsersThree,
   equipment: HourglassSimple,
+  stocks: Package,
   accounting: BookOpen,
   ratios: Scales,
   sensitivity: ChartBar,
@@ -68,7 +69,7 @@ var GROUP_ICON_MAP = {
 
 var NAV_SECTIONS = [
   { id: "overview", type: "item" },
-  { id: "finances", type: "group", items: ["streams", "opex", "salaries", "equipment"] },
+  { id: "finances", type: "group", items: ["streams", "opex", "salaries", "equipment", "stocks"] },
   { id: "tresorerie", type: "group", items: ["cashflow", "debt", "crowdfunding"] },
   { id: "comptabilite", type: "group", items: ["accounting", "ratios", "sensitivity"] },
   { id: "gouvernance", type: "group", items: ["equity", "captable", "pact"] },
@@ -297,7 +298,7 @@ function ProfileFooter({ cfg, collapsed, dark, toggle, lang, toggleLang, onOpenE
         <div style={{ position: "relative", flexShrink: 0 }}>
           <div style={{
             width: 40, height: 40, borderRadius: "50%",
-            background: "linear-gradient(135deg, var(--brand) 0%, var(--brand-gradient-end) 100%)",
+            background: "var(--brand)",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "#fff", fontSize: 14, fontWeight: 700,
             fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif",

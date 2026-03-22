@@ -78,7 +78,7 @@ function DebtModal({ onAdd, onSave, onClose, lang, initialData, debts }) {
               var TIcon = m.icon;
               var isActive = selected === typeKey;
               return (
-                <button key={typeKey} onClick={function () { handleSelect(typeKey); }}
+                <button key={typeKey} type="button" onClick={function () { handleSelect(typeKey); }}
                   style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", width: "100%", padding: "10px var(--sp-3)", border: "none", borderRadius: "var(--r-md)", background: isActive ? "var(--brand-bg)" : "transparent", cursor: "pointer", textAlign: "left", marginBottom: 2, transition: "background 0.1s", fontFamily: "inherit" }}
                   onMouseEnter={function (e) { if (!isActive) e.currentTarget.style.background = "var(--bg-hover)"; }}
                   onMouseLeave={function (e) { e.currentTarget.style.background = isActive ? "var(--brand-bg)" : "transparent"; }}
@@ -245,13 +245,13 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, setTa
 
   function randomizeDebts() {
     var pool = [
-      { name: "Prêt bancaire Belfius", type: "bank", amountMin: 25000, amountMax: 150000, rateMin: 0.02, rateMax: 0.06, durMin: 36, durMax: 84 },
-      { name: "Ligne de crédit BNP", type: "credit", amountMin: 10000, amountMax: 50000, rateMin: 0.04, rateMax: 0.08, durMin: 6, durMax: 24 },
-      { name: "Leasing véhicule", type: "leasing", amountMin: 15000, amountMax: 40000, rateMin: 0.03, rateMax: 0.06, durMin: 36, durMax: 60 },
-      { name: "Prêt fondateur", type: "loan", amountMin: 10000, amountMax: 50000, rateMin: 0, rateMax: 0.03, durMin: 12, durMax: 48 },
-      { name: "Bourse Wallonie", type: "subsidy", amountMin: 5000, amountMax: 25000, rateMin: 0, rateMax: 0, durMin: 1, durMax: 1 },
-      { name: "Avance Innoviris", type: "advance", amountMin: 10000, amountMax: 50000, rateMin: 0, rateMax: 0, durMin: 36, durMax: 72 },
-      { name: "Note convertible seed", type: "convertible", amountMin: 25000, amountMax: 100000, rateMin: 0, rateMax: 0, durMin: 18, durMax: 36 },
+      { name: t.random_bank || "Prêt bancaire Belfius", type: "bank", amountMin: 25000, amountMax: 150000, rateMin: 0.02, rateMax: 0.06, durMin: 36, durMax: 84 },
+      { name: t.random_credit || "Ligne de crédit BNP", type: "credit", amountMin: 10000, amountMax: 50000, rateMin: 0.04, rateMax: 0.08, durMin: 6, durMax: 24 },
+      { name: t.random_leasing || "Leasing véhicule", type: "leasing", amountMin: 15000, amountMax: 40000, rateMin: 0.03, rateMax: 0.06, durMin: 36, durMax: 60 },
+      { name: t.random_loan || "Prêt fondateur", type: "loan", amountMin: 10000, amountMax: 50000, rateMin: 0, rateMax: 0.03, durMin: 12, durMax: 48 },
+      { name: t.random_subsidy || "Bourse Wallonie", type: "subsidy", amountMin: 5000, amountMax: 25000, rateMin: 0, rateMax: 0, durMin: 1, durMax: 1 },
+      { name: t.random_advance || "Avance Innoviris", type: "advance", amountMin: 10000, amountMax: 50000, rateMin: 0, rateMax: 0, durMin: 36, durMax: 72 },
+      { name: t.random_convertible || "Note convertible seed", type: "convertible", amountMin: 25000, amountMax: 100000, rateMin: 0, rateMax: 0, durMin: 18, durMax: 36 },
     ];
     function rand(min, max) { return min + Math.random() * (max - min); }
     function roundTo(v, step) { return Math.round(v / step) * step; }
@@ -342,7 +342,7 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, setTa
         <KpiCard label={t.kpi_total || "Capital restant"} value={totalRemaining > 0 ? eurShort(totalRemaining) : "—"} fullValue={totalRemaining > 0 ? eur(totalRemaining) : undefined} />
         <KpiCard label={t.kpi_monthly || "Mensualités"} value={totalMonthly > 0 ? eurShort(totalMonthly) : "—"} fullValue={totalMonthly > 0 ? eur(totalMonthly) + "/mois" : undefined} />
         <KpiCard label={t.kpi_cost || "Intérêts annuels"} value={annualInterest > 0 ? eurShort(annualInterest) : "—"} fullValue={annualInterest > 0 ? eur(annualInterest) + "/an" : undefined} />
-        <KpiCard label={t.kpi_dscr || "Capacité de remboursement"} value={debts.length > 0 && annualDebtService > 0 ? dscr.toFixed(2) + "x" : "—"} />
+        <KpiCard label={t.kpi_dscr || "Capacité de remboursement"} value={debts.length > 0 && annualDebtService > 0 ? dscr.toFixed(2) + "x" : "—"} glossaryKey="ebitda" />
       </div>
 
       {/* Insights */}
