@@ -74,24 +74,27 @@ var BENEFIT_META = {
     icon: Car,
     label: { fr: "Voiture de société", en: "Company car" },
     chargeLabel: { fr: "Leasing + carburant + assurance", en: "Leasing + fuel + insurance" },
+    purchaseChargeLabel: { fr: "Carburant + assurance + entretien", en: "Fuel + insurance + maintenance" },
     purchaseLabel: { fr: "Achat véhicule", en: "Vehicle purchase" },
-    defaultAmount: 500, pcmn: "6140",
+    defaultAmount: 500, purchaseChargeAmount: 200, pcmn: "6140",
     canPurchase: true, assetCategory: "vehicle", assetPcmn: "2400", defaultAssetAmount: 25000,
   },
   phone: {
     icon: DeviceMobile,
     label: { fr: "GSM / Téléphone", en: "Phone / Mobile" },
     chargeLabel: { fr: "Abonnement téléphonique", en: "Phone subscription" },
+    purchaseChargeLabel: { fr: "Abonnement téléphonique", en: "Phone subscription" },
     purchaseLabel: { fr: "Achat téléphone", en: "Phone purchase" },
-    defaultAmount: 50, pcmn: "6131",
+    defaultAmount: 50, purchaseChargeAmount: 30, pcmn: "6131",
     canPurchase: true, assetCategory: "it", assetPcmn: "2410", defaultAssetAmount: 600,
   },
   laptop: {
     icon: Laptop,
     label: { fr: "Ordinateur", en: "Laptop" },
-    chargeLabel: { fr: "Maintenance / logiciels", en: "Maintenance / software" },
+    chargeLabel: { fr: "Abonnement logiciels + maintenance", en: "Software subscriptions + maintenance" },
+    purchaseChargeLabel: { fr: "Logiciels + maintenance", en: "Software + maintenance" },
     purchaseLabel: { fr: "Achat ordinateur", en: "Laptop purchase" },
-    defaultAmount: 40, pcmn: "6131",
+    defaultAmount: 40, purchaseChargeAmount: 20, pcmn: "6131",
     canPurchase: true, assetCategory: "it", assetPcmn: "2410", defaultAssetAmount: 1200,
   },
   wifi: {
@@ -227,7 +230,13 @@ function SalaryModal({ onAdd, onSave, onClose, lang, initialData, cfg, setAssets
       shareholder: meta.canBeShareholder ? shareholder : false,
       duration: meta.showDuration ? duration : undefined,
       interimCoeff: selected === "interim" ? interimCoeff : undefined,
-      benefits: benefits.length > 0 ? benefits : undefined,
+      benefits: benefits.length > 0 ? benefits.map(function (b) {
+        var bm = BENEFIT_META[b.id];
+        return Object.assign({}, b, {
+          label: bm ? bm.label[lk] : b.id,
+          pcmn: bm ? bm.pcmn : "6130",
+        });
+      }) : undefined,
     };
     /* Auto-create assets for purchase-mode benefits */
     if (setAssets && benefits.length > 0) {
@@ -438,7 +447,17 @@ function SalaryModal({ onAdd, onSave, onClose, lang, initialData, cfg, setAssets
                               {[{ k: "lease", l: t.mode_lease || "Location / Abonnement" }, { k: "purchase", l: t.mode_purchase || "Achat" }].map(function (m) {
                                 var active = (b.mode || "lease") === m.k;
                                 return (
-                                  <button key={m.k} type="button" onClick={function () { updateBenefit({ mode: m.k, assetAmount: m.k === "purchase" ? (b.assetAmount || bm.defaultAssetAmount) : undefined }); }}
+                                  <button key={m.k} type="button" onClick={function () {
+                                    var patch = { mode: m.k };
+                                    if (m.k === "purchase") {
+                                      patch.assetAmount = b.assetAmount || bm.defaultAssetAmount;
+                                      patch.amount = bm.purchaseChargeAmount || bm.defaultAmount;
+                                    } else {
+                                      patch.assetAmount = undefined;
+                                      patch.amount = bm.defaultAmount;
+                                    }
+                                    updateBenefit(patch);
+                                  }}
                                     style={{
                                       flex: 1, height: 36, padding: "0 8px", fontSize: 12, fontWeight: active ? 600 : 400,
                                       border: "1px solid " + (active ? "var(--brand-border)" : "var(--border)"),
@@ -455,7 +474,7 @@ function SalaryModal({ onAdd, onSave, onClose, lang, initialData, cfg, setAssets
                           ) : null}
                           {/* Charge row */}
                           <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", padding: "0 var(--sp-3) 6px" }}>
-                            <span style={{ fontSize: 11, color: "var(--text-faint)", flex: 1 }}>{bm.chargeLabel ? bm.chargeLabel[lk] : ""}</span>
+                            <span style={{ fontSize: 11, color: "var(--text-faint)", flex: 1 }}>{isPurchase && bm.purchaseChargeLabel ? bm.purchaseChargeLabel[lk] : (bm.chargeLabel ? bm.chargeLabel[lk] : "")}</span>
                             <CurrencyInput value={b.amount} onChange={function (v) { updateBenefit({ amount: v }); }} suffix="€" width="90px" height={28} />
                             <span style={{ fontSize: 10, color: "var(--text-faint)", flexShrink: 0 }}>/mois</span>
                           </div>

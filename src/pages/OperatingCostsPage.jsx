@@ -631,7 +631,7 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
         if (!b.amount || b.amount <= 0) return;
         items.push({
           id: "_ben_" + si + "_" + b.id,
-          l: (s.role || "—") + " — " + b.id,
+          l: (s.role || "—") + " — " + (b.label || b.id),
           a: b.amount,
           freq: "monthly",
           pu: false, u: 1,
