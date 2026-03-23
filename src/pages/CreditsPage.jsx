@@ -15,8 +15,6 @@ var LIBS = [
   { name: "react-hotkeys-hook", version: "5.x", license: "MIT", author: "Johannes Klauss", url: "https://react-hotkeys-hook.vercel.app", usage: "keys" },
   { name: "TanStack Table", version: "8.x", license: "MIT", author: "Tanner Linsley", url: "https://tanstack.com/table", usage: "tables" },
   { name: "react-number-format", version: "5.x", license: "MIT", author: "Sudhanshu Yadav", url: "https://s-yadav.github.io/react-number-format", usage: "inputs" },
-  { name: "@dnd-kit", version: "6.x", license: "MIT", author: "Claudéric Demers", url: "https://dndkit.com", usage: "dnd" },
-  { name: "@uiw/react-md-editor", version: "4.x", license: "MIT", author: "uiwjs", url: "https://uiwjs.github.io/react-md-editor", usage: "markdown" },
   { name: "Recharts", version: "3.x", license: "MIT", author: "Recharts Group", url: "https://recharts.org", usage: "charts" },
 ];
 
@@ -50,13 +48,13 @@ function LicenseBadge({ license }) {
   );
 }
 
-function LibRow({ lib, t }) {
+function LibRow({ lib, t, isLast }) {
   return (
     <div style={{
       display: "grid", gridTemplateColumns: "1fr 130px 160px 28px",
       gap: "var(--sp-3)", alignItems: "center",
       padding: "var(--sp-2) var(--sp-3)",
-      borderBottom: "1px solid var(--border-light)",
+      borderBottom: isLast ? "none" : "1px solid var(--border-light)",
     }}>
       <div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{lib.name} <span style={{ fontSize: 11, fontWeight: 400, color: "var(--text-faint)" }}>{lib.version}</span></div>
@@ -167,23 +165,23 @@ export default function CreditsPage() {
               <span>{t.col_url || "Lien"}</span>
               <span />
             </div>
-            {LIBS.map(function (lib) {
-              return <LibRow key={lib.name} lib={lib} t={t} />;
+            {LIBS.map(function (lib, i) {
+              return <LibRow key={lib.name} lib={lib} t={t} isLast={i === LIBS.length - 1} />;
             })}
           </Card>
 
           <Card sx={{ padding: "var(--card-py) var(--card-px)" }}>
             <SectionHeader title={t.section_dev || "Outils de d\u00e9veloppement"} count={DEV_LIBS.length + " libs"} />
-            {DEV_LIBS.map(function (lib) {
-              return <LibRow key={lib.name} lib={lib} t={t} />;
+            {DEV_LIBS.map(function (lib, i) {
+              return <LibRow key={lib.name} lib={lib} t={t} isLast={i === DEV_LIBS.length - 1} />;
             })}
           </Card>
 
           {DOC_LIBS.length > 0 ? (
             <Card sx={{ padding: "var(--card-py) var(--card-px)" }}>
               <SectionHeader title={t.section_docs || "Documentation"} count={DOC_LIBS.length + " libs"} />
-              {DOC_LIBS.map(function (lib) {
-                return <LibRow key={lib.name} lib={lib} t={t} />;
+              {DOC_LIBS.map(function (lib, i) {
+                return <LibRow key={lib.name} lib={lib} t={t} isLast={i === DOC_LIBS.length - 1} />;
               })}
             </Card>
           ) : null}
@@ -236,7 +234,7 @@ export default function CreditsPage() {
             </div>
             <StatRow icon={<Package size={13} color="var(--text-muted)" />} label={t.sidebar_version || "Version"} value={"v" + VERSION} />
             <StatRow icon={<ClockCounterClockwise size={13} color="var(--text-muted)" />} label={t.sidebar_release || "Release"} value={RELEASE_DATE} />
-            <StatRow icon={<TestTube size={13} color="var(--text-muted)" />} label={t.sidebar_tests || "Tests"} value="240" />
+            <StatRow icon={<TestTube size={13} color="var(--text-muted)" />} label={t.sidebar_tests || "Tests"} value="205" />
             <StatRow icon={<GlobeHemisphereWest size={13} color="var(--text-muted)" />} label={t.sidebar_target || "Cible"} value={t.sidebar_target_val || "Belgique"} />
             <div style={{ marginTop: "var(--sp-2)", display: "flex", flexWrap: "wrap", gap: 4 }}>
               {["React 18", "Vite 6", "Vitest 4", "GSAP 3"].map(function (tag) {
@@ -248,7 +246,10 @@ export default function CreditsPage() {
               })}
             </div>
             <div style={{ marginTop: "var(--sp-2)", fontSize: 11, color: "var(--text-faint)" }}>
-              ~550 kB gzip
+              ~620 kB gzip
+            </div>
+            <div style={{ marginTop: "var(--sp-1)", fontSize: 10, color: "var(--text-ghost)" }}>
+              {t.sidebar_last_verified || "Dernière vérification"} : 2026-03-23
             </div>
           </Card>
 

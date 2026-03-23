@@ -159,7 +159,7 @@ function DepreciationBar({ assets, totals, lk, t, palette }) {
                   }}
                 >
                   {roundPct >= 10 ? (
-                    <span style={{ fontSize: 9, fontWeight: 700, color: "var(--color-on-brand)", whiteSpace: "nowrap" }}>{roundPct}%</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: "#fff", textShadow: "0 0 3px rgba(0,0,0,0.5)", whiteSpace: "nowrap" }}>{roundPct}%</span>
                   ) : null}
                 </div>
               );
