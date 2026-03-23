@@ -898,9 +898,9 @@ export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets,
         meta: { align: "center" },
         cell: function (info) {
           var s = info.row.original;
-          if (s.type === "independant") return "—";
+          if (s.type === "independant") return <span style={{ color: "var(--text-faint)" }}>—</span>;
           return s.shareholder
-            ? <UsersThree size={14} weight="fill" color="var(--color-success)" />
+            ? <UsersThree size={14} weight="fill" color="var(--brand)" />
             : <span style={{ color: "var(--text-faint)" }}>—</span>;
         },
       },

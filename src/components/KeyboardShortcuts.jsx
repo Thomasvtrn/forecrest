@@ -4,7 +4,7 @@ import {
   MagnifyingGlass, X,
   ChartBar, CurrencyCircleDollar, Article, Wallet, Bank, Receipt,
   Users, ChartPie, UsersThree, ShieldCheck, Scales, BookOpen,
-  HourglassSimple, Sliders,
+  HourglassSimple, Sliders, Package, TreeStructure, TrendUp, ChartLine,
   ArrowCounterClockwise, ArrowClockwise, UploadSimple, MonitorPlay, Keyboard,
   Code, ClockCounterClockwise,
 } from "@phosphor-icons/react";
@@ -103,6 +103,7 @@ export default function CommandPalette({ open, onClose, setTab, onUndo, onRedo, 
   var s = t.shortcuts || {};
   var tb = t.tabs || {};
   var sg = s.groups || {};
+  var nav = t.nav || {};
   var changelogRecent = RELEASE_DATE && (Date.now() - new Date(RELEASE_DATE).getTime()) < 7 * 86400000;
 
   useEffect(function () {
@@ -126,32 +127,45 @@ export default function CommandPalette({ open, onClose, setTab, onUndo, onRedo, 
 
   var NAV_GROUPS = [
     {
-      label: sg.dashboard || "Dashboard",
+      label: nav.activite || "Mon activité",
       items: [
-        { id: "overview",  icon: ChartBar,              label: s.nav_overview || tb.overview, keys: ["1"] },
-        { id: "plan",      icon: Article,               label: tb.plan,                      keys: ["2"] },
-        { id: "streams",   icon: CurrencyCircleDollar,  label: s.nav_streams  || tb.streams, keys: ["3"] },
+        { id: "overview",  icon: ChartBar,              label: tb.overview, keys: ["1"] },
+        { id: "streams",   icon: CurrencyCircleDollar,  label: tb.streams,  keys: ["2"] },
+        { id: "opex",      icon: Receipt,               label: tb.opex,     keys: ["3"] },
+        { id: "salaries",  icon: Users,                 label: tb.salaries, keys: ["4"] },
+        { id: "equipment", icon: HourglassSimple,       label: tb.equipment, keys: ["5"] },
+        { id: "stocks",    icon: Package,               label: tb.stocks,   keys: [] },
       ],
     },
     {
-      label: sg.finance || "Finance",
+      label: nav.argent || "Mon argent",
       items: [
-        { id: "opex",          icon: Receipt,         label: s.nav_opex || tb.opex,         keys: ["4"] },
-        { id: "salaries",      icon: Users,           label: tb.salaries,                   keys: ["5"] },
-        { id: "cashflow",      icon: Wallet,          label: s.nav_cashflow || tb.cashflow, keys: ["6"] },
-        { id: "debt",          icon: Bank,            label: s.nav_debt || tb.debt,         keys: ["7"] },
-        { id: "accounting",    icon: BookOpen,        label: tb.accounting,                 keys: ["8"] },
-        { id: "ratios",        icon: Scales,          label: tb.ratios,                     keys: ["9"] },
-        { id: "equipment", icon: HourglassSimple, label: tb.equipment,                  keys: [] },
-        { id: "sensitivity",  icon: ChartBar,        label: tb.sensitivity,                keys: [] },
+        { id: "cashflow",      icon: Wallet,     label: tb.cashflow,     keys: ["6"] },
+        { id: "debt",          icon: Bank,        label: tb.debt,         keys: ["7"] },
+        { id: "crowdfunding",  icon: UsersThree,  label: tb.crowdfunding, keys: [] },
       ],
     },
     {
-      label: sg.equity || "Equity",
+      label: nav.documents || "Mes documents",
       items: [
-        { id: "equity",   icon: ChartPie,   label: s.nav_equity   || tb.equity,   keys: [] },
-        { id: "captable", icon: UsersThree,  label: s.nav_captable || tb.captable, keys: [] },
-        { id: "pact",     icon: ShieldCheck, label: tb.pact,                       keys: [] },
+        { id: "income_statement", icon: TreeStructure, label: tb.income_statement, keys: ["8"] },
+        { id: "balance_sheet",    icon: Scales,        label: tb.balance_sheet,    keys: [] },
+        { id: "accounting",       icon: BookOpen,      label: tb.accounting,       keys: [] },
+      ],
+    },
+    {
+      label: nav.analyse || "Mon analyse",
+      items: [
+        { id: "ratios",      icon: TrendUp,   label: tb.ratios,      keys: ["9"] },
+        { id: "sensitivity", icon: ChartLine, label: tb.sensitivity, keys: [] },
+      ],
+    },
+    {
+      label: nav.societe || "Ma société",
+      items: [
+        { id: "equity",   icon: ChartPie,   label: tb.equity,   keys: [] },
+        { id: "captable", icon: UsersThree,  label: tb.captable, keys: [] },
+        { id: "pact",     icon: ShieldCheck, label: tb.pact,     keys: [] },
       ],
     },
   ];

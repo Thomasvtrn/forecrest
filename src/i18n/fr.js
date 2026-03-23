@@ -14,7 +14,7 @@ export default {
   toggle_theme_dark: "Passer au mode sombre",
   palette_toggle: "Changer la palette",
   palette_brand: "Brand",
-  palette_brand_desc: "Dégradé monochrome",
+  palette_brand_desc: "Dégradé",
   palette_multi: "Multi",
   palette_multi_desc: "Couleurs distinctes",
   legend_expand: "Voir tout ({count})",

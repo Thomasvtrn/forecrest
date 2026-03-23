@@ -13,7 +13,7 @@ export default {
   toggle_theme_dark: "Switch to dark mode",
   palette_toggle: "Change palette",
   palette_brand: "Brand",
-  palette_brand_desc: "Monochrome gradient",
+  palette_brand_desc: "Gradient",
   palette_multi: "Multi",
   palette_multi_desc: "Distinct colors",
   legend_expand: "Show all ({count})",
