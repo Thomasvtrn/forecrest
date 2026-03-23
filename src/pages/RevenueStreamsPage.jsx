@@ -696,6 +696,18 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
     });
   }
 
+  function bulkDeleteItems(ids) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    setStreams(function (prev) {
+      var nc = JSON.parse(JSON.stringify(prev));
+      nc.forEach(function (cat) {
+        cat.items = cat.items.filter(function (item) { return !idSet[item.id]; });
+      });
+      return nc.filter(function (cat) { return cat.items.length > 0; });
+    });
+  }
+
   function requestDelete(ci, ii) {
     if (skipDeleteConfirm) {
       removeItem(ci, ii);
@@ -948,6 +960,8 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
     <PageLayout
       title={t.title || (lang === "fr" ? "Sources de revenus" : "Revenue Sources")}
       subtitle={t.subtitle || (lang === "fr" ? "Définissez comment votre entreprise gagne de l'argent." : "Define how your business makes money.")}
+      icon={CurrencyCircleDollar}
+      iconColor="#22C55E"
     >
       {showCreate ? <StreamModal onAdd={addStream} onClose={function () { setShowCreate(null); setPendingLabel(""); }} businessType={businessType || "other"} lang={lang} defaultBehavior={typeof showCreate === "string" ? showCreate : undefined} showTva={showPcmn} initialLabel={pendingLabel} /> : null}
 
@@ -1098,6 +1112,9 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
         pageSize={10}
         dimRow={function (row) { return !row.price || !row.qty; }}
         getRowId={function (row) { return row.id || (row._ci + "-" + row._ii); }}
+        selectable
+        onDeleteSelected={bulkDeleteItems}
+        isRowSelectable={function (row) { return !row._readOnly; }}
       />
 
     </PageLayout>

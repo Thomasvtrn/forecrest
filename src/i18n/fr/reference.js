@@ -100,6 +100,13 @@ export default {
     changelog_debt_cashflow: "Remboursements de dette intégrés dans le flux de trésorerie mensuel avec colonne dédiée.",
     changelog_i18n_split: "Traductions segmentées en 7 fichiers par namespace (common, business, finances, documents, analysis, modules, reference).",
     changelog_financelink_card_title: "Correction : retrait du FinanceLink dans le titre de la carte Ratio d'endettement (page Financement).",
+    // v0.1.22.0
+    changelog_bulk_selection: "Sélection en masse dans les DataTable : checkboxes 3 états, barre d'action brand avec compteur et suppression groupée, modal de confirmation. Déployé sur 8 pages.",
+    changelog_page_icons: "Icônes de page avec gradient pastel par groupe (revenus vert, charges rouge, trésorerie bleu...). Désactivable dans Paramètres.",
+    changelog_cashflow_statement: "Tableau de flux de trésorerie format bancaire belge : encaissements vs décaissements avec solde d'ouverture et de clôture.",
+    changelog_randomize_all: "Randomisation globale (dev) : remplir toutes les pages en un clic depuis la Comptabilité ou la Dev Command Palette.",
+    changelog_code_review_v22: "Code review : _cat manquant sur items auto-générés, AccountantBar migré i18n, test count 240, ternaire redondant corrigé.",
+    changelog_cfg_showpcmn_fix: "Correction bug cfg.showPcmn dans modale charges et toggle icônes de page.",
     // v0.1.21.0
     changelog_cmdk_palette: "Palette de commandes reconstruite avec cmdk : recherche intelligente, filtrage natif et navigation fluide entre les pages.",
     changelog_quick_add: "Commandes structurées style Discord : tapez 'ajouter' + Tab pour créer rapidement un coût, revenu, employé ou équipement avec choix de la page de destination.",

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import {
   Plus, Trash, Shuffle, Eraser, ArrowRight, CaretDown, GearSix,
   Desktop, Car, Buildings, ShieldCheck, Wrench, Briefcase,
-  PencilSimple, Copy,
+  PencilSimple, Copy, HourglassSimple,
 } from "@phosphor-icons/react";
 import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, FinanceLink, PaletteToggle } from "../components";
 import Modal, { ModalFooter } from "../components/Modal";
@@ -852,6 +852,11 @@ export default function AmortissementPage({ assets, setAssets, cfg, setTab, onNa
   function addAsset(data) { setAssets(function (prev) { return (prev || []).concat([data]); }); }
   function removeAsset(idx) { setAssets(function (prev) { var nc = prev.slice(); nc.splice(idx, 1); return nc; }); }
   function requestDelete(idx) { if (skipDeleteConfirm) { removeAsset(idx); } else { setPendingDelete(idx); } }
+  function bulkDeleteAssets(ids) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    setAssets(function (prev) { return prev.filter(function (a) { return !idSet[String(a.id)]; }); });
+  }
   function cloneAsset(idx) {
     setAssets(function (prev) {
       var nc = prev.slice();
@@ -1018,6 +1023,7 @@ export default function AmortissementPage({ assets, setAssets, cfg, setTab, onNa
     <PageLayout
       title={t.page_title || "Immobilisations"}
       subtitle={t.page_sub || "Gérez vos actifs et tableaux d'amortissement."}
+      icon={HourglassSimple} iconColor="#F59E0B"
     >
       {showCreate ? <AssetModal onAdd={addAsset} onClose={function () { setShowCreate(null); setPendingLabel(""); }} lang={lang} cfg={cfg} defaultCategory={typeof showCreate === "string" ? showCreate : undefined} initialLabel={pendingLabel} /> : null}
 
@@ -1147,6 +1153,9 @@ export default function AmortissementPage({ assets, setAssets, cfg, setTab, onNa
         emptyMinHeight={200}
         pageSize={10}
         getRowId={function (row) { return row.id; }}
+        selectable
+        onDeleteSelected={bulkDeleteAssets}
+        isRowSelectable={function (row) { return !row._readOnly; }}
       />
       ) : null}
 

@@ -767,6 +767,11 @@ export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets,
   function addSal(data) { setSals(function (prev) { return (prev || []).concat([data]); }); }
   function removeSal(idx) { setSals(function (prev) { var nc = prev.slice(); nc.splice(idx, 1); return nc; }); }
   function requestDelete(idx) { if (skipDeleteConfirm) { removeSal(idx); } else { setPendingDelete(idx); } }
+  function bulkDeleteSals(ids) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    setSals(function (prev) { return prev.filter(function (s) { return !idSet[String(s.id)]; }); });
+  }
   function cloneSal(idx) {
     setSals(function (prev) {
       var nc = prev.slice();
@@ -996,6 +1001,7 @@ export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets,
     <PageLayout
       title={t.page_title || "Rémunérations"}
       subtitle={t.page_sub || "Simulez le coût réel de votre équipe."}
+      icon={Users} iconColor="#8B5CF6"
     >
       {showCreate ? <SalaryModal onAdd={addSal} onClose={function () { setShowCreate(null); setPendingLabel(""); }} lang={lang} cfg={cfg} setAssets={setAssets} initialLabel={pendingLabel} /> : null}
 
@@ -1181,6 +1187,8 @@ export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets,
         pageSize={10}
         dimRow={function (row) { return !row.net; }}
         getRowId={function (row) { return String(row.id); }}
+        selectable
+        onDeleteSelected={bulkDeleteSals}
       />
     </PageLayout>
   );

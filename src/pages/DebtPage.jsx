@@ -286,6 +286,11 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, 
   function addDebt(data) { setDebts(function (prev) { return (prev || []).concat([data]); }); }
   function removeDebt(idx) { setDebts(function (prev) { var nc = prev.slice(); nc.splice(idx, 1); return nc; }); }
   function requestDelete(idx) { if (skipDeleteConfirm) { removeDebt(idx); } else { setPendingDelete(idx); } }
+  function bulkDeleteDebts(ids) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    setDebts(function (prev) { return prev.filter(function (d) { return !idSet[String(d.id)]; }); });
+  }
   function cloneDebt(idx) { setDebts(function (prev) { var nc = prev.slice(); var clone = Object.assign({}, nc[idx], { id: Date.now(), name: nc[idx].name + (t.copy_suffix || " (copie)") }); nc.splice(idx + 1, 0, clone); return nc; }); }
   function saveDebt(idx, data) { setDebts(function (prev) { var nc = prev.slice(); nc[idx] = Object.assign({}, nc[idx], data); return nc; }); }
 
@@ -376,7 +381,7 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, 
   );
 
   return (
-    <PageLayout title={t.title || "Financement"} subtitle={t.subtitle || "Gérez vos emprunts, crédits et aides."}>
+    <PageLayout title={t.title || "Financement"} subtitle={t.subtitle || "Gérez vos emprunts, crédits et aides."} icon={Bank} iconColor="#3B82F6">
       {showCreate ? <DebtModal onAdd={addDebt} onClose={function () { setShowCreate(null); setPendingLabel(""); }} lang={lang} debts={debts} initialLabel={pendingLabel} /> : null}
       {editingDebt ? <DebtModal initialData={editingDebt.item} onSave={function (data) { saveDebt(editingDebt.idx, data); }} onClose={function () { setEditingDebt(null); }} lang={lang} debts={debts} /> : null}
       {pendingDelete !== null ? <ConfirmDeleteModal onConfirm={function () { removeDebt(pendingDelete); setPendingDelete(null); }} onCancel={function () { setPendingDelete(null); }} skipNext={skipDeleteConfirm} setSkipNext={setSkipDeleteConfirm}
@@ -436,7 +441,7 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, 
         })}
       </div>
 
-      <DataTable data={filteredDebts} columns={columns} toolbar={toolbarNode} emptyState={emptyNode} emptyMinHeight={200} pageSize={10} getRowId={function (row) { return String(row.id); }} />
+      <DataTable data={filteredDebts} columns={columns} toolbar={toolbarNode} emptyState={emptyNode} emptyMinHeight={200} pageSize={10} getRowId={function (row) { return String(row.id); }} selectable onDeleteSelected={bulkDeleteDebts} />
     </PageLayout>
   );
 }

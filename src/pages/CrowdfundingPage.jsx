@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Plus, Trash, PencilSimple, Copy, Shuffle, Eraser,
   Package, Lightning, CalendarCheck, FileText, Heart,
-  Handshake, ToggleRight, Power, ArrowSquareOut,
+  Handshake, ToggleRight, Power, ArrowSquareOut, UsersThree,
 } from "@phosphor-icons/react";
 import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, ActionBtn, SelectDropdown, FinanceLink, SearchInput, FilterDropdown, DatePicker, PaletteToggle, Wizard } from "../components";
 import Tooltip from "../components/Tooltip";
@@ -248,6 +248,11 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
   function addTier(data) { cfgSet("tiers", tiers.concat([Object.assign({ id: Date.now() }, data)])); }
   function saveTier(idx, data) { var nc = tiers.slice(); nc[idx] = Object.assign({}, nc[idx], data); cfgSet("tiers", nc); }
   function removeTier(idx) { cfgSet("tiers", tiers.filter(function (_, j) { return j !== idx; })); }
+  function bulkDeleteTiers(ids) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    cfgSet("tiers", tiers.filter(function (ti) { return !idSet[String(ti.id)]; }));
+  }
   function cloneTier(idx) {
     var nc = tiers.slice();
     var clone = Object.assign({}, nc[idx], { id: Date.now(), name: (nc[idx].name || "") + (t.copy_suffix || " (copie)") });
@@ -580,7 +585,7 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
     ];
 
     return (
-      <PageLayout title={t.title || "Crowdfunding"} subtitle={t.subtitle || "Gérez votre campagne de financement participatif."}>
+      <PageLayout title={t.title || "Crowdfunding"} subtitle={t.subtitle || "Gérez votre campagne de financement participatif."} icon={UsersThree} iconColor="#3B82F6">
         <Wizard
           steps={wizardSteps}
           onFinish={wizardFinish}
@@ -595,7 +600,7 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
   /* Launch animation */
   if (justLaunched) {
     return (
-      <PageLayout title={t.title || "Crowdfunding"} subtitle={t.subtitle || "Gérez votre campagne de financement participatif."}>
+      <PageLayout title={t.title || "Crowdfunding"} subtitle={t.subtitle || "Gérez votre campagne de financement participatif."} icon={UsersThree} iconColor="#3B82F6">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 400, animation: "crowdLaunchIn 0.6s ease" }}>
           <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--color-success-bg)", border: "2px solid var(--color-success-border)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "var(--sp-4)", animation: "crowdPulse 1s ease infinite" }}>
             <Handshake size={36} weight="fill" color="var(--color-success)" />
@@ -618,7 +623,7 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
   }
 
   return (
-    <PageLayout title={t.title || "Crowdfunding"} subtitle={t.subtitle || "Gérez votre campagne de financement participatif."} actions={
+    <PageLayout title={t.title || "Crowdfunding"} subtitle={t.subtitle || "Gérez votre campagne de financement participatif."} icon={UsersThree} iconColor="#3B82F6" actions={
       !cfg.url || urlInvalid ? (
         <Tooltip tip={urlInvalid ? (t.url_invalid || "L'URL saisie n'est pas valide.") : (t.tooltip_add_url || "Renseignez le lien de votre campagne dans la configuration.")} placement="bottom" width={220}>
           <Button color="tertiary" size="lg" sx={{ opacity: 0.5 }} onClick={function () {
@@ -821,6 +826,8 @@ export default function CrowdfundingPage({ crowdfunding, setCrowdfunding, setTab
         emptyMinHeight={160}
         pageSize={20}
         getRowId={function (row) { return String(row.id); }}
+        selectable
+        onDeleteSelected={bulkDeleteTiers}
       />
       </>
       ) : null}

@@ -175,6 +175,11 @@ export default function App() {
       document.documentElement.classList.remove("no-transition");
     }
   }, [cfg && cfg.animationsEnabled]);
+  var _showPageIcons = cfg ? !!cfg.showPageIcons : false;
+  useEffect(function () {
+    document.documentElement.dataset.pageIcons = _showPageIcons ? "1" : "0";
+    window.dispatchEvent(new CustomEvent("fc-page-icons", { detail: _showPageIcons }));
+  }, [_showPageIcons]);
   useEffect(function () { registerGlossarySetTab(setTab); }, [registerGlossarySetTab]);
   useEffect(function () { setGlossaryCurrentTab(tab); }, [tab, setGlossaryCurrentTab]);
   useEffect(function () {
@@ -615,6 +620,54 @@ export default function App() {
   }
   function clearPendingDuplicate() { setPendingDuplicate(null); }
 
+  function randomizeAll() {
+    // Revenue streams
+    setStreams([{ cat: "Revenus", items: [
+      { id: makeId("r"), l: "Abonnement SaaS", behavior: "recurring", price: 29 + Math.floor(Math.random() * 70), qty: 5 + Math.floor(Math.random() * 50), growthRate: 0.05 + Math.random() * 0.15, seasonProfile: "flat" },
+      { id: makeId("r"), l: "Consulting projets", behavior: "project", price: 2000 + Math.floor(Math.random() * 8000), qty: 1 + Math.floor(Math.random() * 3), growthRate: 0, seasonProfile: "flat" },
+      { id: makeId("r"), l: "Commission partenaires", behavior: "commission", price: 500 + Math.floor(Math.random() * 2000), qty: 2 + Math.floor(Math.random() * 6), growthRate: 0.1, seasonProfile: "flat" },
+    ]}]);
+    // Costs
+    setCosts([{ cat: "Charges", items: [
+      { id: makeId("c"), l: "Loyer bureau", a: 400 + Math.floor(Math.random() * 800), freq: "monthly", pu: false, u: 1, pcmn: "6100", type: "exploitation" },
+      { id: makeId("c"), l: "Hébergement cloud", a: 50 + Math.floor(Math.random() * 200), freq: "monthly", pu: true, u: 1 + Math.floor(Math.random() * 3), pcmn: "6120", type: "exploitation" },
+      { id: makeId("c"), l: "Publicité Meta", a: 200 + Math.floor(Math.random() * 1000), freq: "monthly", pu: false, u: 1, pcmn: "6130", type: "exploitation" },
+      { id: makeId("c"), l: "Comptable", a: 100 + Math.floor(Math.random() * 200), freq: "monthly", pu: false, u: 1, pcmn: "6140", type: "exploitation" },
+      { id: makeId("c"), l: "Assurance RC Pro", a: 300 + Math.floor(Math.random() * 400), freq: "annual", pu: false, u: 1, pcmn: "6150", type: "exploitation" },
+    ]}]);
+    // Team (preserve salary-linked shareholders)
+    setSals([
+      { id: makeId("s"), role: "CEO / Fondateur", type: "director", net: 2500 + Math.floor(Math.random() * 1500), shareholder: true, benefits: [{ id: "car", amount: 400 + Math.floor(Math.random() * 200), label: "Voiture de société" }], duration: "cdi" },
+      { id: makeId("s"), role: "Développeur Full-Stack", type: "employee", net: 2000 + Math.floor(Math.random() * 1000), shareholder: false, benefits: [{ id: "laptop", amount: 50, label: "Laptop" }], duration: "cdi" },
+      { id: makeId("s"), role: "Designer freelance", type: "independant", net: 350 + Math.floor(Math.random() * 150), shareholder: false, benefits: [], duration: "cdi" },
+    ]);
+    // Equipment
+    setAssets([
+      { id: makeId("a"), label: "MacBook Pro", amount: 2500 + Math.floor(Math.random() * 1000), years: 3, method: "linear", residual: 0, category: "it" },
+      { id: makeId("a"), label: "Mobilier de bureau", amount: 800 + Math.floor(Math.random() * 600), years: 5, method: "linear", residual: 0, category: "furniture" },
+      { id: makeId("a"), label: "Vélo cargo", amount: 2000 + Math.floor(Math.random() * 1000), years: 5, method: "linear", residual: 200, category: "vehicle" },
+    ]);
+    // Stocks
+    setStocks([
+      { id: makeId("st"), name: "T-shirts imprimés", category: "merchandise", unitCost: 8 + Math.floor(Math.random() * 5), sellingPrice: 25 + Math.floor(Math.random() * 10), quantity: 50 + Math.floor(Math.random() * 150), monthlySales: 10 + Math.floor(Math.random() * 20) },
+      { id: makeId("st"), name: "Emballages carton", category: "supplies", unitCost: 0.5, sellingPrice: 0, quantity: 200 + Math.floor(Math.random() * 300), monthlySales: 30 + Math.floor(Math.random() * 40) },
+    ]);
+    // Debts
+    setDebts([
+      { id: makeId("d"), label: "Prêt bancaire Starteo", type: "bank", amount: 25000 + Math.floor(Math.random() * 50000), rate: 0.03 + Math.random() * 0.03, duration: 48 + Math.floor(Math.random() * 24), elapsed: 0 },
+      { id: makeId("d"), label: "Subside régional", type: "subsidy", amount: 5000 + Math.floor(Math.random() * 15000), rate: 0, duration: 1, elapsed: 0 },
+    ]);
+    // Shareholders (preserve salary-synced)
+    var linked = shareholders.filter(function (sh) { return sh.fromSalary != null; });
+    var nextId = linked.length ? Math.max.apply(null, linked.map(function (s) { return s.id; })) + 1 : 100;
+    setShareholders(linked.concat([
+      { id: nextId, name: "Alice Martin", cl: "common", shares: 4000 + Math.floor(Math.random() * 4000), price: 1 + Math.floor(Math.random() * 3), date: "2025-01-15", fromSalary: null },
+      { id: nextId + 1, name: "Venture Fund SA", cl: "preferred", shares: 1000 + Math.floor(Math.random() * 3000), price: 5 + Math.floor(Math.random() * 10), date: "2025-06-01", fromSalary: null },
+    ]));
+    // Config
+    setCfg(function (prev) { return Object.assign({}, prev, { initialCash: 10000 + Math.floor(Math.random() * 40000), capitalSocial: 18600 }); });
+  }
+
   var currentTabItems = useMemo(function () {
     var items = [];
     if (tab === "opex") {
@@ -739,6 +792,7 @@ export default function App() {
                 annVatC={annVatC} annVatD={annVatD} vatBalance={vatBalance}
                 esopMonthly={esopMonthly} esopEnabled={esopEnabled}
                 setCosts={setCosts} onNavigate={navigateWithToast}
+                onRandomizeAll={randomizeAll}
               />
             ) : null}
 
@@ -945,6 +999,7 @@ export default function App() {
         open={showDevPalette}
         onClose={function () { setShowDevPalette(false); }}
         setTab={setTab}
+        onRandomizeAll={randomizeAll}
       />
 
       {chordPending ? createPortal(

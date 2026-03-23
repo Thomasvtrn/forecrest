@@ -736,11 +736,12 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
           _readOnly: true,
           _linkedPage: "salaries",
           _ci: -1, _ii: -1,
+          _cat: t.salaries_cat_label || "Équipe",
         });
       });
     });
     return items;
-  }, [sals]);
+  }, [sals, t]);
 
   /* synthetic read-only items from crowdfunding tiers */
   var crowdfundingItems = useMemo(function () {
@@ -760,6 +761,7 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
         _readOnly: true,
         _linkedPage: "crowdfunding",
         _ci: -1, _ii: -1,
+        _cat: t.crowdfunding_cat_label || "Crowdfunding",
       });
     });
     return items;
@@ -953,6 +955,18 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
 
   function requestDelete(ci, ii) {
     if (skipDeleteConfirm) { removeItem(ci, ii); } else { setPendingDelete({ ci: ci, ii: ii }); }
+  }
+
+  function bulkDeleteItems(ids) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    setCosts(function (prev) {
+      var nc = JSON.parse(JSON.stringify(prev));
+      nc.forEach(function (cat) {
+        cat.items = cat.items.filter(function (item) { return !idSet[item.id]; });
+      });
+      return nc.filter(function (cat) { return cat.items.length > 0; });
+    });
   }
 
   function cloneItem(ci, ii) {
@@ -1201,6 +1215,7 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
     <PageLayout
       title={t.page_title || "Costs"}
       subtitle={t.page_subtitle || "Manage your business expenses."}
+      icon={Receipt} iconColor="#EF4444"
     >
       {showCreate ? <CostModal onAdd={addCost} onClose={function () { setShowCreate(null); setPendingLabel(""); }} lang={lang} showPcmn={cfg && cfg.showPcmn} defaultCategory={typeof showCreate === "string" ? showCreate : undefined} initialLabel={pendingLabel} /> : null}
 
@@ -1362,6 +1377,9 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
         pageSize={10}
         dimRow={function (row) { return !row.a; }}
         getRowId={function (row) { return row.id || (row._ci + "-" + row._ii); }}
+        selectable
+        onDeleteSelected={bulkDeleteItems}
+        isRowSelectable={function (row) { return !row._readOnly; }}
       />
     </PageLayout>
   );

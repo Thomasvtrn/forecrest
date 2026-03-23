@@ -212,6 +212,11 @@ export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chart
   function saveItem(idx, data) { setStocks(function (prev) { var nc = prev.slice(); nc[idx] = Object.assign({}, nc[idx], data); return nc; }); }
   function removeItem(idx) { setStocks(function (prev) { var nc = prev.slice(); nc.splice(idx, 1); return nc; }); }
   function requestDelete(idx) { if (skipDeleteConfirm) { removeItem(idx); } else { setPendingDelete(idx); } }
+  function bulkDeleteItems(ids) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    setStocks(function (prev) { return prev.filter(function (s) { return !idSet[String(s.id)]; }); });
+  }
   function cloneItem(idx) { setStocks(function (prev) { var nc = prev.slice(); var clone = Object.assign({}, nc[idx], { id: makeId(), name: nc[idx].name + (t.copy_suffix || " (copie)") }); nc.splice(idx + 1, 0, clone); return nc; }); }
 
   /* Totals */
@@ -361,7 +366,7 @@ export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chart
   );
 
   return (
-    <PageLayout title={t.title || "Stocks & Inventaire"} subtitle={t.subtitle || "Gérez vos produits, matières premières et marchandises. La valorisation impacte le bilan et le compte de résultat."}>
+    <PageLayout title={t.title || "Stocks & Inventaire"} subtitle={t.subtitle || "Gérez vos produits, matières premières et marchandises. La valorisation impacte le bilan et le compte de résultat."} icon={Package} iconColor="#F59E0B">
       {showCreate ? <StockModal onSave={addItem} onClose={function () { setShowCreate(false); setPendingLabel(""); }} lang={lang} initialLabel={pendingLabel} /> : null}
       {editing ? <StockModal item={editing.item} onSave={function (data) { saveItem(editing.idx, data); }} onClose={function () { setEditing(null); }} lang={lang} /> : null}
       {pendingDelete !== null ? <ConfirmDeleteModal
@@ -473,6 +478,8 @@ export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chart
         emptyMinHeight={160}
         pageSize={20}
         getRowId={function (row) { return String(row.id); }}
+        selectable
+        onDeleteSelected={bulkDeleteItems}
       />
     </PageLayout>
   );

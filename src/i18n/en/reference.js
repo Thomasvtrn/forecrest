@@ -97,6 +97,13 @@ export default {
     changelog_debt_cashflow: "Debt repayments integrated into monthly cash flow with dedicated column.",
     changelog_i18n_split: "Translations split into 7 namespace files (common, business, finances, documents, analysis, modules, reference).",
     changelog_financelink_card_title: "Fix: removed FinanceLink from debt ratio card title (Financing page).",
+    // v0.1.22.0
+    changelog_bulk_selection: "Bulk selection in DataTables: 3-state checkboxes, brand action bar with counter and bulk delete, confirmation modal. Deployed on 8 pages.",
+    changelog_page_icons: "Page header icons with pastel gradient per group (revenue green, costs red, treasury blue...). Toggleable in Settings.",
+    changelog_cashflow_statement: "Belgian bank format cash flow statement: receipts vs disbursements with opening and closing balance.",
+    changelog_randomize_all: "Global randomize (dev): fill all pages in one click from Accounting or Dev Command Palette.",
+    changelog_code_review_v22: "Code review: missing _cat on auto-generated items, AccountantBar migrated to i18n, test count 240, redundant ternary fixed.",
+    changelog_cfg_showpcmn_fix: "Fixed cfg.showPcmn bug in cost modal and page icons toggle.",
     // v0.1.21.0
     changelog_cmdk_palette: "Command palette rebuilt with cmdk: smart search, native filtering and smooth page navigation.",
     changelog_quick_add: "Discord-style structured commands: type 'add' + Tab to quickly create a cost, revenue, employee or equipment with destination picker.",

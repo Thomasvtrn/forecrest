@@ -715,7 +715,7 @@ export default function CommandPalette({ open, onClose, setTab, tab, currentTabI
               {renderLeftColumn("goto")}
               <div style={{ flex: 1, overflowY: "auto", padding: "var(--sp-2)" }} className="custom-scroll">
                 <div style={{ padding: "6px 10px 4px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.6, color: "var(--text-faint)" }}>
-                  {lang === "fr" ? "Sections" : "Sections"}
+                  {s.goto_sections || "Sections"}
                 </div>
                 {filteredGoto.map(function (item, i) {
                   var Icon = item.icon;

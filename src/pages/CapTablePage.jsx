@@ -254,6 +254,12 @@ export default function CapTablePage({ shareholders, setShareholders, roundSim, 
     setPendingDelete(null);
   }
 
+  function bulkDeleteShareholders(ids) {
+    var idSet = {};
+    ids.forEach(function (id) { idSet[id] = true; });
+    setShareholders(function (prev) { return prev.filter(function (sh) { return !idSet[String(sh.id)]; }); });
+  }
+
   function cloneItem(idx) {
     var clone = Object.assign({}, items[idx], {
       id: items.length ? Math.max.apply(null, items.map(function (s) { return s.id; })) + 1 : 0,
@@ -486,7 +492,7 @@ export default function CapTablePage({ shareholders, setShareholders, roundSim, 
   );
 
   return (
-    <PageLayout title={t.title || "Table de capitalisation"} subtitle={t.subtitle || "Registre des actionnaires, structure du capital et simulation de levée de fonds."}>
+    <PageLayout title={t.title || "Table de capitalisation"} subtitle={t.subtitle || "Registre des actionnaires, structure du capital et simulation de levée de fonds."} icon={UsersThree} iconColor="#E8431A">
 
       {/* Modals */}
       {showCreate ? <ShareholderModal onSave={addItem} onClose={function () { setShowCreate(false); }} lang={lang} nominalPrice={nominalPrice} /> : null}
@@ -601,6 +607,9 @@ export default function CapTablePage({ shareholders, setShareholders, roundSim, 
           emptyState={emptyNode}
           getRowId={function (row) { return String(row.id); }}
           dimRow={function (row) { return !row.shares; }}
+          selectable
+          onDeleteSelected={bulkDeleteShareholders}
+          isRowSelectable={function (row) { return row.fromSalary == null; }}
         />
 
         {/* Round simulator - only in "avec levée" view */}

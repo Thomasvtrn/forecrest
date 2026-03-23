@@ -193,6 +193,9 @@ export default function SettingsPage({
                 <SettingRow label={lang === "fr" ? "Animations" : "Animations"} desc={lang === "fr" ? "Désactiver réduit les mouvements." : "Disabling reduces motion."}>
                   <Toggle on={cfg.animationsEnabled !== false} onChange={function () { cfgSet(setCfg, "animationsEnabled", cfg.animationsEnabled === false); }} />
                 </SettingRow>
+                <SettingRow label={lang === "fr" ? "Icônes de page" : "Page icons"} desc={lang === "fr" ? "Afficher une icône colorée dans l'en-tête de chaque page." : "Display a colored icon in each page header."}>
+                  <Toggle on={cfg.showPageIcons === true} onChange={function () { cfgSet(setCfg, "showPageIcons", !cfg.showPageIcons); }} />
+                </SettingRow>
                 <SettingRow label={lang === "fr" ? "Palette des charts" : "Chart palette"} desc={lang === "fr" ? "Dégradé de la brand color ou couleurs distinctes." : "Brand color gradient or distinct colors."} last>
                   <div style={{ display: "flex", gap: "var(--sp-2)" }}>
                     {[

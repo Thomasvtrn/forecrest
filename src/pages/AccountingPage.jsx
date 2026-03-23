@@ -1,10 +1,11 @@
 import { useMemo, useState, useRef, useCallback } from "react";
+import { BookOpen, Shuffle } from "@phosphor-icons/react";
 import { Card, NumberField, PageLayout, Button, KpiCard, SearchInput, FilterDropdown, DevVal, ButtonUtility } from "../components";
 import { InfoTip } from "../components/Tooltip";
 import { eur, eurShort, nm, pct } from "../utils";
 import { salCalc, calcMonthlyPatronal, calcSocialDue } from "../utils";
 import { calcStreamAnnual, calcStreamPcmn } from "../utils/revenueCalc";
-import { useT, useLang, useDevMode, useGlossary } from "../context";
+import { useT, useLang, useDevMode, useGlossary, useTheme } from "../context";
 import { PCMN_OPTS } from "../constants/defaults";
 import { GLOSSARY } from "../constants";
 import { Printer, Download, CaretDown, CaretUp, FileText, ShareNetwork, Scales, Receipt, ChartBar, Lightbulb, Table, Eye, ArrowSquareOut } from "@phosphor-icons/react";
@@ -72,14 +73,16 @@ function AdviceRow({ label, value, bold, color, tip }) {
 
 // ── Page ──
 
-export default function AccountingPage({ costs, sals, cfg, debts, streams, stocks, totalRevenue, monthlyCosts, opCosts, salCosts, ebitda, isoc, netP, resLeg, annVatC, annVatD, vatBalance, esopMonthly, esopEnabled, setCosts, onNavigate }) {
+export default function AccountingPage({ costs, sals, cfg, debts, streams, stocks, totalRevenue, monthlyCosts, opCosts, salCosts, ebitda, isoc, netP, resLeg, annVatC, annVatD, vatBalance, esopMonthly, esopEnabled, setCosts, onNavigate, onRandomizeAll }) {
   var tAll = useT();
   var t = tAll.accounting;
   var { lang } = useLang();
   var lk = lang === "fr" ? "fr" : "en";
   var devCtx = useDevMode();
   var devMode = devCtx && devCtx.devMode;
+  var { dark } = useTheme();
   var glossary = useGlossary();
+  var devBadgeStyle = { marginLeft: 6, padding: "2px 6px", borderRadius: "var(--r-sm)", background: dark ? "var(--color-dev-banner-light)" : "var(--color-dev-banner-dark)", color: dark ? "var(--color-dev-banner-dark)" : "var(--color-dev-banner-light)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", lineHeight: "14px", verticalAlign: "middle" };
   var [activeTab, setActiveTab] = useState("results");
   var [pcmnSearch, setPcmnSearch] = useState("");
   var [pcmnFilter, setPcmnFilter] = useState("all");
@@ -715,7 +718,7 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
   );
 
   return (
-    <PageLayout title={t.title} subtitle={t.subtitle}>
+    <PageLayout title={t.title} subtitle={t.subtitle} icon={BookOpen} iconColor="#6B7280">
 
       {/* ── KPI Cards ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
@@ -1030,6 +1033,11 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
                 options={pcmnFilterOptions}
               />
             </div>
+            {devMode && onRandomizeAll ? (
+              <Button color="tertiary" size="lg" onClick={onRandomizeAll} iconLeading={<Shuffle size={14} weight="bold" />}>
+                {lang === "fr" ? "Remplir tout" : "Fill all"}<span style={devBadgeStyle}>DEV</span>
+              </Button>
+            ) : null}
           </div>
 
           {/* Collapsible PCMN Table */}
