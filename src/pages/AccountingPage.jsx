@@ -948,15 +948,15 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
             {/* Income Statement */}
             <Card>
               <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 var(--sp-4)", color: "var(--text-primary)" }}>{t.income_title}</h3>
-              <Row label={"70 - " + t.inc_revenue} value={<DevVal v={eur(totalRevenue)} f={"ARR net HT = " + eur(totalRevenue)} />} bold />
-              <Row label={"61 - " + t.inc_services} value={<DevVal v={eur(-servicesCosts)} f={"opex - amort = " + eur(-servicesCosts)} />} />
-              <Row label={"62 - " + t.inc_salaries} value={<DevVal v={eur(-salCostsAnnual)} f={eur(salCosts) + "/mois × 12 = " + eur(salCostsAnnual)} />} />
-              {esopAnnual > 0 ? <Row label={"62 - " + t.inc_esop} value={<DevVal v={eur(-esopAnnual)} f={eur(esopMonthly) + "/mois × 12 = " + eur(esopAnnual)} />} /> : null}
-              {depreciationAnnual > 0 ? <Row label={"63 - " + t.inc_depreciation} value={eur(-depreciationAnnual)} /> : null}
+              <Row label={(cfg.showPcmn ? "70 - " : "") + t.inc_revenue} value={<DevVal v={eur(totalRevenue)} f={"ARR net HT = " + eur(totalRevenue)} />} bold />
+              <Row label={(cfg.showPcmn ? "61 - " : "") + t.inc_services} value={<DevVal v={eur(-servicesCosts)} f={"opex - amort = " + eur(-servicesCosts)} />} />
+              <Row label={(cfg.showPcmn ? "62 - " : "") + t.inc_salaries} value={<DevVal v={eur(-salCostsAnnual)} f={eur(salCosts) + "/mois × 12 = " + eur(salCostsAnnual)} />} />
+              {esopAnnual > 0 ? <Row label={(cfg.showPcmn ? "62 - " : "") + t.inc_esop} value={<DevVal v={eur(-esopAnnual)} f={eur(esopMonthly) + "/mois × 12 = " + eur(esopAnnual)} />} /> : null}
+              {depreciationAnnual > 0 ? <Row label={(cfg.showPcmn ? "63 - " : "") + t.inc_depreciation} value={eur(-depreciationAnnual)} /> : null}
               <Row label={t.inc_ebitda} value={<DevVal v={eur(ebitda)} f={eur(totalRevenue) + " - " + eur(totalRevenue - ebitda) + " = " + eur(ebitda)} />} bold border />
-              {annualInterest > 0 ? <Row label={"65 - " + t.inc_interest} value={eur(-annualInterest)} /> : null}
+              {annualInterest > 0 ? <Row label={(cfg.showPcmn ? "65 - " : "") + t.inc_interest} value={eur(-annualInterest)} /> : null}
               <Row label={t.inc_ebt} value={<DevVal v={eur(ebt)} f={eur(ebitda) + " - " + eur(annualInterest) + " = " + eur(ebt)} />} bold={false} border />
-              <Row label={"67 - " + t.inc_isoc} value={<DevVal v={eur(-isoc)} f={"20% × min(EBT,100k) + 25% × max(EBT-100k,0) = " + eur(isoc)} />} />
+              <Row label={(cfg.showPcmn ? "67 - " : "") + t.inc_isoc} value={<DevVal v={eur(-isoc)} f={"20% × min(EBT,100k) + 25% × max(EBT-100k,0) = " + eur(isoc)} />} />
               <Row label={t.inc_net} value={<DevVal v={eur(resultNet)} f={eur(ebt) + " - " + eur(isoc) + " = " + eur(resultNet)} />} bold border color={resultNet >= 0 ? "var(--color-success)" : "var(--color-error)"} />
 
               <div style={{ marginTop: "var(--sp-3)", padding: "var(--sp-2) var(--sp-3)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)" }}>

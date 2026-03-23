@@ -734,7 +734,7 @@ function AssetModal({ onAdd, onSave, onClose, lang, initialData, cfg, defaultCat
 }
 
 /* ── Main Page ── */
-export default function AmortissementPage({ assets, setAssets, cfg, setTab, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd }) {
+export default function AmortissementPage({ assets, setAssets, cfg, setTab, onNavigate, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
   var { lang } = useLang();
   var t = useT().amortissement || {};
   var [activeTab, setActiveTab] = useState("assets");
@@ -755,6 +755,26 @@ export default function AmortissementPage({ assets, setAssets, cfg, setTab, char
       if (onClearPendingAdd) onClearPendingAdd();
     }
   }, [pendingAdd]);
+
+  useEffect(function () {
+    if (!pendingEdit) return;
+    var idx = (assets || []).findIndex(function (a) { return String(a.id) === String(pendingEdit.itemId); });
+    if (idx >= 0) {
+      setEditingAsset({ idx: idx, item: assets[idx] });
+      if (onClearPendingEdit) onClearPendingEdit();
+    }
+  }, [pendingEdit]);
+
+  useEffect(function () {
+    if (!pendingDuplicate) return;
+    var idx = (assets || []).findIndex(function (a) { return String(a.id) === String(pendingDuplicate.itemId); });
+    if (idx >= 0) {
+      var clone = Object.assign({}, assets[idx], { id: makeId("a"), label: assets[idx].label + " (copie)" });
+      setAssets(function (prev) { var nc = prev.slice(); nc.splice(idx + 1, 0, clone); return nc; });
+      setEditingAsset({ idx: idx + 1, item: clone });
+      if (onClearPendingDuplicate) onClearPendingDuplicate();
+    }
+  }, [pendingDuplicate]);
 
   var devBadgeStyle = {
     marginLeft: 6, padding: "2px 6px", borderRadius: "var(--r-sm)",
@@ -932,7 +952,7 @@ export default function AmortissementPage({ assets, setAssets, cfg, setTab, char
           var isSalaryLinked = asset && typeof asset.id === "string" && asset.id.indexOf("_sal_") === 0;
           if (isSalaryLinked) {
             return (
-              <button type="button" onClick={function () { setTab("salaries"); }}
+              <button type="button" onClick={function () { if (onNavigate) onNavigate("salaries"); else setTab("salaries"); }}
                 title={t.linked_salary_tip || "Lié aux rémunérations. Modifiez depuis la page Rémunérations."}
                 style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--brand)", fontStyle: "italic", border: "none", background: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
                 <ArrowRight size={12} weight="bold" /> {t.salaries_link || "Rémunérations"}
@@ -968,7 +988,7 @@ export default function AmortissementPage({ assets, setAssets, cfg, setTab, char
             </Button>
           </>
         ) : null}
-        <Button color="secondary" size="lg" onClick={function () { setTab("opex"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>
+        <Button color="secondary" size="lg" onClick={function () { if (onNavigate) onNavigate("opex"); else setTab("opex"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>
           {t.charges_btn || "Charges"}
         </Button>
         <Button color="primary" size="lg" onClick={function () { setShowCreate("it"); }} iconLeading={<Plus size={14} weight="bold" />}>

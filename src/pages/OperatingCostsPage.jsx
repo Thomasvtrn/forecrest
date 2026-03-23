@@ -589,7 +589,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
 }
 
 /* ── Main Page ── */
-export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue, debts, assets, sals, crowdfunding, stocks, setTab, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
+export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue, debts, assets, sals, crowdfunding, stocks, setTab, onNavigate, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
   var { lang } = useLang();
   var t = useT().opex || {};
   var [showCreate, setShowCreate] = useState(null); /* null = closed, string = default category key */
@@ -602,6 +602,43 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
       if (onClearPendingAdd) onClearPendingAdd();
     }
   }, [pendingAdd]);
+
+  useEffect(function () {
+    if (!pendingEdit) return;
+    var found = false;
+    for (var ci = 0; ci < (costs || []).length && !found; ci++) {
+      for (var ii = 0; ii < (costs[ci].items || []).length && !found; ii++) {
+        if (String(costs[ci].items[ii].id) === String(pendingEdit.itemId)) {
+          setEditingCost({ ci: ci, ii: ii, item: costs[ci].items[ii] });
+          if (onClearPendingEdit) onClearPendingEdit();
+          found = true;
+        }
+      }
+    }
+  }, [pendingEdit]);
+
+  useEffect(function () {
+    if (!pendingDuplicate) return;
+    var found = false;
+    for (var ci = 0; ci < (costs || []).length && !found; ci++) {
+      for (var ii = 0; ii < (costs[ci].items || []).length && !found; ii++) {
+        if (String(costs[ci].items[ii].id) === String(pendingDuplicate.itemId)) {
+          var srcCi = ci;
+          var srcIi = ii;
+          var clone = Object.assign({}, costs[ci].items[ii], { id: makeId(), l: costs[ci].items[ii].l + " (copie)" });
+          setCosts(function (prev) {
+            var nc = JSON.parse(JSON.stringify(prev));
+            nc[srcCi].items.splice(srcIi + 1, 0, clone);
+            return nc;
+          });
+          setEditingCost({ ci: srcCi, ii: srcIi + 1, item: clone });
+          if (onClearPendingDuplicate) onClearPendingDuplicate();
+          found = true;
+        }
+      }
+    }
+  }, [pendingDuplicate]);
+
   var [editingCost, setEditingCost] = useState(null);
   var [filter, setFilter] = useState("all");
   var [search, setSearch] = useState("");
@@ -1049,7 +1086,7 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
             return (
               <button
                 type="button"
-                onClick={function () { setTab(linkedPage); }}
+                onClick={function () { if (onNavigate) onNavigate(linkedPage); else setTab(linkedPage); }}
                 title={t.auto_tooltip || "Géré automatiquement. Cliquez pour voir la source."}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 4,
@@ -1130,7 +1167,7 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
           </>
         ) : null}
         {activeTab === "financial" ? (
-          <Button color="secondary" size="lg" onClick={function () { setTab("debt"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>
+          <Button color="secondary" size="lg" onClick={function () { if (onNavigate) onNavigate("debt"); else setTab("debt"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>
             {t.financing_btn || "Financing"}
           </Button>
         ) : (

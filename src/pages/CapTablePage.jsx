@@ -155,7 +155,7 @@ function CapDonut({ data, palette }) {
 }
 
 /* ── Main Page ── */
-export default function CapTablePage({ shareholders, setShareholders, roundSim, setRoundSim, grants, sals, cfg, setCfg, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, setTab }) {
+export default function CapTablePage({ shareholders, setShareholders, roundSim, setRoundSim, grants, sals, cfg, setCfg, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, setTab, onNavigate }) {
   var t = useT().captable || {};
   var { lang } = useLang();
   var lk = lang === "en" ? "en" : "fr";
@@ -381,7 +381,7 @@ export default function CapTablePage({ shareholders, setShareholders, roundSim, 
                 <ActionBtn icon={<PencilSimple size={14} />} title={t.action_edit || "Modifier"} onClick={function () { setEditing({ idx: idx, item: items[idx] }); }} />
                 <button
                   type="button"
-                  onClick={function () { if (setTab) setTab("salaries"); }}
+                  onClick={function () { if (onNavigate) onNavigate("salaries"); else if (setTab) setTab("salaries"); }}
                   title={t.auto_tooltip || "Géré automatiquement. Cliquez pour voir la source."}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 4,

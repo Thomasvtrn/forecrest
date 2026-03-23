@@ -604,11 +604,13 @@ export default function App() {
   function clearPendingAdd() { setPendingAdd(null); }
 
   function handleQuickEdit(targetTab, itemId) {
+    setTab(targetTab);
     setPendingEdit({ target: targetTab, itemId: itemId });
   }
   function clearPendingEdit() { setPendingEdit(null); }
 
   function handleQuickDuplicate(targetTab, itemId) {
+    setTab(targetTab);
     setPendingDuplicate({ target: targetTab, itemId: itemId });
   }
   function clearPendingDuplicate() { setPendingDuplicate(null); }
@@ -616,36 +618,47 @@ export default function App() {
   var currentTabItems = useMemo(function () {
     var items = [];
     if (tab === "opex") {
-      costs.forEach(function (cat) {
+      (costs || []).forEach(function (cat) {
         (cat.items || []).forEach(function (item) {
           items.push({ id: item.id, label: item.l || "" });
         });
       });
     } else if (tab === "streams") {
-      streams.forEach(function (cat) {
+      (streams || []).forEach(function (cat) {
         (cat.items || []).forEach(function (item) {
           items.push({ id: item.id, label: item.l || "" });
         });
       });
     } else if (tab === "salaries") {
-      sals.forEach(function (s) {
-        items.push({ id: s.id, label: s.role || "" });
-      });
+      (sals || []).forEach(function (s) { items.push({ id: s.id, label: s.role || "" }); });
     } else if (tab === "equipment") {
-      assets.forEach(function (a) {
-        items.push({ id: a.id, label: a.l || "" });
-      });
+      (assets || []).forEach(function (a) { items.push({ id: a.id, label: a.label || "" }); });
     } else if (tab === "stocks") {
-      stocks.forEach(function (s) {
-        items.push({ id: s.id, label: s.l || "" });
-      });
+      (stocks || []).forEach(function (s) { items.push({ id: s.id, label: s.name || "" }); });
     } else if (tab === "debt") {
-      debts.forEach(function (d) {
-        items.push({ id: d.id, label: d.l || "" });
-      });
+      (debts || []).forEach(function (d) { items.push({ id: d.id, label: d.name || "" }); });
     }
     return items;
   }, [tab, costs, streams, sals, assets, stocks, debts]);
+
+  var allTabItems = useMemo(function () {
+    var opexItems = [];
+    (costs || []).forEach(function (cat) {
+      (cat.items || []).forEach(function (item) { opexItems.push({ id: item.id, label: item.l || "" }); });
+    });
+    var streamsItems = [];
+    (streams || []).forEach(function (cat) {
+      (cat.items || []).forEach(function (item) { streamsItems.push({ id: item.id, label: item.l || "" }); });
+    });
+    return {
+      opex: opexItems,
+      streams: streamsItems,
+      salaries: (sals || []).map(function (s) { return { id: s.id, label: s.role || "" }; }),
+      equipment: (assets || []).map(function (a) { return { id: a.id, label: a.label || "" }; }),
+      stocks: (stocks || []).map(function (s) { return { id: s.id, label: s.name || "" }; }),
+      debt: (debts || []).map(function (d) { return { id: d.id, label: d.name || "" }; }),
+    };
+  }, [costs, streams, sals, assets, stocks, debts]);
 
   if (!ready) {
     return (
@@ -712,7 +725,7 @@ export default function App() {
                 netP={netP} resLeg={resLeg} resTarget={resTarget} dirRem={dirRem} dirOk={dirOk}
                 divGross={divGross} cfg={cfg}
                 annVatC={annVatC} annVatD={annVatD} vatBalance={vatBalance}
-                streams={streams} debts={debts} onPrint={handlePrint} setTab={setTab}
+                streams={streams} debts={debts} onPrint={handlePrint} setTab={setTab} onNavigate={navigateWithToast}
                 bizKpis={bizKpis}
               />
             ) : null}
@@ -776,7 +789,7 @@ export default function App() {
               <OperatingCostsPage
                 costs={costs} setCosts={setCosts}
                 cfg={cfg}
-                totalRevenue={totalRevenue} debts={debts} assets={assets} sals={sals} crowdfunding={crowdfunding} stocks={stocks} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb}
+                totalRevenue={totalRevenue} debts={debts} assets={assets} sals={sals} crowdfunding={crowdfunding} stocks={stocks} setTab={setTab} onNavigate={navigateWithToast} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb}
                 pendingAdd={pendingAdd && pendingAdd.target === "opex" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd}
                 pendingEdit={pendingEdit && pendingEdit.target === "opex" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit}
                 pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "opex" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate}
@@ -784,11 +797,11 @@ export default function App() {
             ) : null}
 
             {tab === "salaries" ? (
-              <SalaryPage sals={sals} setSals={setSals} cfg={cfg} salCosts={salCosts} arrV={totalRevenue} assets={assets} setAssets={setAssets} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} pendingAdd={pendingAdd && pendingAdd.target === "salaries" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd} pendingEdit={pendingEdit && pendingEdit.target === "salaries" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit} pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "salaries" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate} />
+              <SalaryPage sals={sals} setSals={setSals} cfg={cfg} salCosts={salCosts} arrV={totalRevenue} assets={assets} setAssets={setAssets} setTab={setTab} onNavigate={navigateWithToast} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} pendingAdd={pendingAdd && pendingAdd.target === "salaries" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd} pendingEdit={pendingEdit && pendingEdit.target === "salaries" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit} pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "salaries" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate} />
             ) : null}
 
             {tab === "equipment" ? (
-              <AmortissementPage assets={assets} setAssets={setAssets} cfg={cfg} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} pendingAdd={pendingAdd && pendingAdd.target === "equipment" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd} pendingEdit={pendingEdit && pendingEdit.target === "equipment" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit} pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "equipment" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate} />
+              <AmortissementPage assets={assets} setAssets={setAssets} cfg={cfg} setTab={setTab} onNavigate={navigateWithToast} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} pendingAdd={pendingAdd && pendingAdd.target === "equipment" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd} pendingEdit={pendingEdit && pendingEdit.target === "equipment" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit} pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "equipment" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate} />
             ) : null}
 
             {tab === "changelog" ? (
@@ -819,7 +832,7 @@ export default function App() {
                 cfg={cfg} setCfg={setCfg}
                 chartPalette={chartPalette} chartPaletteMode={chartPaletteMode}
                 onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb}
-                setTab={setTab}
+                setTab={setTab} onNavigate={navigateWithToast}
               />
             ) : null}
 
@@ -828,7 +841,7 @@ export default function App() {
             ) : null}
 
             {tab === "debt" ? (
-              <DebtPage debts={debts} setDebts={setDebts} ebitda={ebitda} capitalSocial={cfg.capitalSocial} cfg={cfg} setCfg={setCfg} setTab={setTab} crowdfunding={crowdfunding} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} pendingAdd={pendingAdd && pendingAdd.target === "debt" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd} pendingEdit={pendingEdit && pendingEdit.target === "debt" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit} pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "debt" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate} />
+              <DebtPage debts={debts} setDebts={setDebts} ebitda={ebitda} capitalSocial={cfg.capitalSocial} cfg={cfg} setCfg={setCfg} setTab={setTab} onNavigate={navigateWithToast} crowdfunding={crowdfunding} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} pendingAdd={pendingAdd && pendingAdd.target === "debt" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd} pendingEdit={pendingEdit && pendingEdit.target === "debt" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit} pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "debt" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate} />
             ) : null}
 
             {tab === "crowdfunding" ? (
@@ -916,6 +929,7 @@ export default function App() {
         setTab={setTab}
         tab={tab}
         currentTabItems={currentTabItems}
+        allTabItems={allTabItems}
         onUndo={function () { history.undo(); }}
         onRedo={function () { history.redo(); }}
         onExport={function () { setShowExport(true); }}

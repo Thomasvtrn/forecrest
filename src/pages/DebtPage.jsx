@@ -157,7 +157,7 @@ function DebtModal({ onAdd, onSave, onClose, lang, initialData, debts, initialLa
 }
 
 /* ── Main Page ── */
-export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, setCfg, setTab, crowdfunding, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
+export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, setCfg, setTab, onNavigate, crowdfunding, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
   var t = useT().debt || {};
   var { lang } = useLang();
   var [activeTab, setActiveTab] = useState("all");
@@ -175,6 +175,26 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, 
       if (onClearPendingAdd) onClearPendingAdd();
     }
   }, [pendingAdd]);
+
+  useEffect(function () {
+    if (!pendingEdit) return;
+    var idx = (debts || []).findIndex(function (d) { return String(d.id) === String(pendingEdit.itemId); });
+    if (idx >= 0) {
+      setEditingDebt({ idx: idx, item: debts[idx] });
+      if (onClearPendingEdit) onClearPendingEdit();
+    }
+  }, [pendingEdit]);
+
+  useEffect(function () {
+    if (!pendingDuplicate) return;
+    var idx = (debts || []).findIndex(function (d) { return String(d.id) === String(pendingDuplicate.itemId); });
+    if (idx >= 0) {
+      var clone = Object.assign({}, debts[idx], { id: Date.now(), name: debts[idx].name + " (copie)" });
+      setDebts(function (prev) { var nc = prev.slice(); nc.splice(idx + 1, 0, clone); return nc; });
+      setEditingDebt({ idx: idx + 1, item: clone });
+      if (onClearPendingDuplicate) onClearPendingDuplicate();
+    }
+  }, [pendingDuplicate]);
 
   var { devMode } = useDevMode();
   var { dark } = useTheme();
@@ -313,7 +333,7 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, 
         cell: function (info) {
           var row = info.row.original;
           if (row._readOnly) {
-            return <button type="button" onClick={function () { setTab(row._linkedPage || "crowdfunding"); }} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--brand)", fontStyle: "italic", border: "none", background: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}><ArrowRight size={12} weight="bold" /> {t.crowdfunding_link || "Crowdfunding"}</button>;
+            return <button type="button" onClick={function () { var dest = row._linkedPage || "crowdfunding"; if (onNavigate) onNavigate(dest); else setTab(dest); }} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--brand)", fontStyle: "italic", border: "none", background: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}><ArrowRight size={12} weight="bold" /> {t.crowdfunding_link || "Crowdfunding"}</button>;
           }
           var idx = info.row.index;
           return (
@@ -340,7 +360,7 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, 
             <Button color="tertiary" size="lg" onClick={randomizeDebts} iconLeading={<Shuffle size={14} weight="bold" />}>{t.randomize || "Randomiser"}<span style={devBadgeStyle}>DEV</span></Button>
           </>
         ) : null}
-        <Button color="secondary" size="lg" onClick={function () { setTab("opex"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>{t.charges_btn || "Charges"}</Button>
+        <Button color="secondary" size="lg" onClick={function () { if (onNavigate) onNavigate("opex"); else setTab("opex"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>{t.charges_btn || "Charges"}</Button>
         <Button color="primary" size="lg" onClick={function () { setShowCreate("bank"); }} iconLeading={<Plus size={14} weight="bold" />}>{t.add || "Ajouter"}</Button>
       </div>
     </>

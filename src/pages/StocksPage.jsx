@@ -163,7 +163,7 @@ function StockDonut({ data, palette }) {
 }
 
 /* ── Main Page ── */
-export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd }) {
+export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
   var t = useT().stocks || {};
   var { lang } = useLang();
   var lk = lang === "en" ? "en" : "fr";
@@ -185,6 +185,26 @@ export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chart
       if (onClearPendingAdd) onClearPendingAdd();
     }
   }, [pendingAdd]);
+
+  useEffect(function () {
+    if (!pendingEdit) return;
+    var idx = (stocks || []).findIndex(function (s) { return String(s.id) === String(pendingEdit.itemId); });
+    if (idx >= 0) {
+      setEditing({ idx: idx, item: stocks[idx] });
+      if (onClearPendingEdit) onClearPendingEdit();
+    }
+  }, [pendingEdit]);
+
+  useEffect(function () {
+    if (!pendingDuplicate) return;
+    var idx = (stocks || []).findIndex(function (s) { return String(s.id) === String(pendingDuplicate.itemId); });
+    if (idx >= 0) {
+      var clone = Object.assign({}, stocks[idx], { id: makeId(), name: stocks[idx].name + " (copie)" });
+      setStocks(function (prev) { var nc = prev.slice(); nc.splice(idx + 1, 0, clone); return nc; });
+      setEditing({ idx: idx + 1, item: clone });
+      if (onClearPendingDuplicate) onClearPendingDuplicate();
+    }
+  }, [pendingDuplicate]);
 
   var items = stocks || [];
 

@@ -610,7 +610,7 @@ function SalaryModal({ onAdd, onSave, onClose, lang, initialData, cfg, setAssets
 }
 
 /* ── Main Page ── */
-export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets, setAssets, setTab, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd }) {
+export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets, setAssets, setTab, onNavigate, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
   var { lang } = useLang();
   var t = useT().salaries || {};
   var [activeTab, setActiveTab] = useState("all");
@@ -639,6 +639,26 @@ export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets,
       if (onClearPendingAdd) onClearPendingAdd();
     }
   }, [pendingAdd]);
+
+  useEffect(function () {
+    if (!pendingEdit) return;
+    var idx = (sals || []).findIndex(function (s) { return String(s.id) === String(pendingEdit.itemId); });
+    if (idx >= 0) {
+      setEditingSal({ idx: idx, item: sals[idx] });
+      if (onClearPendingEdit) onClearPendingEdit();
+    }
+  }, [pendingEdit]);
+
+  useEffect(function () {
+    if (!pendingDuplicate) return;
+    var idx = (sals || []).findIndex(function (s) { return String(s.id) === String(pendingDuplicate.itemId); });
+    if (idx >= 0) {
+      var clone = Object.assign({}, sals[idx], { id: Date.now(), role: sals[idx].role + " (copie)" });
+      setSals(function (prev) { var nc = prev.slice(); nc.splice(idx + 1, 0, clone); return nc; });
+      setEditingSal({ idx: idx + 1, item: clone });
+      if (onClearPendingDuplicate) onClearPendingDuplicate();
+    }
+  }, [pendingDuplicate]);
 
   /* breakdown + totals */
   var breakdown = useMemo(function () {
@@ -947,7 +967,7 @@ export default function SalaryPage({ sals, setSals, cfg, salCosts, arrV, assets,
             </Button>
           </>
         ) : null}
-        <Button color="secondary" size="lg" onClick={function () { setTab("opex"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>
+        <Button color="secondary" size="lg" onClick={function () { if (onNavigate) onNavigate("opex"); else setTab("opex"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>
           {t.charges_btn || "Charges"}
         </Button>
         <Button color="primary" size="lg" onClick={function () { setShowCreate("employee"); }} iconLeading={<Plus size={14} weight="bold" />}>

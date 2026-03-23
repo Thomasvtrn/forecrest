@@ -501,6 +501,42 @@ export default function RevenueStreamsPage({ streams, setStreams, annC, business
     }
   }, [pendingAdd]);
 
+  useEffect(function () {
+    if (!pendingEdit) return;
+    var found = false;
+    for (var ci = 0; ci < (streams || []).length && !found; ci++) {
+      for (var ii = 0; ii < (streams[ci].items || []).length && !found; ii++) {
+        if (String(streams[ci].items[ii].id) === String(pendingEdit.itemId)) {
+          setEditingStream({ ci: ci, ii: ii, item: streams[ci].items[ii] });
+          if (onClearPendingEdit) onClearPendingEdit();
+          found = true;
+        }
+      }
+    }
+  }, [pendingEdit]);
+
+  useEffect(function () {
+    if (!pendingDuplicate) return;
+    var found = false;
+    for (var ci = 0; ci < (streams || []).length && !found; ci++) {
+      for (var ii = 0; ii < (streams[ci].items || []).length && !found; ii++) {
+        if (String(streams[ci].items[ii].id) === String(pendingDuplicate.itemId)) {
+          var srcCi = ci;
+          var srcIi = ii;
+          var clone = Object.assign({}, streams[ci].items[ii], { id: makeId(), l: streams[ci].items[ii].l + " (copie)" });
+          setStreams(function (prev) {
+            var nc = JSON.parse(JSON.stringify(prev));
+            nc[srcCi].items.splice(srcIi + 1, 0, clone);
+            return nc;
+          });
+          setEditingStream({ ci: srcCi, ii: srcIi + 1, item: clone });
+          if (onClearPendingDuplicate) onClearPendingDuplicate();
+          found = true;
+        }
+      }
+    }
+  }, [pendingDuplicate]);
+
   var devBadgeStyle = {
     marginLeft: 6, padding: "2px 6px", borderRadius: "var(--r-sm)",
     background: dark ? "var(--color-dev-banner-light)" : "var(--color-dev-banner-dark)",
