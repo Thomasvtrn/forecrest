@@ -3,7 +3,7 @@ import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { HexColorPicker } from "react-colorful";
 import {
   DownloadSimple, MagnifyingGlass, Globe,
-  CheckCircle, XCircle, CircleNotch, QrCode,
+  CheckCircle, XCircle, CircleNotch, QrCode, Sun, Moon, Plus, CaretDown,
   EnvelopeSimple, Phone, WifiHigh, Lock, TextT, AddressBook, LinkSimple, WarningCircle, Eye, EyeSlash,
 } from "@phosphor-icons/react";
 import { PageLayout, Button, SelectDropdown, DataTable, Badge, SearchInput, FilterDropdown, ActionBtn } from "../components";
@@ -132,8 +132,8 @@ var QR_TYPES = [
 
 /* ── QR foreground color presets — 2 rows of 6 ── */
 var FG_COLORS = [
-  "#E8431A", "#0E0E0D", "#1E3A5F", "#166534", "#2563EB", "#7C3AED",
-  "#991B1B", "#D97706", "#475569", "#0D9488", "#DB2777", "#4338CA",
+  "#0E0E0D", "#334155", "#1E3A5F", "#1E40AF", "#7C3AED", "#E8431A",
+  "#475569", "#0D9488", "#166534", "#2563EB", "#DB2777", "#D97706",
 ];
 
 /* ── QR Color Palette (2-row grid + popover color picker) ── */
@@ -177,7 +177,7 @@ function QrColorPalette({ value, onChange, label }) {
               display: "flex", alignItems: "center", justifyContent: "center",
               transition: "box-shadow 0.12s",
             }}>
-            {!isCustom ? <span style={{ fontSize: 14, color: "var(--text-faint)", lineHeight: 1 }}>+</span> : null}
+            {!isCustom ? <Plus size={14} weight="bold" color="var(--text-faint)" /> : null}
           </button>
           {pickerOpen ? (
             <div ref={popRef} style={{
@@ -254,6 +254,14 @@ function QrCodeTool({ t }) {
     return function () { document.removeEventListener("mousedown", onDown); };
   }, [bgPickerOpen]);
   var [format, setFormat] = useState("png");
+  var [formatOpen, setFormatOpen] = useState(false);
+  var formatPopRef = useRef(null);
+  useEffect(function () {
+    if (!formatOpen) return;
+    function onDown(e) { if (formatPopRef.current && !formatPopRef.current.contains(e.target)) setFormatOpen(false); }
+    document.addEventListener("mousedown", onDown);
+    return function () { document.removeEventListener("mousedown", onDown); };
+  }, [formatOpen]);
   var [history, setHistory] = useState([]);
   var [historyFilter, setHistoryFilter] = useState("all");
   var [historySearch, setHistorySearch] = useState("");
@@ -472,50 +480,63 @@ function QrCodeTool({ t }) {
         {/* QR color palette */}
         <QrColorPalette value={fgColor} onChange={setFgColor} label={t.qr_fg_color || "Couleur du QR"} />
 
-        {/* Background — dropdown (Clair / Sombre / Personnalisé) */}
-        <div>
-          <div style={FIELD_LABEL}>{t.qr_bg_color || "Fond"}</div>
-          <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center" }}>
-            <SelectDropdown
-              value={bgMode}
-              onChange={function (v) {
-                setBgMode(v);
-                if (v === "light") setBgColor("#FFFFFF");
-                if (v === "dark") setBgColor("#0E0E0D");
-              }}
-              options={[
-                { value: "light", label: t.qr_bg_light || "Clair" },
-                { value: "dark", label: t.qr_bg_dark || "Sombre" },
-                { value: "custom", label: t.qr_bg_custom || "Personnalisé" },
-              ]}
-            />
-            {bgMode === "custom" ? (
-              <div style={{ position: "relative" }}>
-                <button type="button" onClick={function () { setBgPickerOpen(function (v) { return !v; }); }}
-                  style={{
-                    width: 40, height: 40, borderRadius: "var(--r-md)", cursor: "pointer",
-                    border: "1px solid var(--border)", background: bgColor,
-                    boxShadow: "inset 0 0 0 2px var(--bg-card)",
-                  }} />
-                {bgPickerOpen ? (
-                  <div ref={bgPopRef} style={{
-                    position: "absolute", top: 48, right: 0, zIndex: 50,
-                    background: "var(--bg-card)", border: "1px solid var(--border)",
-                    borderRadius: "var(--r-lg)", boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
-                    padding: 12,
-                  }}>
-                    <HexColorPicker color={bgColor} onChange={setBgColor} style={{ width: 200, height: 160 }} />
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        </div>
       </div>
 
       {/* ── Right: Preview + Download ── */}
       <div style={CARD}>
-        <h3 style={SECTION_LABEL}>{t.qr_preview || "Aperçu"}</h3>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h3 style={SECTION_LABEL}>{t.qr_preview || "Aperçu"}</h3>
+          {/* Background picker — 36x36 color button with popover */}
+          <div style={{ position: "relative" }}>
+            <button type="button" onClick={function () { setBgPickerOpen(function (v) { return !v; }); }}
+              style={{
+                width: 36, height: 36, borderRadius: "var(--r-md)", cursor: "pointer",
+                border: "1px solid var(--border)", background: bgColor,
+                boxShadow: "inset 0 0 0 2px var(--bg-card), inset 0 0 0 3px var(--border-light)",
+                transition: "box-shadow 0.12s",
+              }}
+              title={t.qr_bg_color || "Couleur de fond"}
+            />
+            {bgPickerOpen ? (
+              <div ref={bgPopRef} style={{
+                position: "absolute", top: 42, right: 0, zIndex: 50,
+                background: "var(--bg-card)", border: "1px solid var(--border)",
+                borderRadius: "var(--r-lg)", boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
+                padding: 12, width: 212,
+              }}>
+                {/* Light / Dark toggle */}
+                <div style={{ display: "flex", gap: 0, marginBottom: 10 }}>
+                  {[
+                    { id: "light", icon: Sun, l: t.qr_bg_light || "Clair", color: "#FFFFFF" },
+                    { id: "dark", icon: Moon, l: t.qr_bg_dark || "Sombre", color: "#0E0E0D" },
+                  ].map(function (o) {
+                    var active = bgMode === o.id;
+                    var BIcon = o.icon;
+                    return (
+                      <button key={o.id} type="button"
+                        onClick={function () { setBgMode(o.id); setBgColor(o.color); }}
+                        style={{
+                          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+                          height: 32, fontSize: 12, fontWeight: active ? 600 : 400,
+                          border: "1px solid " + (active ? "var(--brand)" : "var(--border)"),
+                          background: active ? "var(--brand-bg)" : "transparent",
+                          color: active ? "var(--brand)" : "var(--text-muted)",
+                          cursor: "pointer", fontFamily: "inherit",
+                          borderRadius: o.id === "light" ? "var(--r-md) 0 0 var(--r-md)" : "0 var(--r-md) var(--r-md) 0",
+                          marginLeft: o.id === "dark" ? -1 : 0,
+                        }}>
+                        <BIcon size={13} weight={active ? "fill" : "regular"} />
+                        {o.l}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Color picker */}
+                <HexColorPicker color={bgColor} onChange={function (c) { setBgColor(c); setBgMode("custom"); }} style={{ width: "100%", height: 140 }} />
+              </div>
+            ) : null}
+          </div>
+        </div>
 
         {/* Preview area */}
         <div style={{
@@ -657,26 +678,50 @@ function QrCodeTool({ t }) {
           >
             {t.qr_download || "Télécharger PNG"}
           </Button>
-          <SelectDropdown
-            value=""
-            onChange={function (v) {
-              if (!v || !canDownload) return;
-              setFormat(v);
-              setTimeout(function () {
-                var btn = document.querySelector("[data-qr-download]");
-                if (btn) btn.click();
-              }, 50);
-            }}
-            options={[
-              { value: "png", label: "⤓ PNG" },
-              { value: "jpeg", label: "⤓ JPEG" },
-              { value: "svg", label: "⤓ SVG" },
-            ]}
-            placeholder={t.qr_more_formats || "Plus de formats"}
-            clearable={false}
-          />
+          <div style={{ position: "relative" }}>
+            <Button
+              color="tertiary"
+              size="lg"
+              onClick={function () { setFormatOpen(function (v) { return !v; }); }}
+              isDisabled={!canDownload}
+              iconTrailing={<CaretDown size={14} />}
+              sx={{ width: "100%" }}
+            >
+              {t.qr_more_formats || "Plus de formats"}
+            </Button>
+            {formatOpen ? (
+              <div ref={formatPopRef} style={{
+                position: "absolute", bottom: "calc(100% + 4px)", right: 0, zIndex: 50,
+                background: "var(--bg-card)", border: "1px solid var(--border)",
+                borderRadius: "var(--r-lg)", boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+                padding: 4, minWidth: 140,
+              }}>
+                {[
+                  { value: "png", label: "PNG" },
+                  { value: "jpeg", label: "JPEG" },
+                  { value: "svg", label: "SVG" },
+                ].map(function (opt) {
+                  return (
+                    <button key={opt.value} type="button"
+                      onClick={function () { setFormat(opt.value); setFormatOpen(false); setTimeout(function () { handleDownload(); }, 50); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 8, width: "100%",
+                        padding: "8px 12px", border: "none", borderRadius: "var(--r-md)",
+                        background: "transparent", cursor: "pointer", fontFamily: "inherit",
+                        fontSize: 13, color: "var(--text-secondary)",
+                      }}
+                      onMouseEnter={function (e) { e.currentTarget.style.background = "var(--bg-hover)"; }}
+                      onMouseLeave={function (e) { e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <DownloadSimple size={14} color="var(--text-muted)" />
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
         </div>
-        <button data-qr-download type="button" onClick={handleDownload} style={{ display: "none" }} />
 
       </div>
     </div>
