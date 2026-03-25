@@ -512,7 +512,7 @@ function exportWatchlistCSV(watchlist, lk) {
     var price = TLD_PRICES[w.tld] || "";
     var status = w.status === "available" ? (lk === "fr" ? "Disponible" : "Available") : w.status === "taken" ? (lk === "fr" ? "Pris" : "Taken") : w.status;
     var date = w.lastCheck ? new Date(w.lastCheck).toLocaleDateString() : "";
-    return w.domain + ";" + w.tld + ";" + status + ";" + (price ? price + "\u20ac" : "") + ";" + date;
+    return w.domain + ";" + w.tld + ";" + status + ";" + (price ? price + "€" : "") + ";" + date;
   });
   var csv = header + "\n" + rows.join("\n");
   var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -2634,18 +2634,51 @@ var PH_TRADEMARKS = ["maboite", "forecrest", "monproduit", "myapp", "startuplab"
 
 /* ── Nice Classification (12 most common) ── */
 var NICE_CLASSES = [
-  { id: 1, label: { fr: "Produits chimiques", en: "Chemical products" }, keywords: ["chimique", "chemical", "engrais", "fertilizer"] },
-  { id: 9, label: { fr: "Appareils scientifiques, logiciels", en: "Scientific apparatus, software" }, keywords: ["logiciel", "software", "app", "tech", "informatique", "computer", "saas", "digital"] },
-  { id: 16, label: { fr: "Papier, imprim\u00e9s, articles de bureau", en: "Paper, printed matter, stationery" }, keywords: ["papier", "paper", "bureau", "office", "imprim", "print", "livre", "book"] },
-  { id: 25, label: { fr: "V\u00eatements, chaussures, chapellerie", en: "Clothing, footwear, headgear" }, keywords: ["v\u00eatement", "clothing", "t-shirt", "chaussure", "shoe", "mode", "fashion", "textile", "chapeau", "hat"] },
-  { id: 35, label: { fr: "Publicit\u00e9, gestion des affaires", en: "Advertising, business management" }, keywords: ["publicit\u00e9", "advertising", "marketing", "gestion", "management", "consulting", "conseil"] },
-  { id: 36, label: { fr: "Assurances, affaires financi\u00e8res", en: "Insurance, financial affairs" }, keywords: ["assurance", "insurance", "finance", "banque", "bank", "investissement", "investment", "cr\u00e9dit"] },
-  { id: 38, label: { fr: "T\u00e9l\u00e9communications", en: "Telecommunications" }, keywords: ["t\u00e9l\u00e9com", "telecom", "internet", "r\u00e9seau", "network", "communication"] },
-  { id: 41, label: { fr: "\u00c9ducation, divertissement, sport", en: "Education, entertainment, sport" }, keywords: ["\u00e9ducation", "education", "formation", "training", "sport", "jeu", "game", "divertissement", "entertainment"] },
-  { id: 42, label: { fr: "Services scientifiques, technologiques, SaaS", en: "Scientific, technological services, SaaS" }, keywords: ["saas", "cloud", "h\u00e9bergement", "hosting", "d\u00e9veloppement", "development", "recherche", "research", "plateforme", "platform"] },
-  { id: 43, label: { fr: "Restauration, h\u00e9bergement", en: "Restaurant, accommodation" }, keywords: ["restaurant", "h\u00f4tel", "hotel", "caf\u00e9", "nourriture", "food", "traiteur", "catering"] },
-  { id: 44, label: { fr: "Services m\u00e9dicaux, soins de beaut\u00e9", en: "Medical services, beauty care" }, keywords: ["m\u00e9dical", "medical", "sant\u00e9", "health", "beaut\u00e9", "beauty", "pharmacie", "pharmacy"] },
-  { id: 45, label: { fr: "Services juridiques, s\u00e9curit\u00e9", en: "Legal services, security" }, keywords: ["juridique", "legal", "avocat", "lawyer", "s\u00e9curit\u00e9", "security", "droit", "law"] },
+  { id: 1, label: { fr: "Produits chimiques", en: "Chemical products" } },
+  { id: 2, label: { fr: "Peintures, vernis, laques", en: "Paints, varnishes, lacquers" } },
+  { id: 3, label: { fr: "Cosm\u00e9tiques, produits de nettoyage", en: "Cosmetics, cleaning products" } },
+  { id: 4, label: { fr: "Huiles et graisses industrielles", en: "Industrial oils and greases" } },
+  { id: 5, label: { fr: "Produits pharmaceutiques", en: "Pharmaceutical products" } },
+  { id: 6, label: { fr: "M\u00e9taux communs et alliages", en: "Common metals and alloys" } },
+  { id: 7, label: { fr: "Machines et machines-outils", en: "Machines and machine tools" } },
+  { id: 8, label: { fr: "Outils et instruments \u00e0 main", en: "Hand tools and instruments" } },
+  { id: 9, label: { fr: "Appareils scientifiques, logiciels", en: "Scientific apparatus, software" } },
+  { id: 10, label: { fr: "Appareils m\u00e9dicaux et chirurgicaux", en: "Medical and surgical apparatus" } },
+  { id: 11, label: { fr: "Appareils d'\u00e9clairage et chauffage", en: "Lighting and heating apparatus" } },
+  { id: 12, label: { fr: "V\u00e9hicules", en: "Vehicles" } },
+  { id: 13, label: { fr: "Armes \u00e0 feu, munitions", en: "Firearms, ammunition" } },
+  { id: 14, label: { fr: "M\u00e9taux pr\u00e9cieux, joaillerie", en: "Precious metals, jewelry" } },
+  { id: 15, label: { fr: "Instruments de musique", en: "Musical instruments" } },
+  { id: 16, label: { fr: "Papier, imprim\u00e9s, articles de bureau", en: "Paper, printed matter, stationery" } },
+  { id: 17, label: { fr: "Caoutchouc, mati\u00e8res plastiques", en: "Rubber, plastics" } },
+  { id: 18, label: { fr: "Cuir, bagages, parapluies", en: "Leather, luggage, umbrellas" } },
+  { id: 19, label: { fr: "Mat\u00e9riaux de construction", en: "Building materials" } },
+  { id: 20, label: { fr: "Meubles, miroirs, cadres", en: "Furniture, mirrors, frames" } },
+  { id: 21, label: { fr: "Ustensiles de m\u00e9nage", en: "Household utensils" } },
+  { id: 22, label: { fr: "Cordes, filets, tentes", en: "Ropes, nets, tents" } },
+  { id: 23, label: { fr: "Fils textiles", en: "Textile yarns" } },
+  { id: 24, label: { fr: "Tissus et couvertures", en: "Textiles and covers" } },
+  { id: 25, label: { fr: "V\u00eatements, chaussures, chapellerie", en: "Clothing, footwear, headgear" } },
+  { id: 26, label: { fr: "Dentelles, broderies, rubans", en: "Lace, embroidery, ribbons" } },
+  { id: 27, label: { fr: "Tapis, rev\u00eatements de sol", en: "Carpets, floor coverings" } },
+  { id: 28, label: { fr: "Jeux, jouets, articles de sport", en: "Games, toys, sporting goods" } },
+  { id: 29, label: { fr: "Viande, poisson, fruits conserv\u00e9s", en: "Meat, fish, preserved fruits" } },
+  { id: 30, label: { fr: "Caf\u00e9, th\u00e9, p\u00e2tisserie, \u00e9pices", en: "Coffee, tea, pastry, spices" } },
+  { id: 31, label: { fr: "Produits agricoles, fruits frais", en: "Agricultural products, fresh fruits" } },
+  { id: 32, label: { fr: "Bi\u00e8res, boissons non alcoolis\u00e9es", en: "Beers, non-alcoholic beverages" } },
+  { id: 33, label: { fr: "Boissons alcooliques (sauf bi\u00e8res)", en: "Alcoholic beverages (except beers)" } },
+  { id: 34, label: { fr: "Tabac, articles pour fumeurs", en: "Tobacco, smokers' articles" } },
+  { id: 35, label: { fr: "Publicit\u00e9, gestion des affaires", en: "Advertising, business management" } },
+  { id: 36, label: { fr: "Assurances, affaires financi\u00e8res", en: "Insurance, financial affairs" } },
+  { id: 37, label: { fr: "Construction, r\u00e9paration, installation", en: "Construction, repair, installation" } },
+  { id: 38, label: { fr: "T\u00e9l\u00e9communications", en: "Telecommunications" } },
+  { id: 39, label: { fr: "Transport, emballage, stockage", en: "Transport, packaging, storage" } },
+  { id: 40, label: { fr: "Traitement de mat\u00e9riaux", en: "Material treatment" } },
+  { id: 41, label: { fr: "\u00c9ducation, divertissement, sport", en: "Education, entertainment, sport" } },
+  { id: 42, label: { fr: "Services scientifiques, SaaS", en: "Scientific services, SaaS" } },
+  { id: 43, label: { fr: "Restauration, h\u00e9bergement", en: "Restaurant, accommodation" } },
+  { id: 44, label: { fr: "Services m\u00e9dicaux, soins de beaut\u00e9", en: "Medical services, beauty care" } },
+  { id: 45, label: { fr: "Services juridiques, s\u00e9curit\u00e9", en: "Legal services, security" } },
 ];
 
 /* ── Budget Estimator base costs ── */
@@ -3228,40 +3261,6 @@ function TrademarkTool({ lk }) {
             </div>
           ) : null}
 
-          {/* ── Filing Process Timeline — horizontal stepper ── */}
-          <div style={CARD}>
-            <h3 style={Object.assign({}, SECTION_LABEL, { margin: "0 0 var(--sp-3)" })}>
-              {lk === "fr" ? "Processus de d\u00e9p\u00f4t" : "Filing Process"}
-            </h3>
-            <div style={{ display: "flex", alignItems: "flex-start" }}>
-              {TIMELINE_STEPS.map(function (step, idx) {
-                var StepIcon = step.icon;
-                var isLast = idx === TIMELINE_STEPS.length - 1;
-                var stepColor = isLast ? "var(--color-success)" : "var(--brand)";
-                var stepBg = isLast ? "var(--color-success-bg)" : "var(--brand-bg)";
-                return (
-                  <div key={idx} style={{ display: "flex", alignItems: "flex-start", flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "0 0 auto" }}>
-                      <div style={{
-                        width: 28, height: 28, borderRadius: "50%",
-                        background: stepBg, border: "2px solid " + stepColor,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
-                        <StepIcon size={12} weight="bold" color={stepColor} />
-                      </div>
-                      <div style={{ textAlign: "center", marginTop: 6, maxWidth: 70 }}>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.2 }}>{step.label[lk]}</div>
-                        <div style={{ fontSize: 9, color: "var(--text-faint)", marginTop: 2 }}>{step.duration[lk]}</div>
-                      </div>
-                    </div>
-                    {!isLast ? (
-                      <div style={{ flex: 1, height: 2, background: "var(--border)", marginTop: 13, marginLeft: 4, marginRight: 4 }} />
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         {/* ── RIGHT COLUMN — sticky sidebar card ── */}
@@ -3391,8 +3390,8 @@ function TrademarkTool({ lk }) {
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{row.label}</div>
                         <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-                          {"Base : " + row.baseCost + " \u20ac"}
-                          {row.extraCount > 0 ? " + " + row.extraCount + " \u00d7 " + row.extraClass + " \u20ac" : ""}
+                          {"Base : " + row.baseCost + " €"}
+                          {row.extraCount > 0 ? " + " + row.extraCount + " × " + row.extraClass + " €" : ""}
                         </div>
                       </div>
                       <span style={{
@@ -3400,7 +3399,7 @@ function TrademarkTool({ lk }) {
                         fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif",
                         color: "var(--text-primary)",
                       }}>
-                        {row.total + " \u20ac"}
+                        {row.total + " €"}
                       </span>
                     </div>
                   );
@@ -3418,7 +3417,7 @@ function TrademarkTool({ lk }) {
                     fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif",
                     color: "var(--brand)",
                   }}>
-                    {budgetTotal + " \u20ac"}
+                    {budgetTotal + " €"}
                   </span>
                 </div>
               </div>
@@ -3435,7 +3434,42 @@ function TrademarkTool({ lk }) {
       </div>
 
 
-      {/* ── DataTable — full width below the checklist ── */}
+      {/* ── Filing Process Timeline — full width ── */}
+      <div style={CARD}>
+        <h3 style={Object.assign({}, SECTION_LABEL, { margin: "0 0 var(--sp-3)" })}>
+          {lk === "fr" ? "Processus de d\u00e9p\u00f4t" : "Filing Process"}
+        </h3>
+        <div style={{ display: "flex", alignItems: "flex-start" }}>
+          {TIMELINE_STEPS.map(function (step, idx) {
+            var StepIcon = step.icon;
+            var isLast = idx === TIMELINE_STEPS.length - 1;
+            var stepColor = isLast ? "var(--color-success)" : "var(--brand)";
+            var stepBg = isLast ? "var(--color-success-bg)" : "var(--brand-bg)";
+            return (
+              <div key={idx} style={{ display: "flex", alignItems: "flex-start", flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "0 0 auto" }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: stepBg, border: "2px solid " + stepColor,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <StepIcon size={14} weight="bold" color={stepColor} />
+                  </div>
+                  <div style={{ textAlign: "center", marginTop: 6, maxWidth: 90 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.2 }}>{step.label[lk]}</div>
+                    <div style={{ fontSize: 10, color: "var(--text-faint)", marginTop: 2 }}>{step.duration[lk]}</div>
+                  </div>
+                </div>
+                {!isLast ? (
+                  <div style={{ flex: 1, height: 2, background: "var(--border)", marginTop: 17, marginLeft: 6, marginRight: 6 }} />
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── DataTable — full width ── */}
       <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border-light)", marginBottom: "var(--sp-4)" }}>
         {["saved", "history"].map(function (tabKey) {
           var isActive = activeTab === tabKey;
