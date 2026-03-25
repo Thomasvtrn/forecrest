@@ -52,6 +52,7 @@ var DesignTokensPage = lazy(function () { return import("./pages/DesignTokensPag
 var RoadmapPage = lazy(function () { return import("./pages/RoadmapPage"); });
 var MarketingPage = lazy(function () { return import("./pages/MarketingPage"); });
 var AffiliationPage = lazy(function () { return import("./pages/AffiliationPage"); });
+var ToolsPage = lazy(function () { return import("./pages/ToolsPage"); });
 var SitemapPage = lazy(function () { return import("./pages/SitemapPage"); });
 
 function migrateStreams(streams) {
@@ -119,7 +120,8 @@ export default function App() {
   var [devBannerVisible, setDevBannerVisible] = useState(devMode);
   // Hash-based routing: /#/overview, /#/streams, etc.
   var MARKETING_TABS = ["marketing", "mkt_campaigns", "mkt_channels", "mkt_budget", "mkt_conversions"];
-  var VALID_TABS = ["overview","streams","opex","salaries","cashflow","debt","equipment","accounting","ratios","sensitivity","equity","captable","pact","set","profile","changelog","credits","income_statement","balance_sheet","crowdfunding","stocks","affiliation","marketing","mkt_campaigns","mkt_channels","mkt_budget","mkt_conversions","dev-tooltips","dev-calc","dev-tokens","dev-roadmap","dev-sitemap"];
+  var TOOLS_TABS = ["tool_qr", "tool_domain"];
+  var VALID_TABS = ["overview","streams","opex","salaries","cashflow","debt","equipment","accounting","ratios","sensitivity","equity","captable","pact","set","profile","changelog","credits","income_statement","balance_sheet","crowdfunding","stocks","affiliation","tool_qr","tool_domain","marketing","mkt_campaigns","mkt_channels","mkt_budget","mkt_conversions","dev-tooltips","dev-calc","dev-tokens","dev-roadmap","dev-sitemap"];
   function getTabFromHash() {
     var h = window.location.hash.replace(/^#\/?/, "").toLowerCase();
     return VALID_TABS.indexOf(h) >= 0 ? h : "overview";
@@ -233,11 +235,11 @@ export default function App() {
     return { marketing: marketingPaid };
   }, [marketingPaid]);
   var unlockedModules = useMemo(function () {
-    return { marketing: marketingEnabled };
+    return { marketing: marketingEnabled, tools_mod: true };
   }, [marketingEnabled]);
 
   useEffect(function () {
-    var mod = (MARKETING_TABS.indexOf(tab) >= 0 && marketingEnabled) ? "marketing" : "core";
+    var mod = (MARKETING_TABS.indexOf(tab) >= 0 && marketingEnabled) ? "marketing" : (TOOLS_TABS.indexOf(tab) >= 0) ? "tools_mod" : "core";
     setActiveModule(mod);
   }, [tab, marketingEnabled]);
 
@@ -963,6 +965,10 @@ export default function App() {
 
             {tab === "affiliation" ? (
               <AffiliationPage appCfg={cfg} affiliation={affiliation} setAffiliation={setAffiliation} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
+            ) : null}
+
+            {tab === "tool_qr" || tab === "tool_domain" ? (
+              <ToolsPage activeTab={tab} />
             ) : null}
 
             {tab === "stocks" ? (

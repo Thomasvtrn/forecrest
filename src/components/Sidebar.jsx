@@ -8,7 +8,7 @@ import {
   GearSix, Sun, Moon, UploadSimple, List, X,
   CurrencyEur, TreeStructure, Gavel, Buildings, SquaresFour, Package,
   TrendUp, ChartLine, Megaphone, Sparkle, Lock,
-  Crosshair, Funnel, Newspaper, Handshake,
+  Crosshair, Funnel, Newspaper, Handshake, CirclesThreePlus, QrCode, Globe,
 } from "@phosphor-icons/react";
 import { useTheme, useGlossary } from "../context";
 import { useT, useLang, useNotifications } from "../context";
@@ -80,6 +80,9 @@ var NAV_ICON_MAP = {
   captable: UsersThree,
   pact: ShieldCheck,
   affiliation: Handshake,
+  tools: CirclesThreePlus,
+  tool_qr: QrCode,
+  tool_domain: Globe,
   marketing: ChartBar,
   mkt_campaigns: Newspaper,
   mkt_channels: Crosshair,
@@ -126,6 +129,18 @@ var APP_MODULES = {
       { id: "mkt_channels", type: "item" },
       { id: "mkt_budget", type: "item" },
       { id: "mkt_conversions", type: "item" },
+    ],
+  },
+  tools_mod: {
+    id: "tools_mod",
+    icon: CirclesThreePlus,
+    label: { fr: "Outils", en: "Tools" },
+    desc: { fr: "Outils pratiques", en: "Practical tools" },
+    letter: "O",
+    color: "#8B5CF6",
+    sections: [
+      { id: "tool_qr", type: "item" },
+      { id: "tool_domain", type: "item" },
     ],
   },
 };
@@ -973,7 +988,7 @@ export default function Sidebar({ tab, setTab, onOpenExport, onOpenSearch, colla
                         fontSize: 18, fontWeight: 800, color: "var(--text-primary)",
                         fontFamily: "'Bricolage Grotesque','DM Sans',sans-serif",
                         letterSpacing: "-0.02em", lineHeight: 1,
-                      }}>Forecrest</span>
+                      }}>{mod.label[lang === "en" ? "en" : "fr"]}</span>
                     </div>
                   );
                 })()}

@@ -109,6 +109,9 @@ export default {
     crowdfunding: "Crowdfunding",
     marketing: "Acquisition",
     affiliation: "Affiliation",
+    tools: "Outils",
+    tool_qr: "QR Code",
+    tool_domain: "Nom de domaine",
     mkt_campaigns: "Campagnes",
     mkt_channels: "Canaux",
     mkt_budget: "Budget",
@@ -187,6 +190,7 @@ export default {
     documents: "Mes documents",
     analyse: "Mon analyse",
     societe: "Ma société",
+    outils: "Outils",
     modules: "Modules",
   },
 

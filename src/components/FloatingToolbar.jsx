@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import {
   ChartPie, CurrencyCircleDollar, Receipt, Package, BookOpen,
   Lock, Megaphone, CloudArrowUp, ShoppingCart,
-  ChartDonut, UsersFour, Sparkle,
+  ChartDonut, UsersFour, Sparkle, CirclesThreePlus, QrCode, Globe,
   ArrowSquareOut, Star,
   Newspaper, Crosshair, Wallet, Funnel, ChartBar,
 } from "@phosphor-icons/react";
@@ -26,6 +26,11 @@ var MARKETING_ITEMS = [
   { id: "mkt_conversions", icon: Funnel },
 ];
 
+var TOOLS_ITEMS = [
+  { id: "tool_qr", icon: QrCode },
+  { id: "tool_domain", icon: Globe },
+];
+
 var MODULES = [
   { id: "core", icon: ChartPie, items: CORE_ITEMS, locked: false },
   { id: "marketing", icon: Megaphone, items: MARKETING_ITEMS, locked: true },
@@ -34,6 +39,7 @@ var MODULES = [
   { id: "saas_metrics", icon: ChartDonut, items: [], locked: true },
   { id: "hr_advanced", icon: UsersFour, items: [], locked: true },
   { id: "fundraising", icon: Sparkle, items: [], locked: true },
+  { id: "tools_mod", icon: CirclesThreePlus, items: TOOLS_ITEMS, locked: false, separator: true },
 ];
 
 var MODULE_LABELS = {
@@ -44,12 +50,15 @@ var MODULE_LABELS = {
   saas_metrics: { fr: "SaaS", en: "SaaS" },
   hr_advanced: { fr: "RH", en: "HR" },
   fundraising: { fr: "Levee", en: "Fundraising" },
+  tools_mod: { fr: "Outils", en: "Tools" },
 };
 
 var MARKETING_TAB_IDS = MARKETING_ITEMS.map(function (item) { return item.id; });
+var TOOLS_TAB_IDS = TOOLS_ITEMS.map(function (item) { return item.id; });
 
 function getModuleForTab(tab) {
   if (MARKETING_TAB_IDS.indexOf(tab) >= 0) return "marketing";
+  if (TOOLS_TAB_IDS.indexOf(tab) >= 0) return "tools_mod";
   return "core";
 }
 
@@ -356,8 +365,9 @@ export default function FloatingToolbar({ tab, setTab, visible, activeModule, se
         animate={{ width: "auto", opacity: 1, scale: 1 }}
         exit={{ width: 0, opacity: 0, scale: 0.8 }}
         transition={{ duration: 0.22, ease: EASE_ARRAY }}
-        style={{ overflow: "hidden", flexShrink: 0, position: "relative", zIndex: 1 }}
+        style={{ overflow: "hidden", flexShrink: 0, position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 4 }}
       >
+        {mod.separator ? <div style={{ width: 1, height: isCompact ? 20 : 26, background: dark ? "rgba(255,255,255,0.1)" : "var(--border)", borderRadius: 1, flexShrink: 0 }} /> : null}
         <DockBtn
           iconComp={mod.icon}
           isActive={false}
@@ -512,6 +522,7 @@ export default function FloatingToolbar({ tab, setTab, visible, activeModule, se
         <AnimatePresence initial={false}>
           {rightMods.map(renderCollapsedMod)}
         </AnimatePresence>
+
       </motion.div>
 
       {ctxMenu ? (
