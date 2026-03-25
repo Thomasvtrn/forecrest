@@ -14,7 +14,7 @@ import AccountantBar from "./components/AccountantBar";
 import Sidebar from "./components/Sidebar";
 import useHistory from "./hooks/useHistory";
 
-import { salCalc, calcIsoc, grantCalc, calcBusinessKpis, calcTotalRevenue, calcStreamAnnual, migrateStreamsV1ToV2, load, save, setCurrencyDisplay, calcVatCollected, calcVatDeductible, makeId } from "./utils";
+import { salCalc, calcIsoc, grantCalc, calcBusinessKpis, calcTotalRevenue, calcAffiliationMonthly, calcActualRaised, calcStreamAnnual, migrateStreamsV1ToV2, load, save, setCurrencyDisplay, calcVatCollected, calcVatDeductible, makeId } from "./utils";
 
 var OnboardingWizard = lazy(function () { return import("./components/OnboardingWizard"); });
 var ExportImportModal = lazy(function () { return import("./components/ExportImportModal"); });
@@ -558,8 +558,18 @@ export default function App() {
   var monthlyCosts = opCosts + salCosts + (esopEnabled ? esopMonthly : 0);
 
   var totalRevenue = useMemo(function () {
-    return calcTotalRevenue(streams);
-  }, [streams]);
+    var rev = calcTotalRevenue(streams) + calcAffiliationMonthly(affiliation) * 12;
+    /* Add crowdfunding as one-time revenue when funds are received */
+    if (crowdfunding && crowdfunding.enabled) {
+      var cfStatus = crowdfunding.status || "planning";
+      var cfModel = crowdfunding.fundingModel || "all_or_nothing";
+      /* Completed = always count. Failed + flexible model = funds still received */
+      if (cfStatus === "completed" || (cfStatus === "failed" && cfModel === "flexible")) {
+        rev += calcActualRaised(crowdfunding.tiers, crowdfunding.donations || 0);
+      }
+    }
+    return rev;
+  }, [streams, affiliation, crowdfunding]);
 
   var annC = monthlyCosts * 12;
   var ebitda = totalRevenue - annC;

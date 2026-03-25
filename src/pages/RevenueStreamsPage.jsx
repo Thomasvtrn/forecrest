@@ -1064,6 +1064,7 @@ export default function RevenueStreamsPage({ cfg, streams, setStreams, annC, bus
         dimRow={function (row) { return !row.price || !row.qty; }}
         getRowId={function (row) { return row.id || (row._ci + "-" + row._ii); }}
         selectable
+        scrollable
         onDeleteSelected={bulkDeleteItems}
 
         isRowSelectable={function (row) { return !row._readOnly; }}

@@ -10,22 +10,92 @@ import { useT, useLang, useDevMode } from "../context";
 
 /* ── Platforms ── */
 var PLATFORM_META = {
-  ulule:    { label: "Ulule", commission: 0.08, payment: 0, url: "ulule.com" },
-  kkbb:     { label: "KissKissBankBank", commission: 0.08, payment: 0, url: "kisskissbankbank.com" },
-  kickstarter: { label: "Kickstarter", commission: 0.05, payment: 0.035, url: "kickstarter.com" },
-  indiegogo:   { label: "Indiegogo", commission: 0.05, payment: 0, url: "indiegogo.com" },
-  gofundme:    { label: "GoFundMe", commission: 0, payment: 0.029, url: "gofundme.com" },
-  other:       { label: "Autre", commission: 0.05, payment: 0, url: "" },
+  ulule:       { label: "Ulule", commission: 0.08, payment: 0, url: "ulule.com", model: "all_or_nothing" },
+  kkbb:        { label: "KissKissBankBank", commission: 0.08, payment: 0, url: "kisskissbankbank.com", model: "all_or_nothing" },
+  kickstarter: { label: "Kickstarter", commission: 0.05, payment: 0.035, url: "kickstarter.com", model: "all_or_nothing" },
+  indiegogo:   { label: "Indiegogo", commission: 0.05, payment: 0, url: "indiegogo.com", model: "flexible" },
+  gofundme:    { label: "GoFundMe", commission: 0, payment: 0.029, url: "gofundme.com", model: "flexible" },
+  other:       { label: "Autre", commission: 0.05, payment: 0, url: "", model: "all_or_nothing" },
 };
 var PLATFORM_KEYS = Object.keys(PLATFORM_META);
 
 /* ── Tier categories ── */
 var TIER_CAT_META = {
-  product:    { icon: Package, badge: "brand", label: { fr: "Produit physique", en: "Physical product" }, desc: { fr: "T-shirt, mug, poster, livre.", en: "T-shirt, mug, poster, book." }, placeholder: { fr: "ex. T-shirt édition limitée", en: "e.g. Limited edition T-shirt" }, defaultCost: 15, suggestions: [{ l: "T-shirt", cost: 12 }, { l: "Mug personnalisé", cost: 8 }, { l: "Poster signé", cost: 5 }, { l: "Stickers pack", cost: 3 }] },
-  early:      { icon: Lightning, badge: "warning", label: { fr: "Accès anticipé", en: "Early access" }, desc: { fr: "Pré-commande, accès bêta, tarif early bird.", en: "Pre-order, beta access, early bird." }, placeholder: { fr: "ex. Accès early bird", en: "e.g. Early bird access" }, defaultCost: 0, suggestions: [{ l: "Accès early bird", cost: 0 }, { l: "Pré-commande produit", cost: 25 }] },
-  experience: { icon: CalendarCheck, badge: "info", label: { fr: "Expérience", en: "Experience" }, desc: { fr: "Événement, atelier, rencontre.", en: "Event, workshop, meet & greet." }, placeholder: { fr: "ex. Soirée de lancement", en: "e.g. Launch party" }, defaultCost: 30, suggestions: [{ l: "Soirée de lancement", cost: 25 }, { l: "Atelier découverte", cost: 40 }] },
-  digital:    { icon: FileText, badge: "gray", label: { fr: "Numérique", en: "Digital" }, desc: { fr: "Ebook, contenu exclusif, accès premium.", en: "Ebook, exclusive content, premium." }, placeholder: { fr: "ex. Ebook exclusif", en: "e.g. Exclusive ebook" }, defaultCost: 2, suggestions: [{ l: "Ebook exclusif", cost: 2 }, { l: "Accès premium 1 an", cost: 0 }] },
-  thanks:     { icon: Heart, badge: "success", label: { fr: "Remerciement", en: "Thank you" }, desc: { fr: "Mention, certificat. Aucun coût.", en: "Mention, certificate. No cost." }, placeholder: { fr: "ex. Mention contributeurs", en: "e.g. Contributors mention" }, defaultCost: 0, suggestions: [{ l: "Mention sur le site", cost: 0 }, { l: "Certificat contributeur", cost: 0 }] },
+  product: {
+    icon: Package, badge: "brand",
+    label: { fr: "Produit physique", en: "Physical product" },
+    desc: { fr: "Objet tangible : textile, goodies, artisanat, équipement.", en: "Tangible item: apparel, merchandise, craft, equipment." },
+    placeholder: { fr: "ex. T-shirt édition limitée", en: "e.g. Limited edition T-shirt" },
+    defaultCost: 15, defaultTva: 0.21,
+    suggestions: [
+      { l: "T-shirt sérigraphié", cost: 12, price: 30, tva: 0.21 },
+      { l: "Mug personnalisé", cost: 8, price: 20, tva: 0.21 },
+      { l: "Tote bag imprimé", cost: 6, price: 18, tva: 0.21 },
+      { l: "Poster signé", cost: 5, price: 15, tva: 0.21 },
+      { l: "Pack stickers", cost: 3, price: 8, tva: 0.21 },
+      { l: "Kit produit complet", cost: 35, price: 75, tva: 0.21 },
+      { l: "Livre / album photo", cost: 10, price: 25, tva: 0.06 },
+      { l: "Jeu de société", cost: 18, price: 40, tva: 0.21 },
+    ],
+  },
+  early: {
+    icon: Lightning, badge: "warning",
+    label: { fr: "Accès anticipé", en: "Early access" },
+    desc: { fr: "Pré-commande, accès bêta, tarif early bird, accès VIP.", en: "Pre-order, beta access, early bird rate, VIP access." },
+    placeholder: { fr: "ex. Accès early bird -30%", en: "e.g. Early bird -30% off" },
+    defaultCost: 0, defaultTva: 0.21,
+    suggestions: [
+      { l: "Early bird -30%", cost: 0, price: 35, tva: 0.21 },
+      { l: "Pré-commande produit", cost: 25, price: 50, tva: 0.21 },
+      { l: "Accès bêta 6 mois", cost: 0, price: 25, tva: 0.21 },
+      { l: "Pack fondateur (produit + accès)", cost: 20, price: 75, tva: 0.21 },
+      { l: "Tarif lancement à vie", cost: 0, price: 99, tva: 0.21 },
+    ],
+  },
+  experience: {
+    icon: CalendarCheck, badge: "info",
+    label: { fr: "Expérience", en: "Experience" },
+    desc: { fr: "Événement, atelier, formation, rencontre, visite.", en: "Event, workshop, training, meet & greet, tour." },
+    placeholder: { fr: "ex. Soirée de lancement VIP", en: "e.g. VIP launch event" },
+    defaultCost: 30, defaultTva: 0.21,
+    suggestions: [
+      { l: "Soirée de lancement", cost: 25, price: 50, tva: 0.21 },
+      { l: "Atelier découverte (2h)", cost: 40, price: 80, tva: 0.21 },
+      { l: "Formation complète (1 jour)", cost: 60, price: 150, tva: 0.21 },
+      { l: "Déjeuner avec l'équipe", cost: 35, price: 75, tva: 0.12 },
+      { l: "Visite des coulisses", cost: 10, price: 30, tva: 0.21 },
+      { l: "Concert / spectacle privé", cost: 50, price: 100, tva: 0.06 },
+    ],
+  },
+  digital: {
+    icon: FileText, badge: "gray",
+    label: { fr: "Numérique", en: "Digital" },
+    desc: { fr: "Ebook, cours en ligne, template, accès SaaS, contenu exclusif.", en: "Ebook, online course, template, SaaS access, exclusive content." },
+    placeholder: { fr: "ex. Cours en ligne complet", en: "e.g. Full online course" },
+    defaultCost: 2, defaultTva: 0.21,
+    suggestions: [
+      { l: "Ebook exclusif", cost: 2, price: 15, tva: 0.06 },
+      { l: "Template / kit design", cost: 1, price: 20, tva: 0.21 },
+      { l: "Cours en ligne (accès à vie)", cost: 5, price: 49, tva: 0.21 },
+      { l: "Abonnement premium 1 an", cost: 0, price: 79, tva: 0.21 },
+      { l: "Wallpapers / illustrations HD", cost: 1, price: 10, tva: 0.21 },
+      { l: "Podcast / vidéo exclusive", cost: 3, price: 12, tva: 0.21 },
+    ],
+  },
+  thanks: {
+    icon: Heart, badge: "success",
+    label: { fr: "Remerciement / Don", en: "Thank you / Donation" },
+    desc: { fr: "Don sans contrepartie matérielle. Pas de TVA.", en: "Donation without material reward. No VAT." },
+    placeholder: { fr: "ex. Soutien libre", en: "e.g. Free support" },
+    defaultCost: 0, defaultTva: 0,
+    suggestions: [
+      { l: "Soutien libre", cost: 0, price: 10, tva: 0 },
+      { l: "Mention sur le site", cost: 0, price: 15, tva: 0 },
+      { l: "Certificat de contributeur", cost: 0, price: 25, tva: 0 },
+      { l: "Nom au générique / crédits", cost: 0, price: 50, tva: 0 },
+      { l: "Mécène — remerciement personnalisé", cost: 0, price: 100, tva: 0 },
+    ],
+  },
 };
 var TIER_CAT_KEYS = Object.keys(TIER_CAT_META);
 
@@ -34,7 +104,7 @@ var labelStyle = { display: "block", fontSize: 12, fontWeight: 500, color: "var(
 var sectionStyle = { fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" };
 
 /* ── Tier Modal ── */
-function TierModal({ tier, onSave, onClose, lang }) {
+function TierModal({ tier, onSave, onClose, lang, showPcmn }) {
   var t = useT().crowdfunding || {};
   var isEdit = !!tier;
   var lk = lang === "en" ? "en" : "fr";
@@ -44,17 +114,19 @@ function TierModal({ tier, onSave, onClose, lang }) {
   var [price, setPrice] = useState(isEdit ? (tier.price || 0) : 25);
   var [unitCost, setUnitCost] = useState(isEdit ? (tier.unitCost || 0) : TIER_CAT_META.product.defaultCost);
   var [quantity, setQuantity] = useState(isEdit ? (tier.quantity || 1) : 1);
+  var [tvaRate, setTvaRate] = useState(isEdit && tier.tvaRate != null ? tier.tvaRate : 0.21);
 
   var meta = TIER_CAT_META[selected] || TIER_CAT_META.product;
   var Icon = meta.icon;
 
   function handleSelect(catKey) {
     setSelected(catKey);
-    if (!isEdit) { setName(""); setPrice(25); setUnitCost(TIER_CAT_META[catKey].defaultCost); setQuantity(1); }
+    var m = TIER_CAT_META[catKey] || TIER_CAT_META.product;
+    if (!isEdit) { setName(""); setPrice(25); setUnitCost(m.defaultCost); setQuantity(1); setTvaRate(m.defaultTva != null ? m.defaultTva : 0.21); }
   }
 
   function handleSubmit() {
-    onSave({ name: name || meta.label[lk], price: price, unitCost: unitCost, quantity: quantity, category: selected });
+    onSave({ name: name || meta.label[lk], price: price, unitCost: unitCost, quantity: quantity, category: selected, tvaRate: tvaRate });
     onClose();
   }
 
@@ -99,14 +171,19 @@ function TierModal({ tier, onSave, onClose, lang }) {
                     if (!v) { setName(""); setUnitCost(meta.defaultCost); return; }
                     var found = null;
                     meta.suggestions.forEach(function (s) { if (s.l === v) found = s; });
-                    if (found) { setName(found.l); setUnitCost(found.cost); }
+                    if (found) {
+                      setName(found.l);
+                      setUnitCost(found.cost);
+                      if (found.price) setPrice(found.price);
+                      if (found.tva != null) setTvaRate(found.tva);
+                    }
                   }}
                   options={meta.suggestions.map(function (s) { return { value: s.l, label: s.l }; })}
                   placeholder={t.tier_suggestions || "Suggestions..."} clearable
                 />
               </div>
             ) : null}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--sp-3)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: showPcmn ? "1fr 1fr 1fr 1fr" : "1fr 1fr 1fr", gap: "var(--sp-3)" }}>
               <div>
                 <label style={labelStyle}>{t.tier_price || "Prix contributeur"}</label>
                 <CurrencyInput value={price} onChange={setPrice} suffix="€" width="100%" />
@@ -119,6 +196,21 @@ function TierModal({ tier, onSave, onClose, lang }) {
                 <label style={labelStyle}>{t.tier_quantity || "Quantité prévue"}</label>
                 <NumberField value={quantity} onChange={setQuantity} min={0} max={10000} step={1} width="100%" />
               </div>
+              {showPcmn ? (
+                <div>
+                  <label style={labelStyle}>{t.tier_tva || "TVA"}</label>
+                  <SelectDropdown
+                    value={String(tvaRate)}
+                    onChange={function (v) { setTvaRate(parseFloat(v)); }}
+                    options={[
+                      { value: "0", label: "0%" },
+                      { value: "0.06", label: "6%" },
+                      { value: "0.12", label: "12%" },
+                      { value: "0.21", label: "21%" },
+                    ]}
+                  />
+                </div>
+              ) : null}
             </div>
             <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", flexDirection: "column", gap: 4 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -368,6 +460,7 @@ export default function CrowdfundingPage({ appCfg, crowdfunding, setCrowdfunding
     function wizardFinish() {
       cfgSet("enabled", true);
       cfgSet("platform", wizardPlatform);
+      cfgSet("fundingModel", (PLATFORM_META[wizardPlatform] || {}).model || "all_or_nothing");
       cfgSet("goal", wizardGoal);
       cfgSet("name", wizardName);
       cfgSet("tiers", []);
@@ -597,8 +690,8 @@ export default function CrowdfundingPage({ appCfg, crowdfunding, setCrowdfunding
         </Button>
       )
     }>
-      {showTierCreate ? <TierModal onSave={addTier} onClose={function () { setShowTierCreate(false); }} lang={lang} /> : null}
-      {editingTier ? <TierModal tier={editingTier.tier} onSave={function (data) { saveTier(editingTier.idx, data); }} onClose={function () { setEditingTier(null); }} lang={lang} /> : null}
+      {showTierCreate ? <TierModal onSave={addTier} onClose={function () { setShowTierCreate(false); }} lang={lang} showPcmn={appCfg.showPcmn} /> : null}
+      {editingTier ? <TierModal tier={editingTier.tier} onSave={function (data) { saveTier(editingTier.idx, data); }} onClose={function () { setEditingTier(null); }} lang={lang} showPcmn={appCfg.showPcmn} /> : null}
       {pendingDelete !== null ? <ConfirmDeleteModal
         onConfirm={function () { removeTier(pendingDelete); setPendingDelete(null); }}
         onCancel={function () { setPendingDelete(null); }}
@@ -657,7 +750,7 @@ export default function CrowdfundingPage({ appCfg, crowdfunding, setCrowdfunding
             <div style={{ display: "grid", gridTemplateColumns: cfg.platform === "other" ? "1fr 1fr 1fr" : "1fr 1fr", gap: "var(--sp-3)" }}>
               <div>
                 <label style={labelStyle}>{t.field_platform || "Plateforme"}</label>
-                <SelectDropdown value={cfg.platform || "ulule"} onChange={function (v) { cfgSet("platform", v); }}
+                <SelectDropdown value={cfg.platform || "ulule"} onChange={function (v) { cfgSet("platform", v); cfgSet("fundingModel", (PLATFORM_META[v] || {}).model || "all_or_nothing"); }}
                   options={PLATFORM_KEYS.map(function (k) { var p = PLATFORM_META[k]; var fee = p.commission + p.payment; return { value: k, label: k === "other" ? p.label : p.label + " (" + (fee > 0 ? pct(fee) : "0%") + ")" }; })}
                 />
               </div>
@@ -708,15 +801,27 @@ export default function CrowdfundingPage({ appCfg, crowdfunding, setCrowdfunding
               </div>
               <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
             </div>
+            {(function () {
+              var tiersRevenue = 0;
+              var tvaOnTiers = 0;
+              tiers.forEach(function (ti) {
+                var rev = (ti.price || 0) * (ti.quantity || 0);
+                tiersRevenue += rev;
+                tvaOnTiers += rev * (ti.tvaRate != null ? ti.tvaRate : 0.21);
+              });
+              var donutData = cfg.goal > 0 ? { margin: Math.max(0, netMargin - tvaOnTiers), tva: tvaOnTiers, commission: commissionAmount, tiers: tiersCost } : {};
+              var donutTotal = cfg.goal > 0 ? cfg.goal : 1;
+              return (
             <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-4)" }}>
-              <DonutChart data={cfg.goal > 0 ? { margin: Math.max(0, netMargin), commission: commissionAmount, tiers: tiersCost } : {}} palette={chartPalette} />
+              <DonutChart data={donutData} palette={chartPalette} />
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
-                  { key: "margin", label: t.donut_margin || "Marge nette", value: netMargin },
+                  { key: "margin", label: t.donut_margin || "Marge nette", value: Math.max(0, netMargin - tvaOnTiers) },
+                  { key: "tva", label: t.donut_tva || "TVA sur contreparties (21%)", value: tvaOnTiers },
                   { key: "commission", label: t.donut_commission || "Commission plateforme", value: commissionAmount },
-                  { key: "tiers", label: t.donut_tiers || "Contreparties", value: tiersCost },
+                  { key: "tiers", label: t.donut_tiers || "Coût contreparties", value: tiersCost },
                 ].map(function (row, ri) {
-                  var rowPct = cfg.goal > 0 ? Math.round(row.value / cfg.goal * 100) : 0;
+                  var rowPct = cfg.goal > 0 ? Math.round(row.value / donutTotal * 100) : 0;
                   return (
                     <div key={row.key} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
                       <span style={{ width: 8, height: 8, borderRadius: "50%", background: chartPalette[ri % chartPalette.length], flexShrink: 0 }} />
@@ -727,6 +832,8 @@ export default function CrowdfundingPage({ appCfg, crowdfunding, setCrowdfunding
                 })}
               </div>
             </div>
+              );
+            })()}
           </div>
 
           {/* URL card */}
@@ -788,6 +895,7 @@ export default function CrowdfundingPage({ appCfg, crowdfunding, setCrowdfunding
         var actualMargin = actualRaised - actualCommission - actualCost;
         var totalBackers = 0;
         tiers.forEach(function (ti) { totalBackers += (ti.backers || 0); });
+        if ((cfg.donations || 0) > 0) totalBackers += 1;
         var progressPct = cfg.goal > 0 ? Math.round(actualRaised / cfg.goal * 100) : 0;
 
         function updateTierBackers(idx, val) {
@@ -810,28 +918,64 @@ export default function CrowdfundingPage({ appCfg, crowdfunding, setCrowdfunding
         return (
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-md)" }}>
 
-          {/* Bilan banner — ended */}
-          {isEnded ? (
-            <div style={{
-              border: "1px solid " + (status === "completed" && actualRaised >= cfg.goal ? "var(--color-success)" : "var(--color-error)"),
-              borderRadius: "var(--r-lg)", padding: "var(--sp-4)",
-              background: status === "completed" && actualRaised >= cfg.goal ? "var(--color-success-bg)" : "var(--color-error-bg)",
-            }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: status === "completed" && actualRaised >= cfg.goal ? "var(--color-success)" : "var(--color-error)", marginBottom: 4 }}>
-                {status === "completed" && actualRaised >= cfg.goal
-                  ? (t.bilan_success || "Campagne réussie !")
-                  : (t.bilan_failed || "Objectif non atteint")}
+          {/* Bilan card — ended */}
+          {isEnded ? (function () {
+            var succeeded = status === "completed" && actualRaised >= cfg.goal;
+            var cfModel = cfg.fundingModel || (PLATFORM_META[cfg.platform] || {}).model || "all_or_nothing";
+            var isFlexible = cfModel === "flexible";
+            var fundsReceived = status === "completed" || (status === "failed" && isFlexible);
+            var barColor = succeeded ? "var(--color-success)" : progressPct >= 50 ? "var(--color-warning)" : "var(--color-error)";
+            return (
+              <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", overflow: "hidden" }}>
+                {/* Top: big number + badge */}
+                <div style={{ padding: "var(--sp-4)", display: "flex", alignItems: "center", gap: "var(--sp-4)" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={Object.assign({}, sectionStyle, { marginBottom: "var(--sp-2)" })}>{t.bilan_title || "Résultat de la campagne"}</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "var(--sp-2)" }}>
+                      <span style={{ fontSize: 28, fontWeight: 800, fontFamily: "'Bricolage Grotesque', sans-serif", color: "var(--text-primary)" }}>{eur(actualRaised)}</span>
+                      <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{t.bilan_goal_of || "sur"} {eur(cfg.goal)}</span>
+                    </div>
+                    {/* Progress bar inline */}
+                    <div style={{ marginTop: "var(--sp-2)", display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                      <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--bg-hover)", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: Math.min(progressPct, 100) + "%", background: barColor, borderRadius: 3, transition: "width 0.3s" }} />
+                      </div>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: barColor, flexShrink: 0 }}>{progressPct}%</span>
+                    </div>
+                  </div>
+                  <Badge color={succeeded ? "success" : "error"} size="sm" dot>
+                    {succeeded ? (t.bilan_success || "Réussie") : (t.bilan_failed || "Non atteint")}
+                  </Badge>
+                </div>
+                {/* Bottom: stats + funds info on neutral bg */}
+                <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderTop: "1px solid var(--border-light)" }}>
+                  <div style={{ display: "flex", gap: "var(--sp-4)", marginBottom: "var(--sp-3)" }}>
+                    {[
+                      { value: String(totalBackers), label: t.bilan_backers || "contributeurs" },
+                      { value: eur(actualMargin), label: t.bilan_net || "marge nette" },
+                      { value: eur(actualCommission), label: t.bilan_fees || "frais plateforme" },
+                    ].map(function (s, i) {
+                      return (
+                        <div key={i} style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, fontFamily: "'Bricolage Grotesque', sans-serif", color: "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{s.value}</div>
+                          <div style={{ fontSize: 11, color: "var(--text-faint)" }}>{s.label}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: fundsReceived ? "var(--color-success)" : "var(--text-faint)", flexShrink: 0 }} />
+                    <span>
+                      {fundsReceived
+                        ? (t.bilan_funds_received || "Les fonds ({amount}) sont versés et comptabilisés dans le chiffre d'affaires.").replace("{amount}", eur(actualRaised))
+                        : (t.bilan_funds_refunded || "Les fonds sont intégralement remboursés aux contributeurs (modèle tout ou rien).")}
+                      {status === "failed" && isFlexible ? " " + (t.bilan_flexible_note || "({platform} fonctionne en financement flexible : les fonds sont versés même si l'objectif n'est pas atteint.)").replace("{platform}", (PLATFORM_META[cfg.platform] || {}).label || cfg.platform) : null}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                {(t.bilan_summary || "Objectif atteint à {pct} - {backers} contributeurs sur {planned} prévus - {raised} levés sur {goal}.")
-                  .replace("{pct}", progressPct + "%")
-                  .replace("{backers}", String(totalBackers))
-                  .replace("{planned}", String(totalPlanned))
-                  .replace("{raised}", eur(actualRaised))
-                  .replace("{goal}", eur(cfg.goal))}
-              </div>
-            </div>
-          ) : null}
+            );
+          })() : null}
 
           {/* Countdown — active */}
           {isActive && daysLeft !== null ? (
