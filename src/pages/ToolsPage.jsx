@@ -7,7 +7,7 @@ import {
   EnvelopeSimple, Phone, WifiHigh, Lock, TextT, AddressBook, LinkSimple, WarningCircle, Eye, EyeSlash,
   Copy, Image, X, ChatText, MapPin, CalendarPlus,
   ArrowsClockwise, BookmarkSimple, Trash, ArrowSquareOut, Star, ShieldCheck, Check,
-  FileText, Export, Warning, Tag, Info,
+  FileText, Export, Warning, Tag, Info, BookOpen, ArrowRight,
 } from "@phosphor-icons/react";
 import { createPortal } from "react-dom";
 import { PageLayout, Button, DataTable, Badge, SearchInput, FilterDropdown, ActionBtn, InfoTip, KpiCard, ButtonUtility, FinanceLink, ExportButtons } from "../components";
@@ -2733,6 +2733,12 @@ function TrademarkTool({ lk }) {
   var [savedFeedback, setSavedFeedback] = useState({});
   var [selectedClasses, setSelectedClasses] = useState(loadTrademarkClasses);
   var [niceDropdownOpen, setNiceDropdownOpen] = useState(false);
+  var [niceInfoHover, setNiceInfoHover] = useState(false);
+  var [niceTipShow, setNiceTipShow] = useState(false);
+  var [niceTipPos, setNiceTipPos] = useState({ top: 0, left: 0 });
+  var niceInfoRef = useRef(null);
+  var tAll = useT();
+  var niceG = tAll.glossary || {};
   var [selectedRegistries, setSelectedRegistries] = useState({ boip: true });
   var inputRef = useRef(null);
   var glossary = useGlossary();
@@ -3312,22 +3318,88 @@ function TrademarkTool({ lk }) {
         }}>
 
           {/* Nice Classification — multi-select dropdown */}
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-2)" }}>
+          <div style={{ position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--sp-2)" }}>
               <h3 style={Object.assign({}, SECTION_LABEL, { margin: 0 })}>
                 {lk === "fr" ? "Classes de Nice" : "Nice Classes"}
               </h3>
-              <button type="button" onClick={function () { glossary.open("nice_classes"); }}
-                style={{
-                  width: 16, height: 16, borderRadius: "50%", border: "1px solid var(--border)",
-                  background: "var(--bg-accordion)", cursor: "pointer", padding: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              <div
+                ref={niceInfoRef}
+                onMouseEnter={function () {
+                  setNiceInfoHover(true);
+                  if (!niceInfoRef.current) return;
+                  var rect = niceInfoRef.current.getBoundingClientRect();
+                  setNiceTipPos({ top: rect.bottom + 6, left: Math.min(rect.left, window.innerWidth - 290) });
+                  setNiceTipShow(true);
                 }}
-                title={lk === "fr" ? "En savoir plus" : "Learn more"}
+                onMouseLeave={function () { setNiceInfoHover(false); setNiceTipShow(false); }}
+                onClick={function () { setNiceTipShow(false); setNiceInfoHover(false); glossary.open("nice_classes"); }}
+                style={{
+                  width: 28, height: 28,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", borderRadius: "50%",
+                }}
               >
-                <Info size={9} weight="bold" color="var(--text-faint)" />
-              </button>
+                <Info size={14} weight="regular" color={niceInfoHover ? "var(--brand)" : "var(--text-faint)"} style={{ transition: "color 0.12s" }} />
+              </div>
             </div>
+            {niceTipShow ? createPortal(
+              <div
+                onMouseEnter={function () { setNiceTipShow(true); setNiceInfoHover(true); }}
+                onMouseLeave={function () { setNiceTipShow(false); setNiceInfoHover(false); }}
+                style={{ position: "fixed", top: niceTipPos.top, left: niceTipPos.left, zIndex: 2000, width: 280, paddingTop: 6 }}
+              >
+                <div style={{
+                  background: "var(--bg-card)", border: "1px solid var(--border)",
+                  borderRadius: "var(--r-lg)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+                  overflow: "hidden",
+                }}>
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "10px 14px", borderBottom: "1px solid var(--border-light)",
+                    background: "var(--bg-accordion)",
+                  }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: "var(--r-sm)",
+                      background: "var(--brand-bg)", border: "1px solid var(--brand-border)",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                      <BookOpen size={12} weight="bold" color="var(--brand)" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", lineHeight: 1 }}>
+                        {niceG.page_title || "Glossaire"}
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3, marginTop: 1 }}>
+                        {niceG.nice_classes_title || (lk === "fr" ? "Classes de Nice" : "Nice Classes")}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ padding: "10px 14px", fontSize: 12, lineHeight: 1.5, color: "var(--text-secondary)" }}>
+                    {niceG.nice_classes_def || (lk === "fr"
+                      ? "Classification internationale des produits et services utilis\u00e9e pour le d\u00e9p\u00f4t de marques. 45 classes au total (34 produits, 11 services)."
+                      : "International classification of goods and services used for trademark registration. 45 classes total (34 goods, 11 services).")}
+                  </div>
+                  <div
+                    onClick={function () { setNiceTipShow(false); glossary.open("nice_classes"); }}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      padding: "8px 14px", borderTop: "1px solid var(--border-light)",
+                      background: "var(--bg-accordion)", cursor: "pointer",
+                    }}
+                    onMouseEnter={function (e) { e.currentTarget.style.background = "var(--bg-hover)"; }}
+                    onMouseLeave={function (e) { e.currentTarget.style.background = "var(--bg-accordion)"; }}
+                  >
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--brand)" }}>
+                      {niceG.view_full || (lk === "fr" ? "En savoir plus" : "Learn more")}
+                    </span>
+                    <ArrowRight size={12} weight="bold" color="var(--brand)" />
+                  </div>
+                </div>
+              </div>,
+              document.body
+            ) : null}
             {/* Trigger button */}
             <button type="button" onClick={function () { setNiceDropdownOpen(function (v) { return !v; }); }}
               style={{
