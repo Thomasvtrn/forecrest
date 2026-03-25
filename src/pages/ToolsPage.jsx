@@ -7,11 +7,11 @@ import {
   EnvelopeSimple, Phone, WifiHigh, Lock, TextT, AddressBook, LinkSimple, WarningCircle, Eye, EyeSlash,
   Copy, Image, X, ChatText, MapPin, CalendarPlus,
   ArrowsClockwise, BookmarkSimple, Trash, ArrowSquareOut, Star, ShieldCheck, Check,
-  FileText, Export, Warning, Tag,
+  FileText, Export, Warning, Tag, Info,
 } from "@phosphor-icons/react";
 import { createPortal } from "react-dom";
-import { PageLayout, Button, DataTable, Badge, SearchInput, FilterDropdown, ActionBtn, InfoTip, KpiCard, ButtonUtility, FinanceLink } from "../components";
-import { useT, useLang, useTheme } from "../context";
+import { PageLayout, Button, DataTable, Badge, SearchInput, FilterDropdown, ActionBtn, InfoTip, KpiCard, ButtonUtility, FinanceLink, ExportButtons } from "../components";
+import { useT, useLang, useTheme, useGlossary } from "../context";
 
 /* ── Styles ── */
 
@@ -2699,9 +2699,10 @@ function TrademarkTool({ lk }) {
   var [activeTab, setActiveTab] = useState("saved");
   var [savedFeedback, setSavedFeedback] = useState({});
   var [selectedClasses, setSelectedClasses] = useState(loadTrademarkClasses);
-  var [classSearch, setClassSearch] = useState("");
+  var [niceDropdownOpen, setNiceDropdownOpen] = useState(false);
   var [selectedRegistries, setSelectedRegistries] = useState({ boip: true });
   var inputRef = useRef(null);
+  var glossary = useGlossary();
 
   /* Typewriter animated placeholder */
   var [phIdx, setPhIdx] = useState(0);
@@ -2841,19 +2842,6 @@ function TrademarkTool({ lk }) {
     });
   }
 
-  /* Filtered Nice classes by search */
-  var filteredClasses = NICE_CLASSES;
-  if (classSearch.trim()) {
-    var csLower = classSearch.trim().toLowerCase();
-    filteredClasses = NICE_CLASSES.filter(function (cls) {
-      if (String(cls.id).indexOf(csLower) !== -1) return true;
-      if (cls.label.fr.toLowerCase().indexOf(csLower) !== -1) return true;
-      if (cls.label.en.toLowerCase().indexOf(csLower) !== -1) return true;
-      var found = false;
-      cls.keywords.forEach(function (kw) { if (kw.indexOf(csLower) !== -1) found = true; });
-      return found;
-    });
-  }
 
   /* Budget computation (Feature 2) */
   var budgetRows = [];
@@ -3239,6 +3227,41 @@ function TrademarkTool({ lk }) {
               </div>
             </div>
           ) : null}
+
+          {/* ── Filing Process Timeline — horizontal stepper ── */}
+          <div style={CARD}>
+            <h3 style={Object.assign({}, SECTION_LABEL, { margin: "0 0 var(--sp-3)" })}>
+              {lk === "fr" ? "Processus de d\u00e9p\u00f4t" : "Filing Process"}
+            </h3>
+            <div style={{ display: "flex", alignItems: "flex-start" }}>
+              {TIMELINE_STEPS.map(function (step, idx) {
+                var StepIcon = step.icon;
+                var isLast = idx === TIMELINE_STEPS.length - 1;
+                var stepColor = isLast ? "var(--color-success)" : "var(--brand)";
+                var stepBg = isLast ? "var(--color-success-bg)" : "var(--brand-bg)";
+                return (
+                  <div key={idx} style={{ display: "flex", alignItems: "flex-start", flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "0 0 auto" }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: "50%",
+                        background: stepBg, border: "2px solid " + stepColor,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <StepIcon size={12} weight="bold" color={stepColor} />
+                      </div>
+                      <div style={{ textAlign: "center", marginTop: 6, maxWidth: 70 }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.2 }}>{step.label[lk]}</div>
+                        <div style={{ fontSize: 9, color: "var(--text-faint)", marginTop: 2 }}>{step.duration[lk]}</div>
+                      </div>
+                    </div>
+                    {!isLast ? (
+                      <div style={{ flex: 1, height: 2, background: "var(--border)", marginTop: 13, marginLeft: 4, marginRight: 4 }} />
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* ── RIGHT COLUMN — sticky sidebar card ── */}
@@ -3254,46 +3277,101 @@ function TrademarkTool({ lk }) {
           gap: "var(--sp-4)",
         }}>
 
-          {/* Nice Classification Selector */}
+          {/* Nice Classification — multi-select dropdown */}
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-3)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-2)" }}>
               <h3 style={Object.assign({}, SECTION_LABEL, { margin: 0 })}>
                 {lk === "fr" ? "Classes de Nice" : "Nice Classes"}
               </h3>
-              <InfoTip tip={lk === "fr" ? "La classification de Nice organise les produits et services en 45 classes. Choisissez celles qui correspondent à votre activité. Chaque classe supplémentaire augmente le coût du dépôt." : "The Nice Classification organizes goods and services into 45 classes. Choose those that match your business. Each additional class increases the filing cost."} />
-              {selectedClasses.length > 0 ? (
-                <Badge color="brand" size="sm">{selectedClasses.length}</Badge>
-              ) : null}
+              <button type="button" onClick={function () { glossary.open("nice_classes"); }}
+                style={{
+                  width: 16, height: 16, borderRadius: "50%", border: "1px solid var(--border)",
+                  background: "var(--bg-accordion)", cursor: "pointer", padding: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}
+                title={lk === "fr" ? "En savoir plus" : "Learn more"}
+              >
+                <Info size={9} weight="bold" color="var(--text-faint)" />
+              </button>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {NICE_CLASSES.map(function (cls) {
-                var isSelected = selectedClasses.indexOf(cls.id) !== -1;
-                return (
-                  <button key={cls.id} type="button" onClick={function () { toggleClass(cls.id); }}
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 6,
-                      padding: "6px 12px",
-                      borderRadius: "var(--r-md)",
-                      border: "1px solid " + (isSelected ? "var(--brand)" : "var(--border)"),
-                      background: isSelected ? "var(--brand-bg, rgba(232,67,26,0.08))" : "var(--bg-accordion)",
-                      color: isSelected ? "var(--brand)" : "var(--text-secondary)",
-                      fontSize: 12, fontWeight: isSelected ? 600 : 400, fontFamily: "inherit",
-                      cursor: "pointer", transition: "all 0.15s",
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    <span style={{ fontWeight: 700, fontSize: 11, opacity: 0.7 }}>{cls.id}</span>
-                    {cls.label[lk]}
-                    {isSelected ? <CheckCircle size={12} weight="fill" /> : null}
-                  </button>
-                );
-              })}
-              {filteredClasses.length === 0 ? (
-                <span style={{ fontSize: 12, color: "var(--text-faint)", padding: "var(--sp-2)" }}>
-                  {lk === "fr" ? "Aucune classe correspondante" : "No matching class"}
-                </span>
-              ) : null}
-            </div>
+            {/* Trigger button */}
+            <button type="button" onClick={function () { setNiceDropdownOpen(function (v) { return !v; }); }}
+              style={{
+                width: "100%", height: 40, padding: "0 var(--sp-3)",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+                background: "var(--input-bg)", color: "var(--text-primary)",
+                fontSize: 13, fontFamily: "inherit", cursor: "pointer",
+              }}
+            >
+              <span style={{ color: selectedClasses.length > 0 ? "var(--text-primary)" : "var(--text-faint)" }}>
+                {selectedClasses.length > 0
+                  ? selectedClasses.length + (lk === "fr" ? " classe" + (selectedClasses.length > 1 ? "s" : "") + " sélectionnée" + (selectedClasses.length > 1 ? "s" : "") : " class" + (selectedClasses.length > 1 ? "es" : "") + " selected")
+                  : (lk === "fr" ? "Sélectionner les classes..." : "Select classes...")}
+              </span>
+              <CaretDown size={14} color="var(--text-muted)" style={{ transform: niceDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+            </button>
+            {/* Dropdown panel */}
+            {niceDropdownOpen ? (
+              <div style={{
+                marginTop: 4, border: "1px solid var(--border)", borderRadius: "var(--r-md)",
+                background: "var(--bg-card)", boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+                maxHeight: 240, overflowY: "auto", padding: 4,
+                scrollbarWidth: "thin", scrollbarColor: "var(--border-strong) transparent",
+              }}>
+                {NICE_CLASSES.map(function (cls) {
+                  var isSelected = selectedClasses.indexOf(cls.id) !== -1;
+                  return (
+                    <button key={cls.id} type="button" onClick={function () { toggleClass(cls.id); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "var(--sp-2)", width: "100%",
+                        padding: "8px var(--sp-3)", borderRadius: "var(--r-sm)",
+                        border: "none", background: isSelected ? "var(--brand-bg)" : "transparent",
+                        cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+                        transition: "background 0.1s",
+                      }}
+                      onMouseEnter={function (e) { if (!isSelected) e.currentTarget.style.background = "var(--bg-hover)"; }}
+                      onMouseLeave={function (e) { e.currentTarget.style.background = isSelected ? "var(--brand-bg)" : "transparent"; }}
+                    >
+                      <div style={{
+                        width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                        border: isSelected ? "none" : "2px solid var(--border)",
+                        background: isSelected ? "var(--brand)" : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        {isSelected ? <Check size={11} weight="bold" color="white" /> : null}
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-faint)", fontFamily: "ui-monospace, monospace", minWidth: 20 }}>{cls.id}</span>
+                      <span style={{ fontSize: 12, color: isSelected ? "var(--brand)" : "var(--text-secondary)" }}>{cls.label[lk]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+            {/* Selected chips */}
+            {selectedClasses.length > 0 ? (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: "var(--sp-2)" }}>
+                {selectedClasses.map(function (cid) {
+                  var cls = null;
+                  NICE_CLASSES.forEach(function (c) { if (c.id === cid) cls = c; });
+                  if (!cls) return null;
+                  return (
+                    <span key={cid} style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      padding: "2px 8px", fontSize: 11, fontWeight: 500,
+                      borderRadius: "var(--r-full)", background: "var(--brand-bg)",
+                      color: "var(--brand)", border: "1px solid var(--brand-border)",
+                    }}>
+                      {cls.id}
+                      <button type="button" onClick={function () { toggleClass(cid); }}
+                        style={{ border: "none", background: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center" }}>
+                        <X size={10} weight="bold" color="var(--brand)" />
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
 
           {/* ── Divider: Budget Estimator ── */}
@@ -3353,114 +3431,11 @@ function TrademarkTool({ lk }) {
             )}
           </div>
 
-          {/* ── Divider: Filing Process Timeline ── */}
-          <div style={{ borderTop: "1px solid var(--border-light, var(--border))", margin: "var(--sp-3) 0", padding: "var(--sp-3) 0 0" }}>
-            <h3 style={Object.assign({}, SECTION_LABEL, { margin: "0 0 var(--sp-3)" })}>
-              {lk === "fr" ? "Processus de d\u00e9p\u00f4t" : "Filing Process"}
-            </h3>
-            <div style={{
-              display: "flex", flexDirection: "column", gap: "var(--sp-3)",
-            }}>
-              {TIMELINE_STEPS.map(function (step, idx) {
-                var StepIcon = step.icon;
-                var isLast = idx === TIMELINE_STEPS.length - 1;
-                return (
-                  <div key={idx} style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
-                    <div style={{
-                      width: 28, height: 28, borderRadius: "50%",
-                      background: isLast ? "var(--color-success-bg, rgba(22,163,74,0.08))" : "var(--brand-bg, rgba(232,67,26,0.08))",
-                      border: "2px solid " + (isLast ? "var(--color-success)" : "var(--brand)"),
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0,
-                    }}>
-                      <StepIcon size={12} weight="bold" color={isLast ? "var(--color-success)" : "var(--brand)"} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 12, fontWeight: 600, color: "var(--text-primary)",
-                        lineHeight: 1.2,
-                      }}>
-                        {step.label[lk]}
-                      </div>
-                      <div style={{
-                        fontSize: 10, color: "var(--text-muted)", marginTop: 1,
-                      }}>
-                        {step.duration[lk]}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ── Divider: Pre-registration Checklist ── */}
-          <div style={{ borderTop: "1px solid var(--border-light, var(--border))", margin: "var(--sp-3) 0", padding: "var(--sp-3) 0 0" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--sp-3)" }}>
-              <h3 style={Object.assign({}, SECTION_LABEL, { margin: 0 })}>
-                {lk === "fr" ? "Checklist avant d\u00e9p\u00f4t" : "Pre-registration checklist"}
-              </h3>
-              <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
-                {checklistDone}/{TM_CHECKLIST.length}
-              </span>
-            </div>
-            {/* Progress bar */}
-            <div style={{
-              height: 4, borderRadius: 2, background: "var(--bg-accordion)",
-              overflow: "hidden", marginBottom: "var(--sp-3)",
-            }}>
-              <div style={{
-                height: "100%", borderRadius: 2,
-                background: checklistDone === TM_CHECKLIST.length ? "var(--color-success)" : "var(--brand)",
-                width: (TM_CHECKLIST.length > 0 ? (checklistDone / TM_CHECKLIST.length) * 100 : 0) + "%",
-                transition: "width 0.3s ease",
-              }} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {TM_CHECKLIST.map(function (item) {
-                var done = !!checkedItems[item.id];
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={function () { toggleCheck(item.id); }}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "var(--sp-3)",
-                      padding: "var(--sp-2) var(--sp-3)",
-                      border: "none", borderRadius: "var(--r-md)",
-                      background: done ? "var(--color-success-bg)" : "transparent",
-                      cursor: "pointer", textAlign: "left", width: "100%",
-                      transition: "background 0.15s",
-                      fontFamily: "inherit",
-                    }}
-                    onMouseEnter={function (e) { if (!done) e.currentTarget.style.background = "var(--bg-hover)"; }}
-                    onMouseLeave={function (e) { if (!done) e.currentTarget.style.background = "transparent"; }}
-                  >
-                    <div style={{
-                      width: 20, height: 20, borderRadius: "var(--r-sm)",
-                      border: done ? "none" : "2px solid var(--border)",
-                      background: done ? "var(--color-success)" : "transparent",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0, transition: "all 0.15s",
-                    }}>
-                      {done ? <Check size={12} weight="bold" color="#fff" /> : null}
-                    </div>
-                    <span style={{
-                      fontSize: 13, color: done ? "var(--color-success)" : "var(--text-secondary)",
-                      textDecoration: done ? "line-through" : "none",
-                      lineHeight: 1.4,
-                    }}>
-                      {item.text[lk]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* ── DataTable — full width below the 2-column grid ── */}
+
+      {/* ── DataTable — full width below the checklist ── */}
       <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border-light)", marginBottom: "var(--sp-4)" }}>
         {["saved", "history"].map(function (tabKey) {
           var isActive = activeTab === tabKey;
@@ -3499,26 +3474,13 @@ function TrademarkTool({ lk }) {
         data={filteredWatchlist}
         columns={wlColumns}
         toolbar={
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--sp-3)", flexWrap: "wrap" }}>
+          <>
             <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center", flexWrap: "wrap" }}>
               <SearchInput value={wlSearch} onChange={setWlSearch} placeholder={lk === "fr" ? "Rechercher..." : "Search..."} />
               <FilterDropdown value={wlRegistryFilter} onChange={setWlRegistryFilter} options={wlRegistryOptions} />
             </div>
-            <button type="button" onClick={handleExportPdf}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "6px 14px", border: "1px solid var(--border)",
-                borderRadius: "var(--r-md)", background: "var(--bg-card)",
-                color: "var(--text-secondary)", fontSize: 12, fontWeight: 500,
-                fontFamily: "inherit", cursor: "pointer", transition: "all 0.15s",
-              }}
-              onMouseEnter={function (e) { e.currentTarget.style.borderColor = "var(--brand)"; e.currentTarget.style.color = "var(--brand)"; }}
-              onMouseLeave={function (e) { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
-            >
-              <Export size={14} weight="bold" />
-              {lk === "fr" ? "Exporter le r\u00e9sum\u00e9" : "Export summary"}
-            </button>
-          </div>
+            <ExportButtons data={filteredWatchlist} columns={wlColumns} filename={lk === "fr" ? "recherche-marque" : "trademark-search"} title={lk === "fr" ? "Recherche de marque" : "Trademark Search"} subtitle="" />
+          </>
         }
         emptyState={
           <div style={{ textAlign: "center", padding: "var(--sp-6)", color: "var(--text-faint)" }}>
