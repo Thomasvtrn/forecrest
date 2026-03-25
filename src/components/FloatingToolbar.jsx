@@ -5,10 +5,10 @@ import {
   ChartPie, CurrencyCircleDollar, Receipt, Package, BookOpen,
   Lock, Megaphone, CloudArrowUp, ShoppingCart,
   ChartDonut, UsersFour, Sparkle,
-  ArrowSquareOut, Copy, Star,
+  ArrowSquareOut, Star,
   Newspaper, Crosshair, Wallet, Funnel, ChartBar,
 } from "@phosphor-icons/react";
-import { useT, useLang } from "../context";
+import { useT, useLang, useTheme } from "../context";
 
 var CORE_ITEMS = [
   { id: "overview", icon: ChartBar },
@@ -67,6 +67,7 @@ function isModulePreviewable(mod) {
 
 var SHRINK_DELAY = 4000;
 var EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+var EASE_ARRAY = [0.22, 1, 0.36, 1];
 var SZ = 40;
 var SZ_C = 34;
 var SZ_PEAK = 54;
@@ -80,11 +81,13 @@ function injectStyles() {
     ".fc-db{transition:background 0.15s,border-color 0.15s,box-shadow 0.15s,opacity 0.15s}" +
     ".fc-db[data-locked=\"false\"]:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,0.24),0 8px 16px rgba(14,14,13,0.08)}" +
     ".fc-db[data-previewable=\"true\"]:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,0.24),0 8px 16px rgba(14,14,13,0.08)}" +
+    "[data-theme=\"dark\"] .fc-db[data-locked=\"false\"]:hover{box-shadow:none;background:rgba(255,255,255,0.05)}" +
+    "[data-theme=\"dark\"] .fc-db[data-previewable=\"true\"]:hover{box-shadow:none;background:rgba(255,255,255,0.05)}" +
     ".fc-db:focus-visible{outline:none;box-shadow:0 0 0 3px var(--brand-border),0 0 0 1px var(--brand)}";
   document.head.appendChild(styleTag);
 }
 
-function DockBtn({ iconComp, isActive, isLocked, isPreviewable, title, onClick, onCtxMenu, mouseX, compact }) {
+function DockBtn({ iconComp, isActive, isLocked, isPreviewable, title, onClick, onCtxMenu, mouseX, compact, dark }) {
   var Icon = iconComp;
   var size = compact ? SZ_C : SZ;
   var peak = compact ? SZ_C : SZ_PEAK;
@@ -128,10 +131,14 @@ function DockBtn({ iconComp, isActive, isLocked, isPreviewable, title, onClick, 
         position: "relative",
         transformOrigin: "bottom center",
         boxShadow: isActive
-          ? "inset 0 1px 0 rgba(255,255,255,0.26), 0 8px 18px rgba(232,67,26,0.14)"
+          ? (dark
+            ? "none"
+            : "inset 0 1px 0 rgba(255,255,255,0.26), 0 8px 18px rgba(232,67,26,0.14)")
           : "none",
         backgroundImage: isActive
-          ? "linear-gradient(180deg, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0) 68%)"
+          ? (dark
+            ? "none"
+            : "linear-gradient(180deg, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0) 68%)")
           : "none",
         zIndex: isActive ? 2 : 1,
       }}
@@ -172,6 +179,7 @@ function DockBtn({ iconComp, isActive, isLocked, isPreviewable, title, onClick, 
 }
 
 function CtxMenu({ x, y, item, onClose, onNavigate, lang }) {
+  var t = useT();
   var isFr = lang !== "en";
 
   useEffect(function () {
@@ -181,17 +189,12 @@ function CtxMenu({ x, y, item, onClose, onNavigate, lang }) {
   }, [onClose]);
 
   var rows = item.locked
-    ? [{ label: isFr ? "Bientot disponible" : "Coming soon", icon: Star, disabled: true }]
+    ? [{ label: t.dock_coming_soon || (isFr ? "Bientôt disponible" : "Coming soon"), icon: Star, disabled: true }]
     : [
         {
-          label: isFr ? "Ouvrir" : "Open",
+          label: t.dock_open || (isFr ? "Ouvrir" : "Open"),
           icon: ArrowSquareOut,
           action: function () { onNavigate(item.id); onClose(); },
-        },
-        {
-          label: isFr ? "Ouvrir dans un nouvel onglet" : "Open in new tab",
-          icon: Copy,
-          action: function () { window.open("#/" + item.id, "_blank"); onClose(); },
         },
       ];
 
@@ -257,6 +260,7 @@ function CtxMenu({ x, y, item, onClose, onNavigate, lang }) {
 export default function FloatingToolbar({ tab, setTab, visible, activeModule, setActiveModule, unlockedModules }) {
   var t = useT();
   var { lang } = useLang();
+  var { dark } = useTheme();
   var tb = t.tabs || {};
   var lk = lang === "en" ? "en" : "fr";
 
@@ -340,6 +344,39 @@ export default function FloatingToolbar({ tab, setTab, visible, activeModule, se
   var leftMods = MODULES.slice(0, activeIdx);
   var rightMods = MODULES.slice(activeIdx + 1);
 
+  function renderCollapsedMod(mod) {
+    var locked = isModuleLocked(mod, unlockedModules);
+    var previewable = isModulePreviewable(mod);
+    var labels = MODULE_LABELS[mod.id] || {};
+    var title = (labels[lk] || labels.fr || mod.id) + ((locked && !previewable) ? (lk === "fr" ? " (bientôt)" : " (coming soon)") : "");
+    return (
+      <motion.div
+        key={mod.id}
+        initial={{ width: 0, opacity: 0, scale: 0.8 }}
+        animate={{ width: "auto", opacity: 1, scale: 1 }}
+        exit={{ width: 0, opacity: 0, scale: 0.8 }}
+        transition={{ duration: 0.22, ease: EASE_ARRAY }}
+        style={{ overflow: "hidden", flexShrink: 0, position: "relative", zIndex: 1 }}
+      >
+        <DockBtn
+          iconComp={mod.icon}
+          isActive={false}
+          isLocked={locked}
+          isPreviewable={locked && previewable}
+          title={title}
+          onClick={function () { handleModSel(mod.id); }}
+          onCtxMenu={function (e) {
+            e.preventDefault();
+            setCtxMenu({ x: e.clientX, y: e.clientY, item: { id: mod.id, locked: locked && !previewable } });
+          }}
+          mouseX={mouseX}
+          compact={isCompact}
+          dark={dark}
+        />
+      </motion.div>
+    );
+  }
+
   return createPortal(
     <>
       <motion.div
@@ -348,7 +385,7 @@ export default function FloatingToolbar({ tab, setTab, visible, activeModule, se
         onMouseLeave={onLeave}
         initial={{ x: "-50%", y: 20, opacity: 0 }}
         animate={{ x: "-50%", y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.4, ease: EASE_ARRAY }}
         style={{
           position: "fixed",
           bottom: isCompact ? 16 : 18,
@@ -360,74 +397,54 @@ export default function FloatingToolbar({ tab, setTab, visible, activeModule, se
           gap: 4,
           padding: isCompact ? "4px 6px" : "5px 8px",
           borderRadius: isCompact ? 14 : 16,
-          background: "linear-gradient(180deg, var(--overlay-glass) 0%, rgba(255,255,255,0.02) 100%), var(--bg-card-translucent)",
-          backdropFilter: "blur(20px) saturate(1.6)",
-          WebkitBackdropFilter: "blur(20px) saturate(1.6)",
-          border: "1px solid rgba(255,255,255,0.16)",
+          background: dark
+            ? "rgba(18,22,26,0.72)"
+            : "linear-gradient(180deg, var(--overlay-glass) 0%, rgba(255,255,255,0.02) 100%), var(--bg-card-translucent)",
+          backdropFilter: dark ? "blur(20px) saturate(1.02)" : "blur(20px) saturate(1.6)",
+          WebkitBackdropFilter: dark ? "blur(20px) saturate(1.02)" : "blur(20px) saturate(1.6)",
+          border: dark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(255,255,255,0.16)",
           boxShadow: isCompact
-            ? "0 8px 24px rgba(14,14,13,0.10), inset 0 1px 0 rgba(255,255,255,0.30)"
-            : "0 18px 40px rgba(14,14,13,0.14), 0 6px 16px rgba(14,14,13,0.08), inset 0 1px 0 rgba(255,255,255,0.34)",
+            ? (dark
+              ? "0 8px 18px rgba(0,0,0,0.18)"
+              : "0 8px 24px rgba(14,14,13,0.10), inset 0 1px 0 rgba(255,255,255,0.30)")
+            : (dark
+              ? "0 12px 28px rgba(0,0,0,0.20)"
+              : "0 18px 40px rgba(14,14,13,0.14), 0 6px 16px rgba(14,14,13,0.08), inset 0 1px 0 rgba(255,255,255,0.34)"),
           transition: "padding 0.3s " + EASE + ", border-radius 0.3s " + EASE + ", bottom 0.3s " + EASE,
         }}
       >
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 1,
-            borderRadius: isCompact ? 13 : 15,
-            background: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0) 62%)",
-            pointerEvents: "none",
-            opacity: isCompact ? 0.7 : 1,
-          }}
-        />
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: "20%",
-            right: "20%",
-            top: -12,
-            height: isCompact ? 20 : 28,
-            borderRadius: 999,
-            background: "radial-gradient(circle, rgba(232,67,26,0.18) 0%, rgba(232,67,26,0) 72%)",
-            filter: "blur(14px)",
-            opacity: isCompact ? 0.4 : 0.75,
-            pointerEvents: "none",
-          }}
-        />
+        {!dark ? (
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 1,
+              borderRadius: isCompact ? 13 : 15,
+              background: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0) 62%)",
+              pointerEvents: "none",
+              opacity: isCompact ? 0.7 : 1,
+            }}
+          />
+        ) : null}
+        {!dark ? (
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: "20%",
+              right: "20%",
+              top: -12,
+              height: isCompact ? 20 : 28,
+              borderRadius: 999,
+              background: "radial-gradient(circle, rgba(232,67,26,0.18) 0%, rgba(232,67,26,0) 72%)",
+              filter: "blur(14px)",
+              opacity: isCompact ? 0.4 : 0.75,
+              pointerEvents: "none",
+            }}
+          />
+        ) : null}
         <AnimatePresence initial={false}>
-          {leftMods.map(function (mod) {
-            var locked = isModuleLocked(mod, unlockedModules);
-            var previewable = isModulePreviewable(mod);
-            var labels = MODULE_LABELS[mod.id] || {};
-            var title = (labels[lk] || labels.fr || mod.id) + ((locked && !previewable) ? (lk === "fr" ? " (bientot)" : " (coming soon)") : "");
-            return (
-              <motion.div
-                key={mod.id}
-                initial={{ width: 0, opacity: 0, scale: 0.8 }}
-                animate={{ width: "auto", opacity: 1, scale: 1 }}
-                exit={{ width: 0, opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                style={{ overflow: "hidden", flexShrink: 0, position: "relative", zIndex: 1 }}
-              >
-                <DockBtn
-                  iconComp={mod.icon}
-                  isActive={false}
-                  isLocked={locked}
-                  isPreviewable={locked && previewable}
-                  title={title}
-                  onClick={function () { handleModSel(mod.id); }}
-                  onCtxMenu={function (e) {
-                    e.preventDefault();
-                    setCtxMenu({ x: e.clientX, y: e.clientY, item: { id: mod.id, locked: locked && !previewable } });
-                  }}
-                  mouseX={mouseX}
-                  compact={isCompact}
-                />
-              </motion.div>
-            );
-          })}
+          {leftMods.map(renderCollapsedMod)}
         </AnimatePresence>
 
         <AnimatePresence mode="wait">
@@ -436,30 +453,36 @@ export default function FloatingToolbar({ tab, setTab, visible, activeModule, se
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.92 }}
-            transition={{ duration: 0.18, ease: EASE }}
+            transition={{ duration: 0.18, ease: EASE_ARRAY }}
             style={{
               position: "relative",
               zIndex: 1,
               display: "flex",
               alignItems: "center",
               gap: 0,
-              background: "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 100%), var(--bg-accordion)",
-              border: "1px solid var(--border)",
+              background: dark
+                ? "rgba(255,255,255,0.035)"
+                : "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 100%), var(--bg-accordion)",
+              border: dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid var(--border)",
               borderRadius: isCompact ? 10 : 12,
               padding: isCompact ? "1px 2px" : "2px 3px",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 14px rgba(14,14,13,0.06)",
+              boxShadow: dark
+                ? "none"
+                : "inset 0 1px 0 rgba(255,255,255,0.22), 0 6px 14px rgba(14,14,13,0.06)",
             }}
           >
-            <div
-              aria-hidden="true"
-              style={{
-                position: "absolute",
-                inset: 1,
-                borderRadius: isCompact ? 9 : 11,
-                background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 55%)",
-                pointerEvents: "none",
-              }}
-            />
+            {!dark ? (
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  inset: 1,
+                  borderRadius: isCompact ? 9 : 11,
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 55%)",
+                  pointerEvents: "none",
+                }}
+              />
+            ) : null}
             {activeItems.map(function (item) {
               var itemTitle = item.discover
                 ? ((lk === "fr" ? "Decouvrir " : "Discover ") + ((MODULE_LABELS[item.id] && (MODULE_LABELS[item.id][lk] || MODULE_LABELS[item.id].fr)) || item.id))
@@ -479,6 +502,7 @@ export default function FloatingToolbar({ tab, setTab, visible, activeModule, se
                   }}
                   mouseX={mouseX}
                   compact={isCompact}
+                  dark={dark}
                 />
               );
             })}
@@ -486,37 +510,7 @@ export default function FloatingToolbar({ tab, setTab, visible, activeModule, se
         </AnimatePresence>
 
         <AnimatePresence initial={false}>
-          {rightMods.map(function (mod) {
-            var locked = isModuleLocked(mod, unlockedModules);
-            var previewable = isModulePreviewable(mod);
-            var labels = MODULE_LABELS[mod.id] || {};
-            var title = (labels[lk] || labels.fr || mod.id) + ((locked && !previewable) ? (lk === "fr" ? " (bientot)" : " (coming soon)") : "");
-            return (
-              <motion.div
-                key={mod.id}
-                initial={{ width: 0, opacity: 0, scale: 0.8 }}
-                animate={{ width: "auto", opacity: 1, scale: 1 }}
-                exit={{ width: 0, opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                style={{ overflow: "hidden", flexShrink: 0, position: "relative", zIndex: 1 }}
-              >
-                <DockBtn
-                  iconComp={mod.icon}
-                  isActive={false}
-                  isLocked={locked}
-                  isPreviewable={locked && previewable}
-                  title={title}
-                  onClick={function () { handleModSel(mod.id); }}
-                  onCtxMenu={function (e) {
-                    e.preventDefault();
-                    setCtxMenu({ x: e.clientX, y: e.clientY, item: { id: mod.id, locked: locked && !previewable } });
-                  }}
-                  mouseX={mouseX}
-                  compact={isCompact}
-                />
-              </motion.div>
-            );
-          })}
+          {rightMods.map(renderCollapsedMod)}
         </AnimatePresence>
       </motion.div>
 
