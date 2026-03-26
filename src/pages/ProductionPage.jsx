@@ -1187,6 +1187,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
           { id: "margin", accessorFn: function (row) { return calcMargin(row, config); }, header: "Marge", meta: { align: "right" }, cell: function (info) { return eur(info.getValue()); } },
           { id: "monthlySales", accessorFn: function (row) { return row.monthlySales || 0; }, header: "Ventes/mois", meta: { align: "right" }, cell: function (info) { var v = info.getValue(); return v > 0 ? String(v) : "\u2014"; } },
         ]}
+        toolbar={toolbarNode}
         emptyState={emptyNode}
         emptyMinHeight={200}
         pageSize={10}
