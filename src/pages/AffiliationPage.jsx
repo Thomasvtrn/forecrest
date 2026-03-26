@@ -237,7 +237,7 @@ function ProgramModal({ item, onSave, onClose, lang }) {
                 <label style={labelStyle}>
                   {meta.commissionType === "one_time" ? (t.field_signups || "Inscriptions / mois") : (t.field_volume || "Ventes / mois")}
                 </label>
-                <NumberField value={volume} onChange={setVolume} min={0} max={99999} step={1} width="100%" />
+                <NumberField value={volume} onChange={setVolume} min={0} max={99999} step={0.25} width="100%" />
               </div>
             </div>
             {isPercent ? (
@@ -843,12 +843,12 @@ export default function AffiliationPage({ appCfg, affiliation, setAffiliation, c
   function randomize() {
     cfgSet("programs", [
       { id: makeId("aff"), name: "Accountable — Inscription", category: "saas", commission: 0, volume: 8, avgSale: 0, signupBonus: 10, churn: 0, url: "https://www.accountable.eu", commissionType: "one_time" },
-      { id: makeId("aff"), name: "Accountable — Abonnement", category: "saas", commission: 0, volume: 3, avgSale: 100, signupBonus: 0, churn: 0.05, url: "https://www.accountable.eu", commissionType: "recurring" },
+      { id: makeId("aff"), name: "Accountable — Abonnement", category: "saas", commission: 0, volume: 3, avgSale: 100, signupBonus: 0, churn: 0, url: "https://www.accountable.eu", commissionType: "recurring" },
       { id: makeId("aff"), name: "Brevo", category: "saas", commission: 0, volume: 6, avgSale: 0, signupBonus: 5, churn: 0, url: "https://www.brevo.com", commissionType: "one_time" },
-      { id: makeId("aff"), name: "Mailchimp", category: "saas", commission: 0, volume: 6, avgSale: 0, signupBonus: 8, churn: 0.25, url: "https://mailchimp.com", commissionType: "recurring" },
-      { id: makeId("aff"), name: "Wix", category: "saas", commission: 0, volume: 0, avgSale: 0, signupBonus: 20, churn: 0.25, url: "https://fr.wix.com", commissionType: "one_time" },
-      { id: makeId("aff"), name: "Shopify", category: "ecommerce", commission: 0, volume: 0, avgSale: 0, signupBonus: 150, churn: 0.25, url: "https://help.shopify.com", commissionType: "one_time" },
-      { id: makeId("aff"), name: "Metricool", category: "saas", commission: 0, volume: 0, avgSale: 0, signupBonus: 50, churn: 0, url: "https://metricool.com", commissionType: "one_time" },
+      { id: makeId("aff"), name: "Mailchimp", category: "saas", commission: 0, volume: 6, avgSale: 0, signupBonus: 8, churn: 0.25, url: "https://mailchimp.com", commissionType: "one_time" },
+      { id: makeId("aff"), name: "Wix", category: "saas", commission: 0, volume: 0.25, avgSale: 0, signupBonus: 20, churn: 0.25, url: "https://fr.wix.com", commissionType: "one_time" },
+      { id: makeId("aff"), name: "Shopify", category: "ecommerce", commission: 0, volume: 0.25, avgSale: 0, signupBonus: 150, churn: 0.25, url: "https://help.shopify.com", commissionType: "one_time" },
+      { id: makeId("aff"), name: "Metricool", category: "saas", commission: 0, volume: 2, avgSale: 0, signupBonus: 50, churn: 0, url: "https://metricool.com", commissionType: "one_time" },
     ]);
     cfgSet("enabled", true);
   }
