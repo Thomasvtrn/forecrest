@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, ActionBtn, SearchInput, FilterDropdown, Wizard, ExportButtons, DevOptionsButton, Modal, ModalBody, ModalFooter, CurrencyInput, NumberField, SelectDropdown, DonutChart, ChartLegend, PaletteToggle } from "../components";
 import { eur, eurShort, makeId } from "../utils";
+import { SEASONALITY_PROFILES } from "../constants/defaults";
 import { useT, useLang, useDevMode } from "../context";
 
 /* ── Shared styles ── */
@@ -53,6 +54,23 @@ var SEASON_PROFILES = [
   { value: "winter_peak", label: { fr: "Pic hiver", en: "Winter peak" } },
   { value: "bimodal", label: { fr: "Printemps + automne", en: "Spring + fall" } },
 ];
+
+/* ── Mini sparkline for seasonality ── */
+function SeasonSpark(props) {
+  var coefs = props.coefs; var w = props.width || 80; var h = props.height || 24;
+  var max = Math.max.apply(null, coefs); var min = Math.min.apply(null, coefs);
+  var range = max - min || 1; var pad = 2;
+  var points = coefs.map(function (c, i) {
+    var x = pad + (i / 11) * (w - pad * 2);
+    var y = h - pad - ((c - min) / range) * (h - pad * 2);
+    return x + "," + y;
+  }).join(" ");
+  return (
+    <svg width={w} height={h} style={{ display: "block" }} role="img" aria-hidden="true">
+      <polyline points={points} fill="none" stroke={props.color || "var(--brand)"} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 /* ── Recipe suggestion templates ── */
 var RECIPE_SUGGESTIONS = [
@@ -918,8 +936,12 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         header: lk === "fr" ? "Saisonnalité" : "Seasonality",
         enableSorting: true,
         accessorFn: function (row) { return row.seasonProfile || "flat"; },
-        cell: function (info) { var sp = SEASON_PROFILES.find(function (s) { return s.value === info.getValue(); }); return sp ? sp.label[lk] : info.getValue(); },
-        meta: { align: "left", formatPrint: function (v) { var sp = SEASON_PROFILES.find(function (s) { return s.value === v; }); return sp ? sp.label.fr : v; } },
+        cell: function (info) {
+          var key = info.getValue();
+          var profile = SEASONALITY_PROFILES[key] || SEASONALITY_PROFILES.flat;
+          return <SeasonSpark coefs={profile.coefs} width={80} height={24} />;
+        },
+        meta: { align: "center", minWidth: 110, formatPrint: function (v) { var sp = SEASON_PROFILES.find(function (s) { return s.value === v; }); return sp ? sp.label.fr : v; } },
       },
       {
         id: "monthlySales",
