@@ -494,6 +494,22 @@ export default {
     production_revenue_title: "Estimated revenue",
     production_revenue_def: "Projected monthly revenue based on selling price and estimated sales volume for each recipe.",
 
+    /* Marketing */
+    cac_title: "Customer Acquisition Cost",
+    cac_def: "The average amount spent on marketing to acquire a new customer. Calculated by dividing ad spend by the number of conversions.",
+    cac_interpret: "A CAC below the average order value is a sign of profitability. If CAC exceeds the value of a customer, optimize campaigns or target a different audience.",
+    cac_aliases: "CAC, Customer Acquisition Cost, cost per acquisition",
+    roas_title: "Return on Ad Spend",
+    roas_def: "The revenue generated for every euro invested in advertising. A ROAS of 3x means 1 euro spent generates 3 euros in revenue.",
+    roas_interpret: "A ROAS above 3x is generally considered good. Between 1x and 3x, the campaign is profitable but can be optimized. Below 1x, you're losing money.",
+    roas_aliases: "ROAS, Return On Ad Spend, ad return",
+    cpc_title: "Cost per Click",
+    cpc_def: "The amount paid each time someone clicks on your ad. Varies by platform and competition on your keywords.",
+    cpc_aliases: "CPC, Cost per Click, click cost",
+    ctr_title: "Click-Through Rate",
+    ctr_def: "The percentage of people who click on your ad after seeing it. A high CTR indicates that your ad is relevant to your audience.",
+    ctr_aliases: "CTR, Click-Through Rate, click rate",
+
     /* Equity / Incentive plans */
     esop_pool_title: "Reserved shares",
     esop_pool_def: "The total number of shares your company's general assembly has authorized for distribution to employees. Defines the maximum size of the incentive plan.",

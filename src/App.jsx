@@ -1004,6 +1004,7 @@ export default function App() {
                 setCosts={setCosts}
                 streams={streams}
                 onOpenModuleSettings={function () { setTab("set", { section: "modules" }); }}
+                chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb}
               />
             ) : null}
 

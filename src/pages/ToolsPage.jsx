@@ -3631,13 +3631,25 @@ function TrademarkTool({ lk }) {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 var EMPLOYEE_EXTRAS = [
-  { id: "meal_voucher", label: { fr: "Chèques-repas", en: "Meal vouchers" }, monthly: 132, note: { fr: "8€/jour × 16.5j moy.", en: "€8/day × 16.5d avg." } },
-  { id: "eco_voucher", label: { fr: "Éco-chèques", en: "Eco vouchers" }, monthly: 20.83, note: { fr: "250€/an", en: "€250/yr" } },
-  { id: "group_insurance", label: { fr: "Assurance groupe", en: "Group insurance" }, monthly: 0, pctGross: 0.03, note: { fr: "~3% du brut", en: "~3% of gross" } },
-  { id: "hospital", label: { fr: "Assurance hospitalisation", en: "Hospital insurance" }, monthly: 45, note: { fr: "~45€/mois", en: "~€45/mo" } },
-  { id: "company_car", label: { fr: "Voiture de société", en: "Company car" }, monthly: 500, note: { fr: "Leasing mensuel", en: "Monthly lease" }, hasSub: "car" },
-  { id: "phone", label: { fr: "Téléphone + abonnement", en: "Phone + plan" }, monthly: 40, note: { fr: "~40€/mois", en: "~€40/mo" } },
-  { id: "laptop", label: { fr: "Laptop", en: "Laptop" }, monthly: 42, note: { fr: "~500€/an", en: "~€500/yr" } },
+  { id: "meal_voucher", label: { fr: "Chèques-repas", en: "Meal vouchers" }, monthly: 132, note: { fr: "8€/jour × 16.5j moy.", en: "€8/day × 16.5d avg." }, group: "vouchers" },
+  { id: "eco_voucher", label: { fr: "Éco-chèques", en: "Eco vouchers" }, monthly: 20.83, note: { fr: "250€/an", en: "€250/yr" }, group: "vouchers" },
+  { id: "group_insurance", label: { fr: "Assurance groupe", en: "Group insurance" }, monthly: 0, pctGross: 0.03, note: { fr: "~3% du brut", en: "~3% of gross" }, group: "insurance" },
+  { id: "hospital", label: { fr: "Assurance hospitalisation", en: "Hospital insurance" }, monthly: 45, note: { fr: "~45€/mois", en: "~€45/mo" }, group: "insurance" },
+  { id: "company_car", label: { fr: "Voiture de société", en: "Company car" }, monthly: 500, note: { fr: "Leasing mensuel", en: "Monthly lease" }, hasSub: "car", group: "mobility" },
+  { id: "phone", label: { fr: "Téléphone + abonnement", en: "Phone + plan" }, monthly: 40, note: { fr: "~40€/mois", en: "~€40/mo" }, group: "equipment" },
+  { id: "laptop", label: { fr: "Laptop", en: "Laptop" }, monthly: 42, note: { fr: "~500€/an", en: "~€500/yr" }, group: "equipment" },
+  { id: "internet", label: { fr: "Internet domicile", en: "Home internet" }, monthly: 20, note: { fr: "~20€/mois", en: "~€20/mo" }, group: "equipment" },
+  { id: "parking", label: { fr: "Place de parking", en: "Parking space" }, monthly: 80, note: { fr: "~80€/mois", en: "~€80/mo" }, group: "mobility" },
+  { id: "training", label: { fr: "Budget formation", en: "Training budget" }, monthly: 83, note: { fr: "~1000€/an", en: "~€1000/yr" }, group: "development" },
+  { id: "wellness", label: { fr: "Budget bien-être", en: "Wellness budget" }, monthly: 25, note: { fr: "~300€/an", en: "~€300/yr" }, group: "development" },
+];
+
+var EXTRA_GROUPS = [
+  { id: "vouchers", label: { fr: "Chèques & titres", en: "Vouchers & passes" } },
+  { id: "insurance", label: { fr: "Assurances", en: "Insurance" } },
+  { id: "mobility", label: { fr: "Mobilité", en: "Mobility" } },
+  { id: "equipment", label: { fr: "Équipement", en: "Equipment" } },
+  { id: "development", label: { fr: "Développement", en: "Development" } },
 ];
 
 var TRANSPORT_TYPES = [
@@ -3806,7 +3818,7 @@ function EmployeeCostTool({ lk, chartPalette, chartPaletteMode, onChartPaletteCh
               setTransport(Object.assign({}, TRANSPORT_DEF));
               setTelework(Object.assign({}, TELEWORK_DEF));
             }} iconLeading={<ArrowsClockwise size={14} weight="bold" />}>
-              Reset
+              {lk === "fr" ? "Réinitialiser" : "Reset"}
             </Button>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -3825,7 +3837,8 @@ function EmployeeCostTool({ lk, chartPalette, chartPaletteMode, onChartPaletteCh
                       type="number" min="0" step={isPct ? "0.5" : "5"}
                       value={isPct ? ((e.amount || ex.pctGross) * 100) : (e.amount || 0)}
                       onChange={function (ev) { var v = Number(ev.target.value) || 0; setExtraAmount(ex.id, isPct ? v / 100 : v); }}
-                      style={Object.assign({}, INPUT_STYLE, { width: 72, height: 30, textAlign: "right", fontSize: 12, fontVariantNumeric: "tabular-nums", opacity: e.on ? 1 : 0.4, transition: "opacity 0.12s" })}
+                      disabled={!e.on}
+                      style={Object.assign({}, INPUT_STYLE, { width: 72, height: 30, textAlign: "right", fontSize: 12, fontVariantNumeric: "tabular-nums", opacity: e.on ? 1 : 0.4, cursor: e.on ? "text" : "not-allowed", transition: "opacity 0.12s" })}
                     />
                     <span style={{ fontSize: 11, color: "var(--text-faint)", minWidth: 36 }}>{isPct ? (lk === "fr" ? "% du brut" : "% of gross") : "€/" + (lk === "fr" ? "mois" : "mo")}</span>
                   </div>
@@ -5165,7 +5178,7 @@ export default function ToolsPage({ activeTab, chartPalette, chartPaletteMode, o
   if (activeTab === "tool_foodcost") {
     return (
       <PageLayout
-        title={lk === "fr" ? "Calculateur de marge" : "Margin Calculator"}
+        title={lk === "fr" ? "Calculateur de rentabilité" : "Profitability Calculator"}
         subtitle={lk === "fr" ? "Calculez rapidement le coût matière et la marge de vos produits." : "Quickly calculate material cost and margin for your products."}
         icon={CookingPot}
       >

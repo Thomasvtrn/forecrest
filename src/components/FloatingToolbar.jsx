@@ -5,9 +5,9 @@ import {
   ChartPie, CurrencyCircleDollar, Receipt, Package, BookOpen,
   Lock, Megaphone, CloudArrowUp, ShoppingCart,
   ChartDonut, UsersFour, Sparkle, CirclesThreePlus,
-  ArrowSquareOut, Star, ShieldCheck,
-  Newspaper, Crosshair, Wallet, Funnel, ChartBar,
-  UserCircle, Briefcase, CookingPot, CurrencyDollar, Percent,
+  ArrowSquareOut, Star, Gavel, Target,
+  Newspaper, Crosshair, CurrencyEur, Funnel, ChartBar,
+  UserCircle, Briefcase, CurrencyDollar, Percent,
 } from "@phosphor-icons/react";
 import { useT, useLang, useTheme } from "../context";
 
@@ -21,24 +21,24 @@ var CORE_ITEMS = [
 ];
 
 var MARKETING_ITEMS = [
-  { id: "marketing", icon: ChartBar },
+  { id: "marketing", icon: Target },
   { id: "mkt_campaigns", icon: Newspaper },
   { id: "mkt_channels", icon: Crosshair },
-  { id: "mkt_budget", icon: Wallet },
+  { id: "mkt_budget", icon: CurrencyEur },
   { id: "mkt_conversions", icon: Funnel },
 ];
 
 var TOOLS_ITEMS = [
   { id: "tool_employee", icon: UserCircle },
   { id: "tool_freelance", icon: Briefcase },
-  { id: "tool_foodcost", icon: CookingPot },
-  { id: "tool_trademark", icon: ShieldCheck },
+  { id: "tool_foodcost", icon: Sparkle },
+  { id: "tool_trademark", icon: Gavel },
   { id: "tool_vat", icon: Percent },
 ];
 
 var MODULES = [
   { id: "core", icon: ChartPie, items: CORE_ITEMS, locked: false },
-  { id: "marketing", icon: Megaphone, items: MARKETING_ITEMS, locked: true },
+  { id: "marketing", icon: Target, items: MARKETING_ITEMS, locked: true },
   { id: "cloud_infra", icon: CloudArrowUp, items: [], locked: true },
   { id: "ecommerce", icon: ShoppingCart, items: [], locked: true },
   { id: "saas_metrics", icon: ChartDonut, items: [], locked: true },

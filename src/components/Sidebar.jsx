@@ -7,7 +7,7 @@ import {
   HourglassSimple, ClockCounterClockwise, Translate,
   GearSix, Sun, Moon, UploadSimple, List, X,
   CurrencyEur, TreeStructure, Gavel, Buildings, SquaresFour, Package,
-  TrendUp, ChartLine, Megaphone, Sparkle, Lock,
+  TrendUp, ChartLine, Megaphone, Sparkle, Lock, Target,
   Crosshair, Funnel, Newspaper, Handshake, CirclesThreePlus, QrCode, Globe,
   UserCircle, Briefcase, CookingPot, CurrencyDollar, Percent,
 } from "@phosphor-icons/react";
@@ -91,7 +91,7 @@ var NAV_ICON_MAP = {
   tool_currency: CurrencyDollar,
   tool_vat: Percent,
   tool_trademark: Gavel,
-  marketing: Megaphone,
+  marketing: Target,
   mkt_campaigns: Newspaper,
   mkt_channels: Crosshair,
   mkt_budget: CurrencyEur,

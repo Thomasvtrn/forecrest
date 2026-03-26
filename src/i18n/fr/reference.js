@@ -497,6 +497,22 @@ export default {
     production_revenue_title: "CA estimé",
     production_revenue_def: "Chiffre d'affaires mensuel projeté basé sur le prix de vente et le volume de ventes estimé pour chaque recette.",
 
+    /* Marketing */
+    cac_title: "Coût d'acquisition client",
+    cac_def: "Le montant moyen dépensé en marketing pour acquérir un nouveau client. Se calcule en divisant le budget publicitaire par le nombre de conversions.",
+    cac_interpret: "Un CAC inférieur au panier moyen est signe de rentabilité. Si le CAC dépasse la valeur d'un client, il faut optimiser les campagnes ou cibler un public différent.",
+    cac_aliases: "CAC, Customer Acquisition Cost, coût par acquisition",
+    roas_title: "Retour sur investissement publicitaire",
+    roas_def: "Le revenu généré pour chaque euro investi en publicité. Un ROAS de 3x signifie que 1 € dépensé génère 3 € de chiffre d'affaires.",
+    roas_interpret: "Un ROAS supérieur à 3x est généralement considéré comme bon. Entre 1x et 3x, la campagne est rentable mais peut être optimisée. En dessous de 1x, vous perdez de l'argent.",
+    roas_aliases: "ROAS, Return On Ad Spend, retour pub",
+    cpc_title: "Coût par clic",
+    cpc_def: "Le montant payé à chaque fois qu'un internaute clique sur votre publicité. Varie selon la plateforme et la concurrence sur vos mots-clés.",
+    cpc_aliases: "CPC, Cost per Click, prix du clic",
+    ctr_title: "Taux de clic",
+    ctr_def: "Le pourcentage de personnes qui cliquent sur votre publicité après l'avoir vue. Un CTR élevé indique que votre annonce est pertinente pour votre audience.",
+    ctr_aliases: "CTR, Click-Through Rate, taux de clic",
+
     /* Equity / Incentive plans */
     esop_pool_title: "Parts réservées",
     esop_pool_def: "Le nombre total de parts que l'assemblée générale de votre entreprise a autorisé à distribuer aux employés. Définit la taille maximale du plan d'intéressement.",

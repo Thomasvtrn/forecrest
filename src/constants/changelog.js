@@ -4,6 +4,16 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.30.0",
+    date: "2026-03-27",
+    entries: [
+      { type: "feature", key: "cl_marketing_channels" },
+      { type: "feature", key: "cl_marketing_campaigns" },
+      { type: "feature", key: "cl_marketing_budget" },
+      { type: "feature", key: "cl_marketing_conversions" },
+    ],
+  },
+  {
     version: "0.1.29.1",
     date: "2026-03-26",
     entries: [

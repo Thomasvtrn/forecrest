@@ -103,6 +103,12 @@ export var GLOSSARY = [
   { id: "production_margin", category: "kpi", formula: "selling_price - unit_cost", related: ["production_material_cost", "ebitda"], location: { tab: "production" } },
   { id: "production_revenue", category: "revenue", formula: "sum(monthly_sales × selling_price)", related: ["monthly_revenue", "production_margin"], location: { tab: "production" } },
 
+  /* Marketing */
+  { id: "cac", category: "kpi", formula: "monthly_budget / conversions", related: ["roas", "cpc"], location: { tab: "marketing" }, interpret: true, aliases: true },
+  { id: "roas", category: "kpi", formula: "(conversions × avg_order_value) / monthly_budget", related: ["cac", "cpc"], location: { tab: "marketing" }, interpret: true, aliases: true },
+  { id: "cpc", category: "costs", formula: "monthly_budget / clicks", related: ["ctr", "cac"], location: { tab: "marketing" }, aliases: true },
+  { id: "ctr", category: "kpi", formula: "clicks / impressions × 100", related: ["cpc", "roas"], location: { tab: "marketing" }, aliases: true },
+
 ];
 
 export var GLOSSARY_MAP = {};
