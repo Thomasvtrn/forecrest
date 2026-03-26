@@ -478,12 +478,24 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
 
             <div style={{ marginBottom: "var(--sp-3)" }}>
               <label style={labelStyle}>{lk === "fr" ? "Nom" : "Name"} <span style={{ color: "var(--color-error)" }}>*</span></label>
-              <input value={name} onChange={function (e) { setName(e.target.value); }} placeholder={lk === "fr" ? "ex. Burger maison" : "e.g. Homemade burger"} style={inputStyle} />
+              <input value={name} onChange={function (e) { setName(e.target.value); }} placeholder={(function () {
+                var ph = {
+                  starter: { fr: "ex. Soupe de saison", en: "e.g. Seasonal soup" },
+                  main: { fr: "ex. Risotto aux champignons", en: "e.g. Mushroom risotto" },
+                  dessert: { fr: "ex. Fondant au chocolat", en: "e.g. Chocolate lava cake" },
+                  drink: { fr: "ex. Smoothie vert", en: "e.g. Green smoothie" },
+                  snack: { fr: "ex. Granola maison", en: "e.g. Homemade granola" },
+                  product: { fr: "ex. Bougie parfumée", en: "e.g. Scented candle" },
+                };
+                var p = ph[category] || ph.main;
+                return p[lk];
+              })()} style={inputStyle} />
             </div>
 
+            {visibleCategories.length > 1 ? (
             <div style={{ marginBottom: "var(--sp-3)" }}>
               <label style={labelStyle}>{lk === "fr" ? "Catégorie" : "Category"}</label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(" + Math.min(visibleCategories.length, 4) + ", 1fr)", gap: "var(--sp-2)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--sp-2)" }}>
                 {visibleCategories.map(function (ck) {
                   var m = RECIPE_CATEGORIES[ck];
                   var CIcon = m.icon;
@@ -502,6 +514,7 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
                 })}
               </div>
             </div>
+            ) : null}
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-3)", marginBottom: "var(--sp-3)" }}>
               <div>
