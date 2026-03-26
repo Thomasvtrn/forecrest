@@ -2,12 +2,12 @@ import { useState, useMemo, useEffect } from "react";
 import {
   Plus, Trash, PencilSimple, Copy, ToggleRight,
   CookingPot, Cookie, Clock, Lightning, Factory,
-  ForkKnife, Coffee, BowlFood, Wine, Hamburger, Cube, Wrench,
+  ForkKnife, BowlFood, Wine, Hamburger, Cube, Wrench,
   Oven, Fire, Snowflake, Prohibit,
-  Package, Scales, Sparkle, Trophy,
+  Sparkle, Trophy,
 } from "@phosphor-icons/react";
 import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, ActionBtn, SearchInput, FilterDropdown, Wizard, ExportButtons, DevOptionsButton, Modal, ModalBody, ModalFooter, CurrencyInput, NumberField, SelectDropdown, DonutChart, ChartLegend, PaletteToggle } from "../components";
-import { eur, eurShort, pct, makeId } from "../utils";
+import { eur, eurShort, makeId } from "../utils";
 import { useT, useLang, useDevMode } from "../context";
 
 /* ── Shared styles ── */
@@ -281,28 +281,35 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
     }));
   }
 
+  var stepTitles = [
+    { title: lk === "fr" ? "Informations de base" : "Basic information", desc: lk === "fr" ? "Décrivez votre recette ou produit." : "Describe your recipe or product." },
+    { title: lk === "fr" ? "Ingrédients" : "Ingredients", desc: lk === "fr" ? "Ajoutez les ingrédients et leurs coûts." : "Add ingredients and their costs." },
+    { title: lk === "fr" ? "Coûts et résumé" : "Costs & summary", desc: lk === "fr" ? "Temps de préparation, énergie et vue d'ensemble." : "Prep time, energy and overview." },
+  ];
+
   return (
-    <Modal open onClose={onClose} size="lg" height={560}>
-      {/* Progress bar */}
-      <div style={{ padding: "var(--sp-4) var(--sp-5) 0" }}>
+    <Modal open onClose={onClose} size="lg" height={580}>
+      {/* Fixed header: progress bar + step title */}
+      <div style={{ padding: "var(--sp-4) var(--sp-5) var(--sp-3)", borderBottom: "1px solid var(--border-light)", flexShrink: 0 }}>
         <div style={{ display: "flex", gap: 4, marginBottom: "var(--sp-4)" }}>
           {[0, 1, 2].map(function (i) {
             return <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= step ? "var(--brand)" : "var(--bg-hover)", transition: "background 0.2s" }} />;
           })}
         </div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: 4, textAlign: "center" }}>
+          {stepTitles[step].title}
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center" }}>
+          {stepTitles[step].desc}
+        </div>
       </div>
 
       <ModalBody>
+        <div style={{ paddingTop: "var(--sp-3)" }} />
 
         {/* Step 1 — Basic info */}
         {step === 0 ? (
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: "var(--sp-1)", textAlign: "center" }}>
-              {lk === "fr" ? "Informations de base" : "Basic information"}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "var(--sp-4)", textAlign: "center" }}>
-              {lk === "fr" ? "Décrivez votre recette ou produit." : "Describe your recipe or product."}
-            </div>
 
             {/* Suggestion templates — only when creating */}
             {!recipe ? (
@@ -400,13 +407,6 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
         {/* Step 2 — Ingredients */}
         {step === 1 ? (
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: "var(--sp-1)", textAlign: "center" }}>
-              {lk === "fr" ? "Ingrédients" : "Ingredients"}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "var(--sp-4)", textAlign: "center" }}>
-              {lk === "fr" ? "Listez les matières premières nécessaires à cette recette." : "List the raw materials needed for this recipe."}
-            </div>
-
             {ingredients.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-2)", marginBottom: "var(--sp-3)" }}>
                 {/* Header row */}
@@ -423,12 +423,9 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
                       <input value={ing.name} onChange={function (e) { updateIngredient(idx, "name", e.target.value); }}
                         placeholder={lk === "fr" ? "ex. Farine" : "e.g. Flour"}
                         style={Object.assign({}, inputStyle, { height: 36, fontSize: 13 })} />
-                      <CurrencyInput value={ing.cost} onChange={function (v) { updateIngredient(idx, "cost", v); }} suffix="€" width="100%" />
-                      <NumberField value={ing.qty} onChange={function (v) { updateIngredient(idx, "qty", v); }} min={0} max={99999} step={0.01} width="100%" />
-                      <select value={ing.unit} onChange={function (e) { updateIngredient(idx, "unit", e.target.value); }}
-                        style={Object.assign({}, inputStyle, { height: 36, fontSize: 13, padding: "0 var(--sp-2)" })}>
-                        {UNIT_OPTIONS.map(function (u) { return <option key={u.value} value={u.value}>{u.label}</option>; })}
-                      </select>
+                      <CurrencyInput value={ing.cost} onChange={function (v) { updateIngredient(idx, "cost", v); }} suffix="€" width="100%" decimals={2} />
+                      <NumberField value={ing.qty} onChange={function (v) { updateIngredient(idx, "qty", v); }} min={0} max={99999} step={0.001} width="100%" />
+                      <SelectDropdown value={ing.unit} onChange={function (v) { updateIngredient(idx, "unit", v); }} options={UNIT_OPTIONS} height={36} />
                       <button type="button" onClick={function () { removeIngredient(idx); }}
                         style={{ width: 32, height: 32, border: "none", borderRadius: "var(--r-sm)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)" }}
                         onMouseEnter={function (e) { e.currentTarget.style.color = "var(--color-error)"; }}
@@ -461,13 +458,6 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
         {/* Step 3 — Costs + Summary */}
         {step === 2 ? (
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: "var(--sp-1)", textAlign: "center" }}>
-              {lk === "fr" ? "Coûts & résumé" : "Costs & summary"}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "var(--sp-4)", textAlign: "center" }}>
-              {lk === "fr" ? "Temps de préparation, énergie et emballage." : "Prep time, energy and packaging costs."}
-            </div>
-
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-3)", marginBottom: "var(--sp-3)" }}>
               <div>
                 <label style={labelStyle}>{lk === "fr" ? "Temps de préparation (min)" : "Prep time (min)"}</label>
@@ -476,9 +466,7 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
               </div>
               <div>
                 <label style={labelStyle}>{lk === "fr" ? "Type d'énergie" : "Energy type"}</label>
-                <select value={energyType} onChange={function (e) { setEnergyType(e.target.value); }} style={inputStyle}>
-                  {Object.keys(ENERGY_TYPES).map(function (ek) { return <option key={ek} value={ek}>{ENERGY_TYPES[ek].label[lk]}</option>; })}
-                </select>
+                <SelectDropdown value={energyType} onChange={function (v) { setEnergyType(v); }} options={Object.keys(ENERGY_TYPES).map(function (ek) { return { value: ek, label: ENERGY_TYPES[ek].label[lk] }; })} />
                 <div style={hintStyle}>{lk === "fr" ? "Coût énergie : " + eur(energyCost) : "Energy cost: " + eur(energyCost)}</div>
               </div>
             </div>
