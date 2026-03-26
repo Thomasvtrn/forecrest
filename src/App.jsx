@@ -896,6 +896,7 @@ export default function App() {
                 annVatC={annVatC} annVatD={annVatD}
                 cfg={cfg} setCfg={setCfg} setTab={setTab}
                 streams={streams} setStreams={setStreams}
+                costs={costs} setCosts={setCosts}
                 chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb}
               />
             ) : null}
@@ -903,7 +904,7 @@ export default function App() {
             {tab === "opex" ? (
               <OperatingCostsPage
                 costs={costs} setCosts={setCosts}
-                cfg={cfg}
+                cfg={cfg} streams={streams}
                 totalRevenue={totalRevenue} debts={debts} assets={assets} sals={sals} crowdfunding={crowdfunding} stocks={stocks} setTab={setTab} onNavigate={navigateWithToast} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb}
                 pendingAdd={pendingAdd && pendingAdd.target === "opex" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd}
                 pendingEdit={pendingEdit && pendingEdit.target === "opex" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit}

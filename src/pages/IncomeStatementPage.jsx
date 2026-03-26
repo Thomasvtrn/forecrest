@@ -218,7 +218,21 @@ export default function IncomeStatementPage({ streams, costs, cfg, setCfg, asset
           if (item.freq === "once") {
             annual = y === 1 ? annual : 0;
           } else {
-            annual = annual * costMultiplier;
+            /* Per-charge growth: use individual rate, linked stream rate, or global escalation */
+            var chargeGrowth;
+            if (item.linkedStream) {
+              var linkedItem = null;
+              (streams || []).forEach(function (sc) {
+                (sc.items || []).forEach(function (s) {
+                  if (s.id === item.linkedStream) linkedItem = s;
+                });
+              });
+              chargeGrowth = linkedItem ? (linkedItem.growthRate != null ? linkedItem.growthRate : revenueGrowth) : escalation;
+            } else {
+              chargeGrowth = item.growthRate != null ? item.growthRate : escalation;
+            }
+            var chargeMultiplier = Math.pow(1 + chargeGrowth, y - 1);
+            annual = annual * chargeMultiplier;
           }
 
           if (catKey === "purchases") {

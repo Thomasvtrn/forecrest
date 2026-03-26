@@ -108,6 +108,7 @@ export default {
     // v0.1.25.0
     // v0.1.26.0
     cl_per_stream_growth: "Taux de croissance par flux de revenus — chaque source peut avoir son propre taux annuel, utilisé dans le Compte de résultat et la Trésorerie",
+    cl_per_charge_growth: "Croissance par charge — taux individuels, liaison aux flux de revenus, indicateur mixte",
     cl_mixed_growth_indicator: "Indicateur « Mixte » sur la page Trésorerie quand les flux ont des taux différents, avec bouton de réinitialisation",
     cl_hardcoded_growth_rate: "Correction : le taux de croissance dans le graphique Seuil de rentabilité utilise maintenant le taux configuré au lieu de 10% en dur",
     cl_qr_refactor: "QR Code : 9 types (URL, texte, email, téléphone, WiFi, vCard, SMS, localisation, événement), thèmes de couleurs, logo au centre, copie presse-papier, historique persisté",

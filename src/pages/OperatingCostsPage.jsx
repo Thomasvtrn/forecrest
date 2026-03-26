@@ -5,8 +5,8 @@ import {
   Megaphone, ShieldCheck, Wrench, Briefcase, Car,
   PencilSimple, Copy, ShoppingCart, Bank, DotsThreeCircle,
 } from "@phosphor-icons/react";
-import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, FinanceLink, PaletteToggle, ChartLegend, ExportButtons, DevOptionsButton, DonutChart, ModalSideNav, Modal, ModalFooter, CurrencyInput } from "../components";
-import { eur, eurShort, makeId } from "../utils";
+import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, FinanceLink, PaletteToggle, ChartLegend, ExportButtons, DevOptionsButton, DonutChart, ModalSideNav, Modal, ModalFooter, CurrencyInput, NumberField } from "../components";
+import { eur, eurShort, makeId, pct } from "../utils";
 import { useT, useLang, useDevMode, useTheme } from "../context";
 import { PCMN_OPTS, COST_FREQUENCIES } from "../constants/defaults";
 
@@ -265,7 +265,7 @@ function costAnnual(item) {
 }
 
 /* ── Cost Modal — split panel like revenue StreamModal ── */
-function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaultCategory, initialLabel }) {
+function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaultCategory, initialLabel, cfg, streams }) {
   var t = useT().opex || {};
   var { dark: isDark } = useTheme();
   var isEdit = !!initialData;
@@ -290,10 +290,30 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
   var [units, setUnits] = useState(isEdit ? (initialData.u || 1) : 1);
   var [pcmn, setPcmn] = useState(isEdit ? (initialData.pcmn || "6160") : COST_CATEGORY_META.premises.pcmn);
   var [tva, setTva] = useState(isEdit && initialData.tva !== undefined ? initialData.tva : null);
+  var [growthRate, setGrowthRate] = useState(isEdit ? (initialData.growthRate != null ? initialData.growthRate : 0) : ((cfg && cfg.costEscalation) || 0.02));
+  var [linkedStream, setLinkedStream] = useState(isEdit ? (initialData.linkedStream || "") : "");
 
   var lk = lang === "en" ? "en" : "fr";
   var meta = COST_CATEGORY_META[selected] || COST_CATEGORY_META.other;
   var Icon = meta.icon;
+
+  /* Resolve linked stream's growth rate */
+  var linkedStreamRate = null;
+  if (linkedStream) {
+    (streams || []).forEach(function (cat) {
+      (cat.items || []).forEach(function (s) {
+        if (s.id === linkedStream) linkedStreamRate = s.growthRate != null ? s.growthRate : ((cfg && cfg.revenueGrowthRate) || 0.10);
+      });
+    });
+  }
+
+  /* Build stream options for linkedStream dropdown */
+  var streamOptions = [{ value: "", label: lk === "fr" ? "Aucun" : "None" }];
+  (streams || []).forEach(function (cat) {
+    (cat.items || []).forEach(function (s) {
+      if (s.l) streamOptions.push({ value: s.id, label: s.l });
+    });
+  });
 
   function handleSelect(catKey) {
     setSelected(catKey);
@@ -327,6 +347,8 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
       sub: "",
       type: meta.type || "exploitation",
       tva: tva,
+      growthRate: linkedStream ? (linkedStreamRate != null ? linkedStreamRate : growthRate) : growthRate,
+      linkedStream: linkedStream || undefined,
     };
     PCMN_OPTS.forEach(function (o) { if (o.c === pcmn) data.sub = o.l; });
     if (isEdit && onSave) { onSave(data); } else if (onAdd) { onAdd(data); }
@@ -511,6 +533,40 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
               </div>
             ) : null}
 
+            {/* Growth rate */}
+            {freq !== "once" ? (
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>
+                  {lk === "fr" ? "Croissance annuelle" : "Annual growth"}
+                </label>
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
+                  <NumberField value={linkedStream ? (linkedStreamRate != null ? linkedStreamRate : 0) : growthRate} onChange={setGrowthRate} min={-0.50} max={2} step={0.05} width="80px" pct disabled={!!linkedStream} />
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: "var(--sp-1)", lineHeight: 1.3 }}>
+                  {linkedStream
+                    ? (lk === "fr" ? "Taux hérité du flux de revenus lié." : "Rate inherited from the linked revenue stream.")
+                    : (lk === "fr" ? "Taux d'évolution annuel de cette charge. Par défaut, reprend l'inflation globale." : "Annual change rate for this cost. Defaults to global inflation.")}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Linked stream */}
+            {freq !== "once" && streamOptions.length > 1 ? (
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>
+                  {lk === "fr" ? "Lié au flux" : "Linked to stream"}
+                </label>
+                <SelectDropdown
+                  value={linkedStream}
+                  onChange={function (v) { setLinkedStream(v || ""); }}
+                  options={streamOptions}
+                />
+                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: "var(--sp-1)", lineHeight: 1.3 }}>
+                  {lk === "fr" ? "Si lié, cette charge évolue au même rythme que le flux de revenus sélectionné." : "If linked, this cost evolves at the same rate as the selected revenue stream."}
+                </div>
+              </div>
+            ) : null}
+
             {/* Estimation */}
             {amount > 0 ? (
               <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -539,7 +595,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
 }
 
 /* ── Main Page ── */
-export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue, debts, assets, sals, crowdfunding, stocks, setTab, onNavigate, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
+export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue, debts, assets, sals, crowdfunding, stocks, streams, setTab, onNavigate, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
   var { lang } = useLang();
   var t = useT().opex || {};
   var [showCreate, setShowCreate] = useState(null); /* null = closed, string = default category key */
@@ -1031,6 +1087,23 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
         },
       },
       {
+        id: "growthRate",
+        accessorFn: function (row) { return row.growthRate || 0; },
+        header: lk === "fr" ? "Croissance" : "Growth",
+        enableSorting: true,
+        meta: { align: "right", minWidth: 90 },
+        cell: function (info) {
+          var row = info.row.original;
+          if (row.freq === "once" || row._readOnly) return <span style={{ color: "var(--text-faint)" }}>—</span>;
+          var val = info.getValue();
+          var label = pct(val);
+          if (row.linkedStream) {
+            label = label + " *";
+          }
+          return label;
+        },
+      },
+      {
         id: "actions", header: "", enableSorting: false,
         meta: { align: "center", compactPadding: true, width: 1 },
         cell: function (info) {
@@ -1152,7 +1225,7 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
       subtitle={t.page_subtitle || "Manage your business expenses."}
       icon={Receipt} iconColor="#EF4444"
     >
-      {showCreate ? <CostModal onAdd={addCost} onClose={function () { setShowCreate(null); setPendingLabel(""); }} lang={lang} showPcmn={cfg && cfg.showPcmn} defaultCategory={typeof showCreate === "string" ? showCreate : undefined} initialLabel={pendingLabel} /> : null}
+      {showCreate ? <CostModal onAdd={addCost} onClose={function () { setShowCreate(null); setPendingLabel(""); }} lang={lang} showPcmn={cfg && cfg.showPcmn} defaultCategory={typeof showCreate === "string" ? showCreate : undefined} initialLabel={pendingLabel} cfg={cfg} streams={streams} /> : null}
 
       {editingCost ? <CostModal
         initialData={editingCost.item}
@@ -1160,6 +1233,8 @@ export default function OperatingCostsPage({ costs, setCosts, cfg, totalRevenue,
         showPcmn={cfg && cfg.showPcmn}
         onClose={function () { setEditingCost(null); }}
         lang={lang}
+        cfg={cfg}
+        streams={streams}
       /> : null}
 
       {pendingDelete ? <ConfirmDeleteModal
