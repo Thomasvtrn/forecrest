@@ -1134,13 +1134,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         }}
       /> : null}
 
-      {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-        <KpiCard label={lk === "fr" ? "Recettes" : "Recipes"} value={String(kpiCount)} glossaryKey="production_count" />
-        <KpiCard label={lk === "fr" ? "Coût matière moyen" : "Avg. material cost"} value={avgMaterialCost > 0 ? avgMaterialCost.toFixed(1) + "%" : "—"} glossaryKey="production_material_cost" badge={avgMaterialCost > 0 ? { color: avgMaterialCost < 25 ? "success" : avgMaterialCost <= 35 ? "warning" : "error", label: avgMaterialCost < 25 ? (lk === "fr" ? "Excellent" : "Excellent") : avgMaterialCost <= 35 ? "OK" : (lk === "fr" ? "Élevé" : "High") } : undefined} />
-        <KpiCard label={lk === "fr" ? "Marge moyenne" : "Avg. margin"} value={avgMargin !== 0 ? eur(avgMargin) : "—"} glossaryKey="production_margin" />
-        <KpiCard label={lk === "fr" ? "CA estimé / mois" : "Est. revenue / mo"} value={estimatedRevenue > 0 ? eurShort(estimatedRevenue) : "—"} fullValue={estimatedRevenue > 0 ? eur(estimatedRevenue) : undefined} glossaryKey="production_revenue" />
-      </div>
+      {/* KPIs temporarily removed for debugging */}
 
       {/* Insights section temporarily removed for debugging */}
 
