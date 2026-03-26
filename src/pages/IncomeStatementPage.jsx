@@ -218,7 +218,17 @@ export default function IncomeStatementPage({ streams, costs, cfg, setCfg, asset
       var costByCategory = {};
       (costs || []).forEach(function (cat) {
         (cat.items || []).forEach(function (item) {
-          var catKey = item._category || "other";
+          /* Determine category from PCMN code or explicit _category field:
+             60xx = purchases (achats & approvisionnements)
+             63xx = depreciation (handled separately via assets)
+             65xx = financial charges (handled via annualInterest)
+             61xx-64xx = operating expenses */
+          var pcmn = item.pcmn || "";
+          var catKey = item._category
+            || (pcmn.charAt(0) === "6" && pcmn.charAt(1) === "0" ? "purchases"
+            : pcmn.charAt(0) === "6" && pcmn.charAt(1) === "3" ? "depreciation"
+            : pcmn.charAt(0) === "6" && pcmn.charAt(1) === "5" ? "financial_auto"
+            : "other");
           var a = item.pu ? (item.a || 0) * (item.u || 1) : (item.a || 0);
           var freqMap = { monthly: 12, quarterly: 4, annual: 1, once: 1 };
           var annual = a * (freqMap[item.freq] || 12);
