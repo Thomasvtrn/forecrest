@@ -418,24 +418,24 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
   ];
 
   return (
-    <Modal open onClose={onClose} size="lg" height={580}>
-      {/* Fixed header: progress bar + step title */}
-      <div style={{ padding: "var(--sp-4) var(--sp-5) var(--sp-3)", borderBottom: "1px solid var(--border-light)", flexShrink: 0 }}>
-        <div style={{ display: "flex", gap: 4, marginBottom: "var(--sp-4)" }}>
+    <Modal open onClose={onClose} size="lg" height={520}>
+      {/* Progress bar only */}
+      <div style={{ padding: "0 var(--sp-5)", paddingTop: "var(--sp-4)" }}>
+        <div style={{ display: "flex", gap: 4 }}>
           {[0, 1, 2].map(function (i) {
             return <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= step ? "var(--brand)" : "var(--bg-hover)", transition: "background 0.2s" }} />;
           })}
         </div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: 4, textAlign: "center" }}>
-          {stepTitles[step].title}
-        </div>
-        <div style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center" }}>
-          {stepTitles[step].desc}
-        </div>
       </div>
 
-      <ModalBody>
-        <div style={{ paddingTop: "var(--sp-3)" }} />
+      <div className="custom-scroll" style={{ flex: 1, overflowY: "auto", padding: "var(--sp-5)", scrollbarWidth: "thin", scrollbarColor: "var(--border-strong) transparent" }}>
+        {/* Step title inside scroll */}
+        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: 4, textAlign: "center" }}>
+          {stepTitles[step].title}
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "var(--sp-4)", textAlign: "center" }}>
+          {stepTitles[step].desc}
+        </div>
 
         {/* Step 1 — Basic info */}
         {step === 0 ? (
@@ -679,7 +679,7 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
             ) : null}
           </div>
         ) : null}
-      </ModalBody>
+      </div>
 
       {/* Navigation */}
       <ModalFooter>
