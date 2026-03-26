@@ -103,6 +103,12 @@ export default {
     // v0.1.23.0
     // v0.1.24.0
     // v0.1.25.0
+    // v0.1.26.1
+    cl_cost_frequency_opcosts: "Fix: operational costs now respect frequency (quarterly, annual, one-time) instead of treating everything as monthly",
+    cl_income_statement_stock_variation: "Fix: stock_variation and capitalized_production behaviors are no longer multiplied by 12 in Income Statement",
+    cl_accounting_cost_frequency: "Fix: PCMN chart of accounts respects cost frequency for monthly and annual amounts",
+    cl_balance_sheet_remaining_debt: "Fix: remaining debt balance uses correct amortizing loan formula instead of linear approximation",
+    cl_cost_item_monthly_util: "Shared costItemMonthly utility to prevent cost frequency calculation duplication",
     // v0.1.26.0
     cl_per_stream_growth: "Per-stream growth rates — each revenue source can have its own annual rate, used in Income Statement and Cash Flow projections",
     cl_per_charge_growth: "Per-charge growth — individual rates, revenue stream linking, mixed indicator",

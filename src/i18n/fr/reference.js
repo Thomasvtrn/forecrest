@@ -106,6 +106,12 @@ export default {
     // v0.1.23.0
     // v0.1.24.0
     // v0.1.25.0
+    // v0.1.26.1
+    cl_cost_frequency_opcosts: "Correction : les coûts opérationnels respectent désormais la fréquence (trimestrielle, annuelle, ponctuelle) au lieu de tout traiter comme mensuel",
+    cl_income_statement_stock_variation: "Correction : les comportements stock_variation et capitalized_production ne sont plus multipliés par 12 dans le Compte de résultat",
+    cl_accounting_cost_frequency: "Correction : le plan comptable (PCMN) prend en compte la fréquence des charges pour les montants mensuels et annuels",
+    cl_balance_sheet_remaining_debt: "Correction : le solde restant des emprunts utilise la formule d'amortissement correcte au lieu d'une approximation linéaire",
+    cl_cost_item_monthly_util: "Utilitaire partagé costItemMonthly pour éviter la duplication du calcul de fréquence des charges",
     // v0.1.26.0
     cl_per_stream_growth: "Taux de croissance par flux de revenus — chaque source peut avoir son propre taux annuel, utilisé dans le Compte de résultat et la Trésorerie",
     cl_per_charge_growth: "Croissance par charge — taux individuels, liaison aux flux de revenus, indicateur mixte",

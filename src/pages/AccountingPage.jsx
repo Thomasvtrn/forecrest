@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useCallback } from "react";
 import { BookOpen, Shuffle, Printer, Download, CaretDown, CaretUp, FileText, Receipt, Table, Eye, ArrowSquareOut } from "@phosphor-icons/react";
 import { Card, NumberField, PageLayout, Button, KpiCard, SearchInput, FilterDropdown, DevVal, ButtonUtility, InfoTip } from "../components";
-import { eur, eurShort, pct, salCalc, calcMonthlyPatronal, calcSocialDue, calcStreamAnnual, calcStreamPcmn } from "../utils";
+import { eur, eurShort, pct, salCalc, costItemMonthly, calcMonthlyPatronal, calcSocialDue, calcStreamAnnual, calcStreamPcmn } from "../utils";
 import { useT, useLang, useDevMode, useGlossary, useTheme } from "../context";
 import { PCMN_OPTS, GLOSSARY } from "../constants";
 
@@ -117,7 +117,7 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
     // Cost items
     costs.forEach(function (cat) {
       cat.items.forEach(function (item) {
-        var monthly = item.pu ? item.a * (item.u || 1) : item.a;
+        var monthly = costItemMonthly(item);
         if (monthly <= 0) return;
         var pg = (item.pcmn && item.pcmn.startsWith("2")) ? "equipment" : "opex";
         addEntry(item.pcmn || "6160", item.l, monthly, pg);
@@ -262,7 +262,7 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
   costs.forEach(function (cat) {
     cat.items.forEach(function (item) {
       if (item.pcmn && item.pcmn.startsWith("63")) {
-        depreciationAnnual += (item.pu ? item.a * (item.u || 1) : item.a) * 12;
+        depreciationAnnual += costItemMonthly(item) * 12;
       }
     });
   });
@@ -293,7 +293,7 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
   costs.forEach(function (cat, ci) {
     cat.items.forEach(function (item, ii) {
       if (item.pcmn && item.pcmn.startsWith("2")) {
-        var monthly = item.pu ? item.a * (item.u || 1) : item.a;
+        var monthly = costItemMonthly(item);
         if (monthly <= 0) return;
         var years = item.amortYears || 3;
         var acq = monthly * 12 * years;
@@ -692,7 +692,7 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
   costs.forEach(function (cat) {
     cat.items.forEach(function (item) {
       if (item.sub === "Marketing" || item.pcmn === "6140") {
-        var m = item.pu ? item.a * (item.u || 1) : item.a;
+        var m = costItemMonthly(item);
         currentMarketingAnnual += m * 12;
       }
     });

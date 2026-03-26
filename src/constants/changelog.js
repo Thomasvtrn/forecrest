@@ -4,6 +4,17 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.26.1",
+    date: "2026-03-26",
+    entries: [
+      { type: "fix", key: "cl_cost_frequency_opcosts" },
+      { type: "fix", key: "cl_income_statement_stock_variation" },
+      { type: "fix", key: "cl_accounting_cost_frequency" },
+      { type: "fix", key: "cl_balance_sheet_remaining_debt" },
+      { type: "improvement", key: "cl_cost_item_monthly_util" },
+    ],
+  },
+  {
     version: "0.1.26.0",
     date: "2026-03-26",
     entries: [

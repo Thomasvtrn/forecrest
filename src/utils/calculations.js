@@ -1,3 +1,14 @@
+// ── Cost item → monthly value (frequency-aware) ─────────────────────────────
+// Converts any cost item to its correct monthly equivalent based on freq.
+
+export function costItemMonthly(item) {
+  var base = item.pu ? (item.a || 0) * (item.u || 1) : (item.a || 0);
+  if (item.freq === "quarterly") return base / 3;
+  if (item.freq === "annual") return base / 12;
+  if (item.freq === "once") return 0;
+  return base;
+}
+
 // ── Belgian ISOC (corporate tax) ─────────────────────────────────────────────
 // PME reduced rate: 20% on first 100K, 25% on excess.
 // Reserve legale: 5% of net profit, capped at 10% of capital social.

@@ -195,7 +195,7 @@ export default function IncomeStatementPage({ streams, costs, cfg, setCfg, asset
           var streamMultiplier = Math.pow(1 + streamGrowth, y - 1);
           if (b === "one_time" || b === "subsidy") {
             annual = y === 1 ? price * qty : 0;
-          } else if (b === "project" || b === "daily_rate") {
+          } else if (b === "project" || b === "daily_rate" || b === "stock_variation" || b === "capitalized_production") {
             annual = price * qty * streamMultiplier;
           } else {
             annual = price * qty * 12 * streamMultiplier;

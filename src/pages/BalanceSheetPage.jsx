@@ -303,7 +303,15 @@ export default function BalanceSheetPage({ cfg, setCfg, assets, stocks, debts, s
           monthlyPayment = d.amount / d.duration;
         }
         var elapsed = (d.elapsed || 0) + y * 12;
-        var remaining = Math.max(0, d.amount - monthlyPayment * elapsed);
+        var remaining;
+        if (d.rate > 0 && d.duration > 0) {
+          var rr = d.rate / 12;
+          var pow = Math.pow(1 + rr, d.duration);
+          var powN = Math.pow(1 + rr, elapsed);
+          remaining = elapsed >= d.duration ? 0 : d.amount * (pow - powN) / (pow - 1);
+        } else {
+          remaining = Math.max(0, d.amount - (d.amount / Math.max(d.duration, 1)) * elapsed);
+        }
         var monthsLeft = d.duration - elapsed;
         if (monthsLeft > 12) {
           ltDebt += remaining - monthlyPayment * 12;
@@ -386,10 +394,10 @@ export default function BalanceSheetPage({ cfg, setCfg, assets, stocks, debts, s
 
       {/* ── 1. KPI cards ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-        <KpiCard label={t.kpi_assets || "Total actif Y1"} value={y1.totalAssets > 0 ? eurShort(y1.totalAssets) : "\u2014"} fullValue={y1.totalAssets > 0 ? eur(y1.totalAssets) : undefined} />
-        <KpiCard label={t.kpi_equity || "Capitaux propres Y1"} value={eurShort(y1.totalEquity || 0)} fullValue={eur(y1.totalEquity || 0)} />
-        <KpiCard label={t.kpi_cash || "Tresorerie Y1"} value={eurShort(y1.cash || 0)} fullValue={eur(y1.cash || 0)} glossaryKey="treasury" />
-        <KpiCard label={t.kpi_debt_ratio || "Ratio d'endettement"} value={y1.totalEquity > 0 ? ((y1.ltDebt + y1.totalStDebt) / y1.totalEquity).toFixed(2) + "x" : "\u2014"} />
+        <KpiCard label={t.kpi_assets || "Total actif Y1"} value={y1.totalAssets != null ? eurShort(y1.totalAssets) : "\u2014"} fullValue={y1.totalAssets != null ? eur(y1.totalAssets) : undefined} />
+        <KpiCard label={t.kpi_equity || "Capitaux propres Y1"} value={y1.totalEquity != null ? eurShort(y1.totalEquity) : "\u2014"} fullValue={y1.totalEquity != null ? eur(y1.totalEquity) : undefined} />
+        <KpiCard label={t.kpi_cash || "Tresorerie Y1"} value={y1.cash != null ? eurShort(y1.cash) : "\u2014"} fullValue={y1.cash != null ? eur(y1.cash) : undefined} glossaryKey="treasury" />
+        <KpiCard label={t.kpi_debt_ratio || "Ratio d'endettement"} value={y1.totalEquity !== 0 ? (Math.abs((y1.ltDebt + y1.totalStDebt) / y1.totalEquity)).toFixed(2) + "x" : "\u2014"} />
       </div>
 
       {/* ── 2. Chart card — stacked bar composition ── */}

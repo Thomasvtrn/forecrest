@@ -14,7 +14,7 @@ import AccountantBar from "./components/AccountantBar";
 import Sidebar from "./components/Sidebar";
 import useHistory from "./hooks/useHistory";
 
-import { salCalc, calcIsoc, grantCalc, calcBusinessKpis, calcTotalRevenue, calcAffiliationMonthly, calcActualRaised, calcStreamAnnual, migrateStreamsV1ToV2, load, save, setCurrencyDisplay, calcVatCollected, calcVatDeductible, makeId } from "./utils";
+import { costItemMonthly, salCalc, calcIsoc, grantCalc, calcBusinessKpis, calcTotalRevenue, calcAffiliationMonthly, calcActualRaised, calcStreamAnnual, migrateStreamsV1ToV2, load, save, setCurrencyDisplay, calcVatCollected, calcVatDeductible, makeId } from "./utils";
 
 var OnboardingWizard = lazy(function () { return import("./components/OnboardingWizard"); });
 var ExportImportModal = lazy(function () { return import("./components/ExportImportModal"); });
@@ -531,7 +531,7 @@ export default function App() {
   var opCosts = useMemo(function () {
     var t = 0;
     costs.forEach(function (c) {
-      c.items.forEach(function (i) { t += i.pu ? i.a * (i.u || 1) : i.a; });
+      c.items.forEach(function (i) { t += costItemMonthly(i); });
     });
     return t;
   }, [costs]);
