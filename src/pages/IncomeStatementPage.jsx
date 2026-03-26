@@ -3,7 +3,7 @@ import { CaretDown, CaretUp, TreeStructure } from "@phosphor-icons/react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { PageLayout, KpiCard, SelectDropdown, NumberField, PnlCascade, PaletteToggle } from "../components";
 import { eur, eurShort, calcStockValue, calcStockVariation } from "../utils";
-import { useT } from "../context";
+import { useT, useLang } from "../context";
 
 /**
  * Compte de resultat previsionnel — PCMN belge
@@ -19,7 +19,12 @@ function ChartTooltip(props) {
     <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", padding: "var(--sp-2) var(--sp-3)", fontSize: 12 }}>
       <div style={{ fontWeight: 600, marginBottom: 4 }}>{props.label}</div>
       {props.payload.map(function (entry) {
-        return <div key={entry.dataKey} style={{ color: entry.color }}>{entry.name}: {eur(entry.value)}</div>;
+        return (
+          <div key={entry.dataKey} style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-secondary)" }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: entry.color, flexShrink: 0 }} />
+            {entry.name}: {eur(entry.value)}
+          </div>
+        );
       })}
     </div>
   );
@@ -156,8 +161,10 @@ function YearColumn({ year, data, showPcmn, t }) {
 
 /* ── Main page component ─────────────────────────── */
 
-export default function IncomeStatementPage({ streams, costs, cfg, setCfg, assets, stocks, salCosts, annualInterest, chartPaletteMode, onChartPaletteChange, accentRgb }) {
+export default function IncomeStatementPage({ streams, costs, cfg, setCfg, assets, stocks, salCosts, annualInterest, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb }) {
   var t = useT().income_statement || {};
+  var { lang } = useLang();
+  var lk = lang === "en" ? "en" : "fr";
   var [horizon, setHorizon] = useState(3);
   var showPcmn = cfg.showPcmn;
 
@@ -312,7 +319,7 @@ export default function IncomeStatementPage({ streams, costs, cfg, setCfg, asset
   var chartData = useMemo(function () {
     return yearData.map(function (d) {
       return {
-        name: "Y" + d.year,
+        name: (lk === "fr" ? "Année " : "Year ") + d.year,
         revenue: d.revenue,
         costs: d.opex + d.salaries + d.purchases + d.depreciation + d.interest + d.isoc,
       };
@@ -360,9 +367,9 @@ export default function IncomeStatementPage({ streams, costs, cfg, setCfg, asset
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--text-muted)" }} />
               <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} tickFormatter={function (v) { return eurShort(v); }} />
               <Tooltip content={ChartTooltip} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="revenue" name={t.total_revenue || "Revenus"} fill="#E8431A" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="costs" name={t.total_costs || "Charges"} fill="#6B7280" radius={[3, 3, 0, 0]} />
+              <Legend wrapperStyle={{ fontSize: 11 }} formatter={function (value) { return <span style={{ color: "var(--text-secondary)" }}>{value}</span>; }} />
+              <Bar dataKey="revenue" name={t.total_revenue || "Revenus"} fill={chartPalette[0 % chartPalette.length]} radius={[3, 3, 0, 0]} />
+              <Bar dataKey="costs" name={t.total_costs || "Charges"} fill={chartPalette[7 % chartPalette.length]} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

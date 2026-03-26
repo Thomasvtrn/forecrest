@@ -18,7 +18,12 @@ function ChartTooltip(props) {
     <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", padding: "var(--sp-2) var(--sp-3)", fontSize: 12 }}>
       <div style={{ fontWeight: 600, marginBottom: 4 }}>{props.label}</div>
       {props.payload.map(function (entry) {
-        return <div key={entry.dataKey} style={{ color: entry.color }}>{entry.name}: {eur(entry.value)}</div>;
+        return (
+          <div key={entry.dataKey} style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-secondary)" }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: entry.color, flexShrink: 0 }} />
+            {entry.name}: {eur(entry.value)}
+          </div>
+        );
       })}
     </div>
   );
@@ -224,7 +229,7 @@ function FinancingPlan({ cfg, assets, debts, stocks, y1, showPcmn, t }) {
   );
 }
 
-export default function BalanceSheetPage({ cfg, setCfg, assets, stocks, debts, sals, totalRevenue, monthlyCosts, annVatC, annVatD, annualInterest, chartPaletteMode, onChartPaletteChange, accentRgb }) {
+export default function BalanceSheetPage({ cfg, setCfg, assets, stocks, debts, sals, totalRevenue, monthlyCosts, annVatC, annVatD, annualInterest, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb }) {
   var t = useT().balance_sheet || {};
   var [horizon, setHorizon] = useState(3);
   var [showDetail, setShowDetail] = useState(false);
@@ -410,16 +415,16 @@ export default function BalanceSheetPage({ cfg, setCfg, assets, stocks, debts, s
             <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--text-muted)" }} />
             <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} tickFormatter={function (v) { return eurShort(v); }} />
             <Tooltip content={<ChartTooltip />} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend wrapperStyle={{ fontSize: 11 }} formatter={function (value) { return <span style={{ color: "var(--text-secondary)" }}>{value}</span>; }} />
             {/* Assets side */}
-            <Bar dataKey="netAssets" name={t.net_assets || "Immobilisations nettes"} stackId="assets" fill="#8B5CF6" />
-            <Bar dataKey="stocks" name={t.stocks || "Stocks"} stackId="assets" fill="#F59E0B" />
-            <Bar dataKey="receivables" name={t.receivables || "Creances"} stackId="assets" fill="#3B82F6" />
-            <Bar dataKey="cash" name={t.cash || "Tresorerie"} stackId="assets" fill="#22C55E" />
+            <Bar dataKey="netAssets" name={t.net_assets || "Immobilisations nettes"} stackId="assets" fill={chartPalette[4 % chartPalette.length]} />
+            <Bar dataKey="stocks" name={t.stocks || "Stocks"} stackId="assets" fill={chartPalette[5 % chartPalette.length]} />
+            <Bar dataKey="receivables" name={t.receivables || "Creances"} stackId="assets" fill={chartPalette[1 % chartPalette.length]} />
+            <Bar dataKey="cash" name={t.cash || "Tresorerie"} stackId="assets" fill={chartPalette[2 % chartPalette.length]} />
             {/* Liabilities side */}
-            <Bar dataKey="equity" name={t.equity || "Capitaux propres"} stackId="liabilities" fill="#E8431A" />
-            <Bar dataKey="ltDebt" name={t.lt_debt || "Dettes LT"} stackId="liabilities" fill="#6B7280" />
-            <Bar dataKey="stDebt" name={t.st_debt || "Dettes CT"} stackId="liabilities" fill="#9CA3AF" />
+            <Bar dataKey="equity" name={t.equity || "Capitaux propres"} stackId="liabilities" fill={chartPalette[0 % chartPalette.length]} />
+            <Bar dataKey="ltDebt" name={t.lt_debt || "Dettes LT"} stackId="liabilities" fill={chartPalette[3 % chartPalette.length]} />
+            <Bar dataKey="stDebt" name={t.st_debt || "Dettes CT"} stackId="liabilities" fill={chartPalette[6 % chartPalette.length]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
