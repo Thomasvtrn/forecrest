@@ -889,7 +889,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
 
   /* ── Enhancement 4: Comparison state ── */
   var [comparison, setComparison] = useState(null);
-  var [showAllIngredients, setShowAllIngredients] = useState(false);
+  var [prodTab, setProdTab] = useState("recipes");
 
   /* ── Columns ── */
   var columns = useMemo(function () {
@@ -1334,60 +1334,27 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         </div>
       ) : null}
 
-      {/* Enhancement 3: Ingredient consumption alerts */}
-      {recipes.length > 0 && ingredientConsumption.length > 0 ? (
-        <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)", marginBottom: "var(--gap-lg)" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "var(--sp-3)" }}>
-            {lk === "fr" ? "Consommation des ingrédients" : "Ingredient consumption"}
-          </div>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-            <thead>
-              <tr>
-                {[
-                  lk === "fr" ? "Ingrédient" : "Ingredient",
-                  lk === "fr" ? "Qté / mois" : "Qty / month",
-                  lk === "fr" ? "Coût / mois" : "Cost / month",
-                  lk === "fr" ? "Utilisé dans" : "Used in",
-                ].map(function (h, hi) {
-                  return <th key={hi} style={{ textAlign: hi === 0 ? "left" : "right", fontSize: 10, fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.04em", padding: "0 var(--sp-2) var(--sp-2)", borderBottom: "1px solid var(--border)" }}>{h}</th>;
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              {(showAllIngredients ? ingredientConsumption : ingredientConsumption.slice(0, 5)).map(function (ic, ii) {
-                var isHighCost = ingredientTotalCost > 0 && (ic.totalCost / ingredientTotalCost) > 0.30;
-                return (
-                  <tr key={ii} style={{ background: isHighCost ? "var(--color-warning-bg)" : undefined }}>
-                    <td style={{ padding: "var(--sp-2)", borderBottom: "1px solid var(--border-light)", fontWeight: 500, color: "var(--text-primary)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        {isHighCost ? <Warning size={14} weight="fill" color="var(--color-warning)" /> : null}
-                        {ic.name}
-                      </div>
-                    </td>
-                    <td style={{ padding: "var(--sp-2)", borderBottom: "1px solid var(--border-light)", textAlign: "right", fontVariantNumeric: "tabular-nums", color: "var(--text-secondary)" }}>
-                      {ic.totalQty.toFixed(1)} {ic.unit}
-                    </td>
-                    <td style={{ padding: "var(--sp-2)", borderBottom: "1px solid var(--border-light)", textAlign: "right", fontWeight: 600, fontVariantNumeric: "tabular-nums", color: isHighCost ? "var(--color-warning)" : "var(--text-primary)" }}>
-                      {eur(ic.totalCost)}
-                    </td>
-                    <td style={{ padding: "var(--sp-2)", borderBottom: "1px solid var(--border-light)", textAlign: "right", color: "var(--text-muted)" }}>
-                      {ic.recipeCount} {lk === "fr" ? (ic.recipeCount > 1 ? "recettes" : "recette") : (ic.recipeCount > 1 ? "recipes" : "recipe")}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {ingredientConsumption.length > 5 ? (
-            <button type="button" onClick={function () { setShowAllIngredients(function (v) { return !v; }); }}
-              style={{ border: "none", background: "none", color: "var(--brand)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", padding: "var(--sp-2) 0 0", display: "block" }}>
-              {showAllIngredients
-                ? (lk === "fr" ? "Réduire" : "Collapse")
-                : (lk === "fr" ? "Voir tout (" + ingredientConsumption.length + ")" : "View all (" + ingredientConsumption.length + ")")}
+      {/* Tablist: Recettes / Ingrédients */}
+      <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border-light)", marginBottom: "var(--sp-4)" }}>
+        {["recipes", "ingredients"].map(function (tabKey) {
+          var isActive = prodTab === tabKey;
+          var tabLabels = { recipes: lk === "fr" ? "Recettes" : "Recipes", ingredients: lk === "fr" ? "Ingrédients" : "Ingredients" };
+          var tabCounts = { recipes: recipes.length, ingredients: ingredientConsumption.length };
+          return (
+            <button key={tabKey} type="button" onClick={function () { setProdTab(tabKey); }}
+              style={{
+                padding: "var(--sp-2) var(--sp-4)", border: "none", background: "none",
+                fontSize: 13, fontWeight: isActive ? 600 : 400, cursor: "pointer", fontFamily: "inherit",
+                color: isActive ? "var(--brand)" : "var(--text-muted)",
+                borderBottom: isActive ? "2px solid var(--brand)" : "2px solid transparent",
+                marginBottom: -2, transition: "color 0.15s, border-color 0.15s",
+              }}>
+              {tabLabels[tabKey]}
+              {tabCounts[tabKey] > 0 ? <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 600, color: isActive ? "var(--brand)" : "var(--text-faint)", background: isActive ? "var(--brand-bg)" : "var(--bg-accordion)", padding: "1px 6px", borderRadius: "var(--r-full)" }}>{tabCounts[tabKey]}</span> : null}
             </button>
-          ) : null}
-        </div>
-      ) : null}
+          );
+        })}
+      </div>
 
       {/* Enhancement 4: Comparison card */}
       {comparison ? (
@@ -1451,28 +1418,29 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         </div>
       ) : null}
 
-      {/* DataTable */}
-      <DataTable
-        data={filteredRecipes}
-        columns={columns}
-        toolbar={toolbarNode}
-        emptyState={emptyNode}
-        emptyMinHeight={200}
-        pageSize={10}
-        getRowId={function (row) { return String(row.id); }}
-        selectable
-        onDeleteSelected={bulkDeleteRecipes}
-        selectionExtraActions={function (selectedIds) {
-          var ids = Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; });
-          if (ids.length === 2) {
-            return (
-              <button type="button" onClick={function () {
-                var r1 = recipes.find(function (r) { return String(r.id) === String(ids[0]); });
-                var r2 = recipes.find(function (r) { return String(r.id) === String(ids[1]); });
-                if (r1 && r2) setComparison([r1, r2]);
-              }}
-                style={{
-                  height: 40, padding: "0 20px",
+      {/* Tab: Recipes */}
+      {prodTab === "recipes" ? (
+        <DataTable
+          data={filteredRecipes}
+          columns={columns}
+          toolbar={toolbarNode}
+          emptyState={emptyNode}
+          emptyMinHeight={200}
+          pageSize={10}
+          getRowId={function (row) { return String(row.id); }}
+          selectable
+          onDeleteSelected={bulkDeleteRecipes}
+          selectionExtraActions={function (selectedIds) {
+            var ids = Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; });
+            if (ids.length === 2) {
+              return (
+                <button type="button" onClick={function () {
+                  var r1 = recipes.find(function (r) { return String(r.id) === String(ids[0]); });
+                  var r2 = recipes.find(function (r) { return String(r.id) === String(ids[1]); });
+                  if (r1 && r2) setComparison([r1, r2]);
+                }}
+                  style={{
+                    height: 40, padding: "0 20px",
                   display: "inline-flex", alignItems: "center",
                   border: "2px solid rgba(255,255,255,0.6)",
                   borderRadius: "var(--r-md)",
@@ -1490,8 +1458,84 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
           }
           return null;
         }}
-        scrollable
-      />
+          scrollable
+        />
+      ) : null}
+
+      {/* Tab: Ingredients */}
+      {prodTab === "ingredients" ? (
+        <DataTable
+          data={ingredientConsumption}
+          columns={[
+            {
+              id: "name", accessorKey: "name",
+              header: lk === "fr" ? "Ingrédient" : "Ingredient",
+              enableSorting: true, meta: { align: "left", minWidth: 180, grow: true },
+              cell: function (info) {
+                var ic = info.row.original;
+                var isHigh = ingredientTotalCost > 0 && (ic.totalCost / ingredientTotalCost) > 0.30;
+                return (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    {isHigh ? <Warning size={14} weight="fill" color="var(--color-warning)" /> : null}
+                    <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+                  </div>
+                );
+              },
+            },
+            {
+              id: "unit", accessorKey: "unit",
+              header: lk === "fr" ? "Unité" : "Unit",
+              enableSorting: true, meta: { align: "center" },
+              cell: function (info) { return <Badge color="gray" size="sm">{info.getValue()}</Badge>; },
+            },
+            {
+              id: "totalQty",
+              header: lk === "fr" ? "Qté / mois" : "Qty / month",
+              enableSorting: true, meta: { align: "right" },
+              accessorFn: function (row) { return row.totalQty; },
+              cell: function (info) { return info.getValue().toFixed(1); },
+            },
+            {
+              id: "totalCost",
+              header: lk === "fr" ? "Coût / mois" : "Cost / month",
+              enableSorting: true, meta: { align: "right" },
+              accessorFn: function (row) { return row.totalCost; },
+              cell: function (info) {
+                var v = info.getValue();
+                var ic = info.row.original;
+                var isHigh = ingredientTotalCost > 0 && (v / ingredientTotalCost) > 0.30;
+                return <span style={{ fontWeight: 600, color: isHigh ? "var(--color-warning)" : "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{eur(v)}</span>;
+              },
+            },
+            {
+              id: "pctOfTotal",
+              header: "%",
+              enableSorting: true, meta: { align: "center" },
+              accessorFn: function (row) { return ingredientTotalCost > 0 ? (row.totalCost / ingredientTotalCost) * 100 : 0; },
+              cell: function (info) {
+                var v = info.getValue();
+                return <Badge color={v > 30 ? "warning" : "gray"} size="sm">{v.toFixed(1)}%</Badge>;
+              },
+            },
+            {
+              id: "recipeCount",
+              header: lk === "fr" ? "Recettes" : "Recipes",
+              enableSorting: true, meta: { align: "center" },
+              accessorFn: function (row) { return row.recipeCount; },
+              cell: function (info) { return String(info.getValue()); },
+            },
+          ]}
+          emptyState={
+            <div style={{ textAlign: "center", padding: "var(--sp-6)", color: "var(--text-faint)" }}>
+              {lk === "fr" ? "Ajoutez des recettes avec des ingrédients pour voir la consommation." : "Add recipes with ingredients to see consumption."}
+            </div>
+          }
+          emptyMinHeight={150}
+          pageSize={20}
+          getRowId={function (row, idx) { return String(idx); }}
+          scrollable
+        />
+      ) : null}
     </PageLayout>
   );
 }
