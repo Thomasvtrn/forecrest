@@ -1245,22 +1245,39 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
 
       {/* Insights section — always visible, skeleton when empty */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-          {/* Left column: two donuts stacked */}
+          {/* Left column: gauge + margin donut */}
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-md)" }}>
+            {/* Material cost gauge with per-recipe hover */}
+            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "var(--sp-3)" }}>
+                {lk === "fr" ? "Coût matière moyen" : "Average material cost"}
+              </div>
+              <MaterialCostGauge pct={avgMaterialCost} lk={lk} />
+              {recipes.length > 0 ? (
+                <div style={{ marginTop: "var(--sp-4)", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {recipes.slice().sort(function (a, b) { return calcMaterialCostPct(a, config) - calcMaterialCostPct(b, config); }).map(function (r) {
+                    var pctV = calcMaterialCostPct(r, config);
+                    var col = pctV <= 25 ? "var(--color-success)" : pctV <= 35 ? "var(--color-warning)" : "var(--color-error)";
+                    return (
+                      <div key={r.id} style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", fontSize: 12 }}>
+                        <span style={{ flex: 1, color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                        <div style={{ width: 80, height: 6, borderRadius: 3, background: "var(--bg-accordion)", overflow: "hidden", flexShrink: 0 }}>
+                          <div style={{ height: "100%", width: Math.min(pctV / 50 * 100, 100) + "%", background: col, borderRadius: 3, transition: "width 0.3s" }} />
+                        </div>
+                        <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums", color: col, minWidth: 42, textAlign: "right" }}>{pctV > 0 ? pctV.toFixed(1) + "%" : "\u2014"}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+            {/* Margin by category donut */}
             <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  {lk === "fr" ? "Répartition par catégorie" : "Distribution by category"}
+                  {lk === "fr" ? "Marge par catégorie" : "Margin by category"}
                 </div>
                 <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
-              </div>
-              <ChartLegend palette={chartPalette} distribution={categoryDistribution} meta={RECIPE_CATEGORIES} total={recipes.length} lk={lk}>
-                <DonutChart data={categoryDistribution} palette={chartPalette} />
-              </ChartLegend>
-            </div>
-            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "var(--sp-3)" }}>
-                {lk === "fr" ? "Marge par catégorie" : "Margin by category"}
               </div>
               <ChartLegend palette={chartPalette} distribution={marginByCategory} meta={RECIPE_CATEGORIES} total={Object.values(marginByCategory).reduce(function (a, b) { return a + b; }, 0)} lk={lk}>
                 <DonutChart data={marginByCategory} palette={chartPalette} />
