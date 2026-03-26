@@ -100,7 +100,7 @@ function calcUnitCost(recipe, config) {
   return total / portions;
 }
 
-function calcFoodcostPct(recipe, config) {
+function calcMaterialCostPct(recipe, config) {
   var unitCost = calcUnitCost(recipe, config);
   var price = recipe.sellingPrice || 0;
   if (price <= 0) return 0;
@@ -170,7 +170,7 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
   var wasteAmount = subtotal * ((wastePct || 0) / 100);
   var totalCost = subtotal + wasteAmount;
   var unitCost = totalCost / (portionCount || 1);
-  var foodcostPctVal = sellingPrice > 0 ? (unitCost / sellingPrice) * 100 : 0;
+  var materialCostPctVal = sellingPrice > 0 ? (unitCost / sellingPrice) * 100 : 0;
   var marginVal = sellingPrice - unitCost;
 
   function handleSave() {
@@ -396,9 +396,9 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
                 {sellingPrice > 0 ? (
                   <>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                      <span style={{ color: "var(--text-muted)" }}>Foodcost</span>
-                      <Badge color={foodcostPctVal < 25 ? "success" : foodcostPctVal <= 35 ? "warning" : "error"} size="sm">
-                        {foodcostPctVal.toFixed(1)}%
+                      <span style={{ color: "var(--text-muted)" }}>Coût matière</span>
+                      <Badge color={materialCostPctVal < 25 ? "success" : materialCostPctVal <= 35 ? "warning" : "error"} size="sm">
+                        {materialCostPctVal.toFixed(1)}%
                       </Badge>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
@@ -478,14 +478,14 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     var newRecipe = Object.assign({ id: makeId("rec"), createdAt: new Date().toISOString() }, data);
     var newRecipes = recipes.concat([newRecipe]);
     cfgSet("recipes", newRecipes);
-    syncLinks(newRecipe, newRecipes);
+    syncLinks(newRecipe);
   }
 
   function saveRecipe(idx, data) {
     var nc = recipes.slice();
     nc[idx] = Object.assign({}, nc[idx], data);
     cfgSet("recipes", nc);
-    syncLinks(nc[idx], nc);
+    syncLinks(nc[idx]);
   }
 
   function removeRecipe(idx) {
@@ -494,8 +494,16 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     cfgSet("recipes", newRecipes);
     // Remove linked streams and costs
     if (removed) {
-      setStreams(function (prev) { return prev.filter(function (s) { return s._linkedProduction !== removed.id; }); });
-      setCosts(function (prev) { return prev.filter(function (c) { return c._linkedProduction !== removed.id; }); });
+      setStreams(function (prev) {
+        return (prev || []).map(function (cat) {
+          return Object.assign({}, cat, { items: (cat.items || []).filter(function (s) { return s._linkedProduction !== removed.id; }) });
+        });
+      });
+      setCosts(function (prev) {
+        return (prev || []).map(function (cat) {
+          return Object.assign({}, cat, { items: (cat.items || []).filter(function (c) { return c._linkedProduction !== removed.id; }) });
+        });
+      });
     }
   }
 
@@ -516,90 +524,119 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     ids.forEach(function (id) { idSet[id] = true; });
     var removed = recipes.filter(function (r) { return idSet[String(r.id)]; });
     cfgSet("recipes", recipes.filter(function (r) { return !idSet[String(r.id)]; }));
-    // Clean up linked data
     removed.forEach(function (rem) {
-      setStreams(function (prev) { return prev.filter(function (s) { return s._linkedProduction !== rem.id; }); });
-      setCosts(function (prev) { return prev.filter(function (c) { return c._linkedProduction !== rem.id; }); });
+      setStreams(function (prev) {
+        return (prev || []).map(function (cat) {
+          return Object.assign({}, cat, { items: (cat.items || []).filter(function (s) { return s._linkedProduction !== rem.id; }) });
+        });
+      });
+      setCosts(function (prev) {
+        return (prev || []).map(function (cat) {
+          return Object.assign({}, cat, { items: (cat.items || []).filter(function (c) { return c._linkedProduction !== rem.id; }) });
+        });
+      });
     });
   }
 
   /* ── Auto-link to Revenue Streams and Operating Costs ── */
-  function syncLinks(recipe, allRecipes) {
+  function syncLinks(recipe) {
     if (!recipe) return;
     var recipeId = recipe.id;
 
-    // Revenue link
+    // Revenue link — streams is [{ cat, items }]
     if ((recipe.monthlySales || 0) > 0 && (recipe.sellingPrice || 0) > 0) {
       setStreams(function (prev) {
-        var existing = prev.findIndex(function (s) { return s._linkedProduction === recipeId; });
-        var linked = {
-          id: existing >= 0 ? prev[existing].id : makeId("str"),
-          behavior: "per_transaction",
-          price: recipe.sellingPrice,
-          qty: recipe.monthlySales,
-          l: recipe.name,
-          _linkedProduction: recipeId,
-          _readOnly: true,
-          _linkedPage: "production",
-          tvaRate: recipe.tvaRate || 0.21,
-        };
-        if (existing >= 0) {
-          var nc = prev.slice();
-          nc[existing] = Object.assign({}, nc[existing], linked);
-          return nc;
+        var cats = (prev || []).map(function (cat) {
+          var existIdx = -1;
+          (cat.items || []).forEach(function (s, i) { if (s._linkedProduction === recipeId) existIdx = i; });
+          var linked = {
+            id: existIdx >= 0 ? cat.items[existIdx].id : makeId("str"),
+            behavior: "per_transaction", price: recipe.sellingPrice, qty: recipe.monthlySales,
+            l: recipe.name, _linkedProduction: recipeId, _readOnly: true, _linkedPage: "production",
+            tva: recipe.tvaRate || 0.21, growthRate: 0, seasonProfile: "flat",
+          };
+          if (existIdx >= 0) {
+            var ni = cat.items.slice(); ni[existIdx] = Object.assign({}, ni[existIdx], linked);
+            return Object.assign({}, cat, { items: ni });
+          }
+          return cat;
+        });
+        var found = false;
+        cats.forEach(function (cat) { (cat.items || []).forEach(function (s) { if (s._linkedProduction === recipeId) found = true; }); });
+        if (!found && cats.length > 0) {
+          cats[0] = Object.assign({}, cats[0], { items: (cats[0].items || []).concat([{
+            id: makeId("str"), behavior: "per_transaction", price: recipe.sellingPrice, qty: recipe.monthlySales,
+            l: recipe.name, _linkedProduction: recipeId, _readOnly: true, _linkedPage: "production",
+            tva: recipe.tvaRate || 0.21, growthRate: 0, seasonProfile: "flat",
+          }]) });
         }
-        return prev.concat([linked]);
+        return cats;
       });
     } else {
-      // Remove linked stream if conditions no longer met
-      setStreams(function (prev) { return prev.filter(function (s) { return s._linkedProduction !== recipeId; }); });
+      setStreams(function (prev) {
+        return (prev || []).map(function (cat) {
+          return Object.assign({}, cat, { items: (cat.items || []).filter(function (s) { return s._linkedProduction !== recipeId; }) });
+        });
+      });
     }
 
-    // Charge link — monthly ingredient cost
+    // Charge link — costs is [{ cat, items }]
     var ingCost = calcIngredientCost(recipe.ingredients);
     var portions = recipe.portionCount || 1;
     var monthlyIngCost = (ingCost / portions) * (recipe.monthlySales || 0);
 
     if (monthlyIngCost > 0) {
       setCosts(function (prev) {
-        var existing = prev.findIndex(function (c) { return c._linkedProduction === recipeId; });
-        var linked = {
-          id: existing >= 0 ? prev[existing].id : makeId("cost"),
-          l: (lk === "fr" ? "Ingrédients — " : "Ingredients — ") + recipe.name,
-          a: Math.round(monthlyIngCost * 100) / 100,
-          freq: "monthly",
-          pcmn: "6000",
-          _linkedProduction: recipeId,
-          _readOnly: true,
-          _linkedPage: "production",
-        };
-        if (existing >= 0) {
-          var nc = prev.slice();
-          nc[existing] = Object.assign({}, nc[existing], linked);
-          return nc;
+        var cats = (prev || []).map(function (cat) {
+          var existIdx = -1;
+          (cat.items || []).forEach(function (c, i) { if (c._linkedProduction === recipeId) existIdx = i; });
+          var linked = {
+            id: existIdx >= 0 ? cat.items[existIdx].id : makeId("cost"),
+            l: (lk === "fr" ? "Ingrédients \u2014 " : "Ingredients \u2014 ") + recipe.name,
+            a: Math.round(monthlyIngCost * 100) / 100, freq: "monthly", pcmn: "6000", pu: false, u: 1,
+            _linkedProduction: recipeId, _readOnly: true, _linkedPage: "production",
+          };
+          if (existIdx >= 0) {
+            var ni = cat.items.slice(); ni[existIdx] = Object.assign({}, ni[existIdx], linked);
+            return Object.assign({}, cat, { items: ni });
+          }
+          return cat;
+        });
+        var found = false;
+        cats.forEach(function (cat) { (cat.items || []).forEach(function (c) { if (c._linkedProduction === recipeId) found = true; }); });
+        if (!found && cats.length > 0) {
+          cats[0] = Object.assign({}, cats[0], { items: (cats[0].items || []).concat([{
+            id: makeId("cost"), l: (lk === "fr" ? "Ingrédients \u2014 " : "Ingredients \u2014 ") + recipe.name,
+            a: Math.round(monthlyIngCost * 100) / 100, freq: "monthly", pcmn: "6000", pu: false, u: 1,
+            _linkedProduction: recipeId, _readOnly: true, _linkedPage: "production",
+          }]) });
         }
-        return prev.concat([linked]);
+        return cats;
       });
     } else {
-      setCosts(function (prev) { return prev.filter(function (c) { return c._linkedProduction !== recipeId; }); });
+      setCosts(function (prev) {
+        return (prev || []).map(function (cat) {
+          return Object.assign({}, cat, { items: (cat.items || []).filter(function (c) { return c._linkedProduction !== recipeId; }) });
+        });
+      });
     }
   }
 
   /* ── Sync all recipes on recipe list change ── */
   useEffect(function () {
     if (!cfg.enabled || !recipes.length) return;
-    recipes.forEach(function (r) { syncLinks(r, recipes); });
+    recipes.forEach(function (r) { syncLinks(r); });
   }, []);
 
   /* ── KPIs ── */
   var kpiCount = recipes.length;
 
-  var avgFoodcost = useMemo(function () {
+  var avgMaterialCost = useMemo(function () {
     if (recipes.length === 0) return 0;
     var sum = 0;
     var counted = 0;
     recipes.forEach(function (r) {
-      var fc = calcFoodcostPct(r, config);
+      var fc = calcMaterialCostPct(r, config);
       if ((r.sellingPrice || 0) > 0) { sum += fc; counted++; }
     });
     return counted > 0 ? sum / counted : 0;
@@ -686,10 +723,10 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         },
       },
       {
-        id: "foodcost",
-        header: "Foodcost %",
+        id: "materialCost",
+        header: "Coût matière %",
         enableSorting: true, meta: { align: "center" },
-        accessorFn: function (row) { return calcFoodcostPct(row, config); },
+        accessorFn: function (row) { return calcMaterialCostPct(row, config); },
         cell: function (info) {
           var v = info.getValue();
           if (v <= 0) return <span style={{ color: "var(--text-faint)" }}>—</span>;
@@ -745,7 +782,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     cfgSet("recipes", demoRecipes);
     cfgSet("enabled", true);
     // Sync all links
-    demoRecipes.forEach(function (r) { syncLinks(r, demoRecipes); });
+    demoRecipes.forEach(function (r) { syncLinks(r); });
   }
 
   /* ── Wizard (when not enabled) ── */
@@ -814,7 +851,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
               <div>
                 <label style={labelStyle}>{lk === "fr" ? "Objectif de marge" : "Target margin"}</label>
                 <NumberField value={wizMargin} onChange={setWizMargin} min={0} max={1} step={0.01} width="100%" pct />
-                <div style={hintStyle}>{lk === "fr" ? "La marge visée sur le prix de vente (ex. 70% = foodcost cible 30%)" : "Target margin on selling price (e.g. 70% = 30% foodcost target)"}</div>
+                <div style={hintStyle}>{lk === "fr" ? "La marge visée sur le prix de vente (ex. 70% = coût matière cible 30%)" : "Target margin on selling price (e.g. 70% = 30% material cost target)"}</div>
               </div>
             </div>
           </div>
@@ -935,7 +972,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
         <KpiCard label={lk === "fr" ? "Recettes" : "Recipes"} value={String(kpiCount)} glossaryKey="production_recipes" />
-        <KpiCard label={lk === "fr" ? "Foodcost moyen" : "Avg. foodcost"} value={avgFoodcost > 0 ? avgFoodcost.toFixed(1) + "%" : "—"} glossaryKey="foodcost" badge={avgFoodcost > 0 ? { color: avgFoodcost < 25 ? "success" : avgFoodcost <= 35 ? "warning" : "error", label: avgFoodcost < 25 ? (lk === "fr" ? "Excellent" : "Excellent") : avgFoodcost <= 35 ? "OK" : (lk === "fr" ? "Élevé" : "High") } : undefined} />
+        <KpiCard label={lk === "fr" ? "Coût matière moyen" : "Avg. material cost"} value={avgMaterialCost > 0 ? avgMaterialCost.toFixed(1) + "%" : "—"} glossaryKey="materialCost" badge={avgMaterialCost > 0 ? { color: avgMaterialCost < 25 ? "success" : avgMaterialCost <= 35 ? "warning" : "error", label: avgMaterialCost < 25 ? (lk === "fr" ? "Excellent" : "Excellent") : avgMaterialCost <= 35 ? "OK" : (lk === "fr" ? "Élevé" : "High") } : undefined} />
         <KpiCard label={lk === "fr" ? "Marge moyenne" : "Avg. margin"} value={avgMargin !== 0 ? eur(avgMargin) : "—"} glossaryKey="production_margin" />
         <KpiCard label={lk === "fr" ? "CA estimé / mois" : "Est. revenue / mo"} value={estimatedRevenue > 0 ? eurShort(estimatedRevenue) : "—"} fullValue={estimatedRevenue > 0 ? eur(estimatedRevenue) : undefined} glossaryKey="production_revenue" />
       </div>
