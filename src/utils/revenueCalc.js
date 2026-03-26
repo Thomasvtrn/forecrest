@@ -135,6 +135,28 @@ export function calcTotalMonthlyBreakdown(streams, profiles) {
   return totals;
 }
 
+/**
+ * Annual revenue for a stream in a given projection year.
+ * Applies the stream's own growthRate (compound from year 1).
+ */
+export function calcStreamAnnualYear(item, year) {
+  var base = calcStreamAnnual(item);
+  var rate = item.growthRate || 0;
+  if (year <= 1 || rate === 0) return base;
+  return base * Math.pow(1 + rate, year - 1);
+}
+
+/**
+ * Monthly revenue for a stream in a given projection year.
+ * Applies the stream's own growthRate (compound from year 1).
+ */
+export function calcStreamMonthlyYear(item, year) {
+  var base = calcStreamMonthly(item);
+  var rate = item.growthRate || 0;
+  if (year <= 1 || rate === 0) return base;
+  return base * Math.pow(1 + rate, year - 1);
+}
+
 // Migrate old v1 format (y1-based) to v2 (behavior-based)
 export function migrateStreamsV1ToV2(streams) {
   if (!streams || !streams.length) return streams;

@@ -103,6 +103,10 @@ export default {
     // v0.1.23.0
     // v0.1.24.0
     // v0.1.25.0
+    // v0.1.26.0
+    cl_per_stream_growth: "Per-stream growth rates — each revenue source can have its own annual rate, used in Income Statement and Cash Flow projections",
+    cl_mixed_growth_indicator: "'Mixed' indicator on Cash Flow page when streams have different rates, with reset button",
+    cl_hardcoded_growth_rate: "Fix: break-even chart growth rate now uses configured rate instead of hardcoded 10%",
     cl_qr_refactor: "QR Code: 9 types (URL, text, email, phone, WiFi, vCard, SMS, location, event), color themes, center logo, clipboard copy, persisted history",
     cl_domain_checker_refactor: "Domain checker: 15 extensions, quality score, name suggestions, watchlist with CSV export, search history",
     cl_registrar_drawer: "Integrated registrar comparison with indicative pricing (OVH, Gandi, Namecheap, Infomaniak)",

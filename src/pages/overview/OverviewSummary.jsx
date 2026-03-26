@@ -20,6 +20,7 @@ export default function OverviewSummary({
   totalDebt, debts,
   sparkData, tresoNette,
   setTab, onNavigate,
+  cfg,
 }) {
   /* ─── revenue streams list ─── */
   var streamsList = [];
@@ -36,7 +37,7 @@ export default function OverviewSummary({
         <section style={{ marginBottom: "var(--sp-8)" }}>
           <SectionHeader icon={<ChartLine size={18} weight="bold" />} title={t.breakeven_title || "Seuil de rentabilité"} sub={t.breakeven_sub || "Projection mensuelle revenus vs charges"} />
           <Card>
-            <BreakEvenChart monthlyRevenue={monthlyRevenue} monthlyCosts={monthlyCosts} growthRate={0.10} t={t} />
+            <BreakEvenChart monthlyRevenue={monthlyRevenue} monthlyCosts={monthlyCosts} growthRate={(cfg && cfg.revenueGrowthRate) || 0.10} t={t} />
           </Card>
         </section>
       ) : null}

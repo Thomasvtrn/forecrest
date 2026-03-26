@@ -41,6 +41,7 @@ export function projectFinancials(params) {
   var revenueGrowth = params.revenueGrowthRate || 0;
   var costEscalation = params.costEscalation || 0;
   var months = params.months || 36;
+  var revenueByMonth = params.revenueByMonth || null;
 
   var revGrowthMonthly = Math.pow(1 + revenueGrowth, 1 / 12) - 1;
   var costGrowthMonthly = Math.pow(1 + costEscalation, 1 / 12) - 1;
@@ -51,6 +52,10 @@ export function projectFinancials(params) {
   var cost = monthlyCosts;
 
   for (var m = 1; m <= months; m++) {
+    // If revenueByMonth array is provided, use it instead of compound growth
+    if (revenueByMonth && revenueByMonth[m - 1] != null) {
+      rev = revenueByMonth[m - 1];
+    }
     var net = rev - cost;
     cum += net;
     rows.push({
@@ -61,7 +66,9 @@ export function projectFinancials(params) {
       net: net,
       cumulative: cum,
     });
-    rev = rev * (1 + revGrowthMonthly);
+    if (!revenueByMonth) {
+      rev = rev * (1 + revGrowthMonthly);
+    }
     cost = cost * (1 + costGrowthMonthly);
   }
 

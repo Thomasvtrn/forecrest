@@ -895,6 +895,7 @@ export default function App() {
                 debts={debts} salCosts={salCosts} assets={assets}
                 annVatC={annVatC} annVatD={annVatD}
                 cfg={cfg} setCfg={setCfg} setTab={setTab}
+                streams={streams} setStreams={setStreams}
                 chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb}
               />
             ) : null}

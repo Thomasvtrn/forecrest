@@ -172,7 +172,6 @@ export default function IncomeStatementPage({ streams, costs, cfg, setCfg, asset
     var revenueGrowth = cfg.revenueGrowthRate || 0.10;
 
     for (var y = 1; y <= horizon; y++) {
-      var revMultiplier = Math.pow(1 + revenueGrowth, y - 1);
       var costMultiplier = Math.pow(1 + escalation, y - 1);
 
       /* Revenue breakdown by behavior */
@@ -185,12 +184,14 @@ export default function IncomeStatementPage({ streams, costs, cfg, setCfg, asset
           var annual = 0;
           var price = item.price || 0;
           var qty = item.qty || 0;
+          var streamGrowth = item.growthRate != null ? item.growthRate : revenueGrowth;
+          var streamMultiplier = Math.pow(1 + streamGrowth, y - 1);
           if (b === "one_time" || b === "subsidy") {
             annual = y === 1 ? price * qty : 0;
           } else if (b === "project" || b === "daily_rate") {
-            annual = price * qty * revMultiplier;
+            annual = price * qty * streamMultiplier;
           } else {
-            annual = price * qty * 12 * revMultiplier;
+            annual = price * qty * 12 * streamMultiplier;
           }
           revByBehavior[b] = (revByBehavior[b] || 0) + annual;
           revTotal += annual;

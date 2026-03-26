@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
-import { Wallet } from "@phosphor-icons/react";
+import { Wallet, ArrowsClockwise } from "@phosphor-icons/react";
 import { PAGE_ICON_COLORS } from "../constants";
-import { NumberField, PageLayout, KpiCard, SelectDropdown, CurrencyInput, PaletteToggle } from "../components";
+import { NumberField, PageLayout, KpiCard, SelectDropdown, CurrencyInput, PaletteToggle, ButtonUtility, Modal, ModalFooter, Button } from "../components";
 import { eur, pct, projectFinancials } from "../utils";
-import { useT } from "../context";
+import { calcStreamMonthly } from "../utils/revenueCalc";
+import { useT, useLang } from "../context";
 
 /* ── Projection Chart (SVG) ── */
 function ProjectionChart({ rows, t }) {
@@ -217,11 +218,38 @@ function CashFlowStatement({ proj, monthlyDebtService, salCosts, annVatC, annVat
 }
 
 /* ── Main ── */
-export default function CashFlowPage({ totalRevenue, monthlyCosts, debts, salCosts, assets, annVatC, annVatD, cfg, setCfg, chartPaletteMode, onChartPaletteChange, accentRgb }) {
+export default function CashFlowPage({ totalRevenue, monthlyCosts, debts, salCosts, assets, annVatC, annVatD, cfg, setCfg, streams, setStreams, chartPaletteMode, onChartPaletteChange, accentRgb }) {
   var tAll = useT();
   var t = tAll.cashflow || {};
+  var { lang } = useLang();
+  var lk = lang === "en" ? "en" : "fr";
 
   var [projYears, setProjYears] = useState(cfg.projectionYears || 3);
+  var [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  /* Detect mixed per-stream growth rates */
+  var allStreamRates = useMemo(function () {
+    return (streams || []).flatMap(function (cat) {
+      return (cat.items || []).map(function (item) { return item.growthRate; });
+    }).filter(function (r) { return r != null && r !== 0; });
+  }, [streams]);
+
+  var isMixed = allStreamRates.length > 0 && allStreamRates.some(function (r) {
+    return Math.abs(r - (cfg.revenueGrowthRate || 0.10)) > 0.001;
+  });
+
+  function resetAllGrowthRates() {
+    var globalRate = cfg.revenueGrowthRate || 0.10;
+    setStreams(function (prev) {
+      return JSON.parse(JSON.stringify(prev)).map(function (cat) {
+        cat.items = cat.items.map(function (item) {
+          return Object.assign({}, item, { growthRate: globalRate });
+        });
+        return cat;
+      });
+    });
+    setShowResetConfirm(false);
+  }
 
   var monthlyRev = totalRevenue / 12;
   var monthlyDebtService = calcMonthlyDebtService(debts);
@@ -234,6 +262,32 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, debts, salCos
 
   var projY1 = initialCash + monthlyNet * 12;
 
+  /* Pre-compute monthly revenue array using per-stream growth rates */
+  var revenueByMonth = useMemo(function () {
+    var totalMonths = projYears * 12;
+    var hasCustomRates = (streams || []).some(function (cat) {
+      return (cat.items || []).some(function (item) {
+        return item.growthRate != null && item.growthRate !== 0;
+      });
+    });
+    if (!hasCustomRates) return null;
+    var months = [];
+    for (var m = 1; m <= totalMonths; m++) {
+      var yearIdx = Math.ceil(m / 12);
+      var total = 0;
+      (streams || []).forEach(function (cat) {
+        (cat.items || []).forEach(function (item) {
+          var base = calcStreamMonthly(item);
+          var rate = item.growthRate != null ? item.growthRate : (cfg.revenueGrowthRate || 0.10);
+          var monthlyGrowth = Math.pow(1 + rate, 1 / 12) - 1;
+          total += base * Math.pow(1 + monthlyGrowth, m - 1);
+        });
+      });
+      months.push(total);
+    }
+    return months;
+  }, [streams, cfg.revenueGrowthRate, projYears]);
+
   var proj = useMemo(function () {
     return projectFinancials({
       monthlyRevenue: monthlyRev,
@@ -242,8 +296,9 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, debts, salCos
       revenueGrowthRate: cfg.revenueGrowthRate || 0.10,
       costEscalation: cfg.costEscalation || 0.02,
       months: projYears * 12,
+      revenueByMonth: revenueByMonth,
     });
-  }, [monthlyRev, monthlyCosts, monthlyDebtService, initialCash, cfg.revenueGrowthRate, cfg.costEscalation, projYears]);
+  }, [monthlyRev, monthlyCosts, monthlyDebtService, initialCash, cfg.revenueGrowthRate, cfg.costEscalation, projYears, revenueByMonth]);
 
   function cfgSet(key, val) {
     setCfg(function (prev) { var nc = Object.assign({}, prev); nc[key] = val; return nc; });
@@ -270,8 +325,30 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, debts, salCos
           },
           {
             title: t.growth_title || "Évolution des revenus",
-            hint: t.growth_hint || "De combien vos revenus augmentent chaque année.",
-            input: <NumberField value={cfg.revenueGrowthRate || 0.10} onChange={function (v) { cfgSet("revenueGrowthRate", v); }} min={-0.50} max={5} step={0.05} width="80px" pct />,
+            hint: isMixed
+              ? (lk === "fr" ? "Un ou plusieurs flux de revenus ont un taux de croissance personnalisé." : "One or more revenue streams have a custom growth rate.")
+              : (t.growth_hint || "De combien vos revenus augmentent chaque année."),
+            input: isMixed ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", height: 36,
+                  padding: "0 var(--sp-3)", borderRadius: "var(--r-md)",
+                  border: "1px solid var(--border)", background: "var(--bg-accordion)",
+                  fontSize: 13, fontWeight: 600, color: "var(--text-muted)",
+                  fontStyle: "italic", whiteSpace: "nowrap",
+                }}>
+                  {lk === "fr" ? "Mixte" : "Mixed"}
+                </span>
+                <ButtonUtility
+                  icon={<ArrowsClockwise size={14} weight="bold" />}
+                  title={lk === "fr" ? "Réinitialiser les taux" : "Reset growth rates"}
+                  onClick={function () { setShowResetConfirm(true); }}
+                  size="sm"
+                />
+              </div>
+            ) : (
+              <NumberField value={cfg.revenueGrowthRate || 0.10} onChange={function (v) { cfgSet("revenueGrowthRate", v); }} min={-0.50} max={5} step={0.05} width="80px" pct />
+            ),
           },
           {
             title: t.inflation_title || "Évolution des charges",
@@ -409,6 +486,29 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, debts, salCos
         cfg={cfg}
         t={t}
       />
+
+      {showResetConfirm ? (
+        <Modal open onClose={function () { setShowResetConfirm(false); }} size="sm">
+          <div style={{ padding: "var(--sp-5)" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: "var(--sp-3)", color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>
+              {lk === "fr" ? "Réinitialiser les taux" : "Reset growth rates"}
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+              {lk === "fr"
+                ? "Tous les flux reviendront à " + pct(cfg.revenueGrowthRate || 0.10) + "."
+                : "All streams will reset to " + pct(cfg.revenueGrowthRate || 0.10) + "."}
+            </div>
+          </div>
+          <ModalFooter>
+            <Button color="tertiary" size="lg" onClick={function () { setShowResetConfirm(false); }}>
+              {lk === "fr" ? "Annuler" : "Cancel"}
+            </Button>
+            <Button color="primary" size="lg" onClick={resetAllGrowthRates}>
+              {lk === "fr" ? "Réinitialiser" : "Reset"}
+            </Button>
+          </ModalFooter>
+        </Modal>
+      ) : null}
 
     </PageLayout>
   );

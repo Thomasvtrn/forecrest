@@ -83,6 +83,10 @@ export default {
     runway_covers: "Couvre",
     growth_title: "Évolution des revenus",
     growth_hint: "De combien vos revenus augmentent chaque année.",
+    growth_mixed: "Mixte",
+    growth_mixed_tip: "Un ou plusieurs flux ont un taux personnalisé.",
+    growth_reset_title: "Réinitialiser les taux",
+    growth_reset_confirm: "Réinitialiser",
     inflation_title: "Évolution des charges",
     inflation_hint: "De combien vos charges augmentent chaque année (inflation, embauches, loyer...).",
 

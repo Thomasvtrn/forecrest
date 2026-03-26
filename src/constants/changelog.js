@@ -4,6 +4,15 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.26.0",
+    date: "2026-03-26",
+    entries: [
+      { type: "feature", key: "cl_per_stream_growth" },
+      { type: "improvement", key: "cl_mixed_growth_indicator" },
+      { type: "fix", key: "cl_hardcoded_growth_rate" },
+    ],
+  },
+  {
     version: "0.1.25.0",
     date: "2026-03-25",
     entries: [

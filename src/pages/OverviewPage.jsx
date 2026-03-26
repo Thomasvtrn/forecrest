@@ -143,6 +143,7 @@ export default function OverviewPage({
           totalDebt={totalDebt} debts={debts}
           sparkData={sparkData} tresoNette={tresoNette}
           setTab={setTab} onNavigate={onNavigate}
+          cfg={cfg}
         />
       ) : null}
 

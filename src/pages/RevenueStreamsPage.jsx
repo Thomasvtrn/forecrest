@@ -6,8 +6,8 @@ import {
   PencilSimple, Copy, Timer, Percent, CurrencyCircleDollar, ArrowRight,
   HandCoins,
 } from "@phosphor-icons/react";
-import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, FinanceLink, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, PaletteToggle, ChartLegend, ExportButtons, DevOptionsButton, DonutChart, ModalSideNav, Modal, ModalFooter, CurrencyInput } from "../components";
-import { eur, eurShort, makeId } from "../utils";
+import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, FinanceLink, SearchInput, FilterDropdown, SelectDropdown, ActionBtn, PaletteToggle, ChartLegend, ExportButtons, DevOptionsButton, DonutChart, ModalSideNav, Modal, ModalFooter, CurrencyInput, NumberField } from "../components";
+import { eur, eurShort, pct, makeId } from "../utils";
 import { calcStreamMonthly, calcStreamAnnual, calcTotalMonthlyBreakdown, getDriverLabel, getPriceLabel, REVENUE_BEHAVIORS } from "../utils/revenueCalc";
 import { useT, useLang, useDevMode } from "../context";
 import { REVENUE_BEHAVIOR_TEMPLATES, SEASONALITY_PROFILES, SEASONALITY_DEFAULT } from "../constants/defaults";
@@ -144,8 +144,9 @@ function RequiredLabel({ text, htmlFor }) {
 }
 
 /* ── Split-panel Creation / Edit Modal ── */
-function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, defaultBehavior, showTva, initialLabel }) {
+function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, defaultBehavior, showTva, initialLabel, cfg }) {
   var rt = useT().revenue || {};
+  var lk = lang === "en" ? "en" : "fr";
   var isEdit = !!initialData;
   var primary = PRIMARY_BEHAVIOR[businessType] || "recurring";
   var [selected, setSelected] = useState(isEdit ? initialData.behavior : (defaultBehavior || primary));
@@ -155,6 +156,7 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
   var defaultSeason = SEASONALITY_DEFAULT[businessType] || "flat";
   var [seasonProfile, setSeasonProfile] = useState(isEdit ? (initialData.seasonProfile || defaultSeason) : defaultSeason);
   var [tva, setTva] = useState(isEdit && initialData.tva !== undefined ? initialData.tva : null);
+  var [growthRate, setGrowthRate] = useState(isEdit ? (initialData.growthRate || 0) : ((cfg && cfg.revenueGrowthRate) || 0.10));
 
   var suggestions = (REVENUE_BEHAVIOR_TEMPLATES[businessType] || REVENUE_BEHAVIOR_TEMPLATES.other || []).filter(function (tpl) {
     return tpl.behavior === selected;
@@ -183,7 +185,7 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
       price: price,
       qty: qty,
       seasonProfile: seasonProfile,
-      growthRate: isEdit ? (initialData.growthRate || 0) : 0,
+      growthRate: growthRate,
       tva: tva,
     };
     if (isEdit && onSave) {
@@ -304,6 +306,19 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
                   />
                 </div>
                 <SeasonSpark coefs={SEASONALITY_PROFILES[seasonProfile].coefs} width={100} height={28} />
+              </div>
+            </div>
+
+            {/* Annual growth rate */}
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-muted)", marginBottom: "var(--sp-1)" }}>
+                {lk === "fr" ? "Croissance annuelle" : "Annual growth"}
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
+                <NumberField value={growthRate} onChange={setGrowthRate} min={-0.50} max={2} step={0.05} width="80px" pct />
+              </div>
+              <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: "var(--sp-1)", lineHeight: 1.3 }}>
+                {lk === "fr" ? "Taux de croissance spécifique à ce flux. Par défaut, reprend le taux global." : "Growth rate specific to this stream. Defaults to the global rate."}
               </div>
             </div>
 
@@ -782,6 +797,14 @@ export default function RevenueStreamsPage({ cfg, streams, setStreams, annC, bus
         },
       },
       {
+        id: "growthRate",
+        accessorFn: function (row) { return row.growthRate || 0; },
+        header: lk === "fr" ? "Croissance" : "Growth",
+        enableSorting: true,
+        meta: { align: "right", minWidth: 90 },
+        cell: function (info) { return pct(info.getValue()); },
+      },
+      {
         id: "annual",
         accessorFn: function (row) { return calcStreamAnnual(row); },
         header: t.col_annual || "Annual",
@@ -914,7 +937,7 @@ export default function RevenueStreamsPage({ cfg, streams, setStreams, annC, bus
       icon={CurrencyCircleDollar}
       iconColor="var(--color-success)"
     >
-      {showCreate ? <StreamModal onAdd={addStream} onClose={function () { setShowCreate(null); setPendingLabel(""); }} businessType={businessType || "other"} lang={lang} defaultBehavior={typeof showCreate === "string" ? showCreate : undefined} showTva={showPcmn} initialLabel={pendingLabel} /> : null}
+      {showCreate ? <StreamModal onAdd={addStream} onClose={function () { setShowCreate(null); setPendingLabel(""); }} businessType={businessType || "other"} lang={lang} defaultBehavior={typeof showCreate === "string" ? showCreate : undefined} showTva={showPcmn} initialLabel={pendingLabel} cfg={cfg} /> : null}
 
       {editingStream ? <StreamModal
         initialData={editingStream.item}
@@ -923,6 +946,7 @@ export default function RevenueStreamsPage({ cfg, streams, setStreams, annC, bus
         businessType={businessType || "other"}
         lang={lang}
         showTva={showPcmn}
+        cfg={cfg}
       /> : null}
 
       {pendingDelete ? <ConfirmDeleteModal

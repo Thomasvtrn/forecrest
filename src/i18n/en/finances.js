@@ -80,6 +80,10 @@ export default {
     runway_covers: "Covers",
     growth_title: "Revenue growth",
     growth_hint: "How much your revenue grows each year.",
+    growth_mixed: "Mixed",
+    growth_mixed_tip: "One or more streams have a custom rate.",
+    growth_reset_title: "Reset growth rates",
+    growth_reset_confirm: "Reset",
     inflation_title: "Cost increase",
     inflation_hint: "How much your costs increase each year (inflation, hires, rent...).",
 
