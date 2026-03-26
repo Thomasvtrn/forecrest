@@ -74,24 +74,25 @@ function SeasonSpark(props) {
 
 /* ── Recipe suggestion templates ── */
 var RECIPE_SUGGESTIONS = [
-  { name: { fr: "Burger classique", en: "Classic burger" }, category: "main", ingredients: [
-    { name: "Pain", cost: 0.30, qty: 1, unit: "pcs" },
-    { name: "Steak haché", cost: 1.80, qty: 1, unit: "pcs" },
-    { name: "Fromage", cost: 0.40, qty: 1, unit: "pcs" },
-    { name: "Salade, tomate", cost: 0.30, qty: 1, unit: "pcs" },
-  ], prepTimeMinutes: 15, sellingPrice: 12, tvaRate: 0.12 },
-  { name: { fr: "Salade César", en: "Caesar salad" }, category: "starter", ingredients: [
-    { name: "Laitue", cost: 0.80, qty: 1, unit: "pcs" },
-    { name: "Poulet", cost: 2.50, qty: 150, unit: "g" },
-    { name: "Parmesan", cost: 0.60, qty: 30, unit: "g" },
-    { name: "Croutons", cost: 0.20, qty: 1, unit: "pcs" },
-    { name: "Sauce César", cost: 0.40, qty: 1, unit: "pcs" },
-  ], prepTimeMinutes: 10, sellingPrice: 14, tvaRate: 0.12 },
-  { name: { fr: "Limonade maison", en: "Homemade lemonade" }, category: "drink", ingredients: [
-    { name: "Citrons", cost: 0.60, qty: 3, unit: "pcs" },
-    { name: "Sucre", cost: 0.10, qty: 50, unit: "g" },
-    { name: "Eau gazeuse", cost: 0.30, qty: 500, unit: "mL" },
-  ], prepTimeMinutes: 5, sellingPrice: 5, tvaRate: 0.21 },
+  { name: { fr: "Bowl végétarien", en: "Veggie bowl" }, category: "main", ingredients: [
+    { name: { fr: "Quinoa", en: "Quinoa" }, cost: 4.50, qty: 0.08, unit: "kg" },
+    { name: { fr: "Avocat", en: "Avocado" }, cost: 1.20, qty: 0.5, unit: "pcs" },
+    { name: { fr: "Pois chiches", en: "Chickpeas" }, cost: 1.80, qty: 0.06, unit: "kg" },
+    { name: { fr: "Patate douce", en: "Sweet potato" }, cost: 2.50, qty: 0.12, unit: "kg" },
+    { name: { fr: "Sauce tahini", en: "Tahini sauce" }, cost: 8.00, qty: 0.02, unit: "kg" },
+  ], prepTimeMinutes: 20, sellingPrice: 14.50, tvaRate: 0.12 },
+  { name: { fr: "Soupe de saison", en: "Seasonal soup" }, category: "starter", ingredients: [
+    { name: { fr: "Légumes de saison", en: "Seasonal vegetables" }, cost: 3.00, qty: 0.30, unit: "kg" },
+    { name: { fr: "Oignon", en: "Onion" }, cost: 1.50, qty: 0.08, unit: "kg" },
+    { name: { fr: "Crème fraîche", en: "Fresh cream" }, cost: 3.20, qty: 0.03, unit: "L" },
+    { name: { fr: "Bouillon", en: "Broth" }, cost: 0.80, qty: 0.25, unit: "L" },
+  ], prepTimeMinutes: 25, sellingPrice: 8.50, tvaRate: 0.12 },
+  { name: { fr: "Thé glacé maison", en: "Homemade iced tea" }, category: "drink", ingredients: [
+    { name: { fr: "Thé en vrac", en: "Loose leaf tea" }, cost: 12.00, qty: 0.005, unit: "kg" },
+    { name: { fr: "Miel", en: "Honey" }, cost: 8.00, qty: 0.015, unit: "kg" },
+    { name: { fr: "Citron", en: "Lemon" }, cost: 0.40, qty: 0.5, unit: "pcs" },
+    { name: { fr: "Menthe fraîche", en: "Fresh mint" }, cost: 0.30, qty: 1, unit: "pcs" },
+  ], prepTimeMinutes: 10, sellingPrice: 4.50, tvaRate: 0.21 },
 ];
 
 /* ── Activity types for wizard ── */
@@ -295,7 +296,8 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
     setTvaRate(sug.tvaRate);
     setPrepTimeMinutes(sug.prepTimeMinutes);
     setIngredients(sug.ingredients.map(function (ing) {
-      return { id: makeId("ing"), name: ing.name, cost: ing.cost, qty: ing.qty, unit: ing.unit };
+      var ingName = typeof ing.name === "object" ? ing.name[lk] : ing.name;
+      return { id: makeId("ing"), name: ingName, cost: ing.cost, qty: ing.qty, unit: ing.unit };
     }));
   }
 
