@@ -1142,77 +1142,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         <KpiCard label={lk === "fr" ? "CA estimé / mois" : "Est. revenue / mo"} value={estimatedRevenue > 0 ? eurShort(estimatedRevenue) : "—"} fullValue={estimatedRevenue > 0 ? eur(estimatedRevenue) : undefined} glossaryKey="production_revenue" />
       </div>
 
-      {/* ── Insights section ── */}
-      {false && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-
-        {/* Donut: distribution by category */}
-        <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-              {lk === "fr" ? "Répartition par catégorie" : "Distribution by category"}
-            </div>
-            <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
-          </div>
-          <ChartLegend palette={chartPalette} distribution={categoryDistribution} meta={RECIPE_CATEGORIES} total={recipes.length} lk={lk}>
-            <DonutChart data={categoryDistribution} palette={chartPalette} />
-          </ChartLegend>
-        </div>
-
-        {/* Right column: top recipe by margin */}
-        <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)", display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: "var(--sp-3)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-            {lk === "fr" ? "Meilleure marge" : "Top margin"}
-          </div>
-          {topRecipe ? (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
-                <Trophy size={18} weight="fill" color="var(--color-warning)" />
-                <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif" }}>{topRecipe.recipe.name}</span>
-                <Badge color={(RECIPE_CATEGORIES[topRecipe.recipe.category] || {}).badge || "gray"} size="sm" dot>
-                  {(RECIPE_CATEGORIES[topRecipe.recipe.category] || { label: {} }).label[lk] || topRecipe.recipe.category}
-                </Badge>
-              </div>
-              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
-                <span style={{ fontWeight: 700, color: "var(--color-success)", fontVariantNumeric: "tabular-nums" }}>{eur(topRecipe.margin)}</span>
-                {" "}{lk === "fr" ? "de marge par portion" : "margin per portion"}
-              </div>
-              <div style={{ marginTop: "var(--sp-3)" }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-faint)", textTransform: "uppercase", marginBottom: 4 }}>
-                  {lk === "fr" ? "Coût matière" : "Material cost"}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
-                  <div style={{ flex: 1 }}>
-                    <MaterialCostGauge pct={topRecipe.materialCostPct} lk={lk} mini />
-                  </div>
-                  <Badge color={topRecipe.materialCostPct < 25 ? "success" : topRecipe.materialCostPct <= 35 ? "warning" : "error"} size="sm">
-                    {topRecipe.materialCostPct.toFixed(1)}%
-                  </Badge>
-                </div>
-              </div>
-              <div style={{ marginTop: "var(--sp-3)", padding: "var(--sp-3)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                  <span style={{ color: "var(--text-muted)" }}>{lk === "fr" ? "Prix de vente" : "Selling price"}</span>
-                  <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{eur(topRecipe.recipe.sellingPrice)}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
-                  <span style={{ color: "var(--text-muted)" }}>{lk === "fr" ? "Coût unitaire" : "Unit cost"}</span>
-                  <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{eur(calcUnitCost(topRecipe.recipe, config))}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                  <span style={{ color: "var(--text-muted)" }}>{lk === "fr" ? "Ventes / mois" : "Sales / month"}</span>
-                  <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{topRecipe.recipe.monthlySales || 0}</span>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ textAlign: "center", color: "var(--text-faint)", fontSize: 13 }}>
-                {lk === "fr" ? "Ajoutez des recettes avec un prix de vente" : "Add recipes with a selling price"}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>}
+      {/* Insights section temporarily removed for debugging */}
 
       {/* DataTable */}
       <DataTable
