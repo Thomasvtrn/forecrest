@@ -106,6 +106,10 @@ export default {
     // v0.1.23.0
     // v0.1.24.0
     // v0.1.25.0
+    // v0.1.29.0
+    cl_production_page: "Nouveau : page Production — gestion complète des recettes/produits avec coûts décomposés (ingrédients, main d'œuvre, énergie, emballage)",
+    cl_production_wizard: "Nouveau : wizard 3 étapes pour activer le module Production (paramètres de base, type d'activité)",
+    cl_production_auto_link: "Nouveau : les recettes créent automatiquement des flux de revenus et des charges d'ingrédients liés",
     // v0.1.28.0
     cl_foodcost_recipes: "Nouveau : gestion de recettes avec sauvegarde, DataTable, recherche et filtre par catégorie (Entrée, Plat, Dessert, Boisson, Snack)",
     cl_foodcost_wizard: "Nouveau : wizard 3 étapes pour créer une recette (infos, ingrédients, tarification)",

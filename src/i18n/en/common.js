@@ -106,6 +106,7 @@ export default {
     crowdfunding: "Crowdfunding",
     marketing: "Acquisition",
     affiliation: "Affiliate",
+    production: "Production",
     tools: "Tools",
     tool_qr: "QR Code",
     tool_domain: "Domain name",

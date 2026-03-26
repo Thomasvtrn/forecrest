@@ -4103,9 +4103,9 @@ function EmployeeCostTool({ lk, chartPalette, chartPaletteMode, onChartPaletteCh
                   <td style={{ padding: "6px 0", textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: isBold ? 700 : 500, color: row[2] || "var(--text-primary)" }}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                       {row[1]}
-                      {hasTooltip ? <InfoTip content={lk === "fr"
-                        ? "Le multiplicateur indique combien un employ\u00e9 co\u00fbte r\u00e9ellement par rapport \u00e0 son salaire net. Un multiplicateur de 2,5\u00d7 signifie que pour 1\u20ac net vers\u00e9, l\u2019employeur paie 2,50\u20ac au total."
-                        : "The multiplier shows the real cost of an employee compared to their net salary. A 2.5\u00d7 multiplier means for every \u20ac1 net paid, the employer pays \u20ac2.50 total."
+                      {hasTooltip ? <InfoTip tip={lk === "fr"
+                        ? "Le multiplicateur indique combien un employé coûte réellement par rapport à son salaire net. Un multiplicateur de 2,5× signifie que pour 1€ net versé, l'employeur paie 2,50€ au total."
+                        : "The multiplier shows the real cost of an employee compared to their net salary. A 2.5× multiplier means for every €1 net paid, the employer pays €2.50 total."
                       } /> : null}
                     </span>
                   </td>

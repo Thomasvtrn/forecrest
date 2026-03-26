@@ -81,6 +81,7 @@ var NAV_ICON_MAP = {
   captable: UsersThree,
   pact: ShieldCheck,
   affiliation: Handshake,
+  production: CookingPot,
   tools: CirclesThreePlus,
   tool_qr: QrCode,
   tool_domain: Globe,
@@ -119,7 +120,7 @@ var APP_MODULES = {
     color: "var(--brand)",
     sections: [
       { id: "overview", type: "item" },
-      { id: "activite", type: "group", items: ["streams", "opex", "salaries", "equipment", "stocks"] },
+      { id: "activite", type: "group", items: ["streams", "opex", "salaries", "equipment", "stocks", "production"] },
       { id: "argent", type: "group", items: ["cashflow", "debt", "crowdfunding", "affiliation"] },
       { id: "documents", type: "group", items: ["income_statement", "balance_sheet", "accounting"] },
       { id: "analyse", type: "group", items: ["ratios", "sensitivity"] },

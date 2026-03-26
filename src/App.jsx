@@ -53,6 +53,7 @@ var RoadmapPage = lazy(function () { return import("./pages/RoadmapPage"); });
 var MarketingPage = lazy(function () { return import("./pages/MarketingPage"); });
 var AffiliationPage = lazy(function () { return import("./pages/AffiliationPage"); });
 var ToolsPage = lazy(function () { return import("./pages/ToolsPage"); });
+var ProductionPage = lazy(function () { return import("./pages/ProductionPage"); });
 var SitemapPage = lazy(function () { return import("./pages/SitemapPage"); });
 
 function migrateStreams(streams) {
@@ -121,7 +122,7 @@ export default function App() {
   // Hash-based routing: /#/overview, /#/streams, etc.
   var MARKETING_TABS = ["marketing", "mkt_campaigns", "mkt_channels", "mkt_budget", "mkt_conversions"];
   var TOOLS_TABS = ["tool_qr", "tool_domain", "tool_trademark", "tool_employee", "tool_freelance", "tool_foodcost", "tool_currency", "tool_vat"];
-  var VALID_TABS = ["overview","streams","opex","salaries","cashflow","debt","equipment","accounting","ratios","sensitivity","equity","captable","pact","set","profile","changelog","credits","income_statement","balance_sheet","crowdfunding","stocks","affiliation","tool_qr","tool_domain","tool_trademark","tool_employee","tool_freelance","tool_foodcost","tool_currency","tool_vat","marketing","mkt_campaigns","mkt_channels","mkt_budget","mkt_conversions","dev-tooltips","dev-calc","dev-tokens","dev-roadmap","dev-sitemap"];
+  var VALID_TABS = ["overview","streams","opex","salaries","cashflow","debt","equipment","accounting","ratios","sensitivity","equity","captable","pact","set","profile","changelog","credits","income_statement","balance_sheet","crowdfunding","stocks","affiliation","production","tool_qr","tool_domain","tool_trademark","tool_employee","tool_freelance","tool_foodcost","tool_currency","tool_vat","marketing","mkt_campaigns","mkt_channels","mkt_budget","mkt_conversions","dev-tooltips","dev-calc","dev-tokens","dev-roadmap","dev-sitemap"];
   function getTabFromHash() {
     var h = window.location.hash.replace(/^#\/?/, "").toLowerCase();
     return VALID_TABS.indexOf(h) >= 0 ? h : "overview";
@@ -215,6 +216,7 @@ export default function App() {
   var [stocks, setStocks] = useState([]);
   var [marketing, setMarketing] = useState({});
   var [affiliation, setAffiliation] = useState({});
+  var [production, setProduction] = useState({});
   var [assets, setAssets] = useState([]);
   var [planSections, setPlanSections] = useState(JSON.parse(JSON.stringify(PLAN_SECTIONS_DEF)));
   var [showOnboarding, setShowOnboarding] = useState(false);
@@ -302,6 +304,7 @@ export default function App() {
     if (d.stocks) setStocks(d.stocks);
     if (d.marketing) setMarketing(normalizeMarketingState(d.marketing));
     if (d.affiliation) setAffiliation(d.affiliation);
+    if (d.production) setProduction(d.production);
     if (d.assets) setAssets(d.assets);
     if (d.planSections) setPlanSections(d.planSections);
   }, []);
@@ -380,8 +383,8 @@ export default function App() {
   }, []);
 
   useEffect(function () {
-    if (ready && !showOnboarding) save(STORAGE_KEY, { cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, crowdfunding, stocks, marketing, affiliation });
-  }, [cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, crowdfunding, stocks, marketing, affiliation, ready, showOnboarding]);
+    if (ready && !showOnboarding) save(STORAGE_KEY, { cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, crowdfunding, stocks, marketing, affiliation, production });
+  }, [cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, crowdfunding, stocks, marketing, affiliation, production, ready, showOnboarding]);
 
   // ── Salary → Cap Table sync ──
   useEffect(function () {
@@ -975,6 +978,10 @@ export default function App() {
 
             {tab === "affiliation" ? (
               <AffiliationPage appCfg={cfg} affiliation={affiliation} setAffiliation={setAffiliation} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
+            ) : null}
+
+            {tab === "production" ? (
+              <ProductionPage appCfg={cfg} production={production} setProduction={setProduction} streams={streams} setStreams={setStreams} costs={costs} setCosts={setCosts} sals={sals} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
             ) : null}
 
             {TOOLS_TABS.indexOf(tab) >= 0 ? (

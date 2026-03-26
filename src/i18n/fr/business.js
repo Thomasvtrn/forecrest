@@ -1277,4 +1277,9 @@ export default {
     ct_one_time: "Montant fixe",
     ct_revenue_share: "Partage de revenus",
   },
+
+  production: {
+    page_title: "Production",
+    page_sub: "Calculez le coût de revient de vos recettes et produits.",
+  },
 };

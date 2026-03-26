@@ -21,4 +21,5 @@ export { default as CrowdfundingPage } from "./CrowdfundingPage";
 export { default as StocksPage } from "./StocksPage";
 export { default as IncomeStatementPage } from "./IncomeStatementPage";
 export { default as BalanceSheetPage } from "./BalanceSheetPage";
+export { default as ProductionPage } from "./ProductionPage";
 export { DomainChecker } from "./ToolsPage";

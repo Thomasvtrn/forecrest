@@ -16,6 +16,7 @@ var CORE_ITEMS = [
   { id: "streams", icon: CurrencyCircleDollar },
   { id: "opex", icon: Receipt },
   { id: "stocks", icon: Package },
+  { id: "production", icon: CookingPot },
   { id: "accounting", icon: BookOpen },
 ];
 

@@ -1273,4 +1273,9 @@ export default {
     ct_one_time: "Fixed amount",
     ct_revenue_share: "Revenue share",
   },
+
+  production: {
+    page_title: "Production",
+    page_sub: "Calculate the cost price of your recipes and products.",
+  },
 };

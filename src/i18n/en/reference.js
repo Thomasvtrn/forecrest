@@ -103,6 +103,10 @@ export default {
     // v0.1.23.0
     // v0.1.24.0
     // v0.1.25.0
+    // v0.1.29.0
+    cl_production_page: "New: Production page — full recipe/product management with cost breakdown (ingredients, labor, energy, packaging)",
+    cl_production_wizard: "New: 3-step wizard to activate the Production module (base settings, activity type)",
+    cl_production_auto_link: "New: recipes automatically create linked revenue streams and ingredient cost entries",
     // v0.1.28.0
     cl_foodcost_recipes: "New: recipe management with saving, DataTable, search and category filter (Starter, Main, Dessert, Drink, Snack)",
     cl_foodcost_wizard: "New: 3-step wizard to create a recipe (info, ingredients, pricing)",
