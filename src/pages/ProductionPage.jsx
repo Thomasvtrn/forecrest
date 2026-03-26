@@ -615,7 +615,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     var newRecipe = Object.assign({ id: makeId("rec"), createdAt: new Date().toISOString() }, data);
     var newRecipes = recipes.concat([newRecipe]);
     cfgSet("recipes", newRecipes);
-    syncLinks(newRecipe);
+    /* syncLinks disabled for debugging */
   }
 
   function saveRecipe(idx, data) {
