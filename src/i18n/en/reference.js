@@ -102,6 +102,12 @@ export default {
     changelog_financelink_card_title: "Fix: removed FinanceLink from debt ratio card title (Financing page).",
     // v0.1.23.0
     // v0.1.24.0
+    // v0.1.30.0
+    cl_marketing_channels: "New: Marketing Channels page — full management of acquisition channels (Meta, Google, LinkedIn, TikTok, SEO, Email) with KPIs, donut chart and auto-link to operating costs",
+    cl_marketing_campaigns: "New: Campaigns page — create and track campaigns by channel, objective and status (draft, active, paused, completed)",
+    cl_marketing_budget: "New: Marketing Budget page — global budget view by channel with % of revenue, interactive donut chart and summary table",
+    cl_marketing_conversions: "New: Conversions page — acquisition funnel (impressions → clicks → conversions → revenue) and channel comparison by ROAS",
+
     // v0.1.25.0
     // v0.1.29.0
     cl_production_modal_scroll: "Fix: recipe modal uses custom scrollbar instead of native browser scrollbar",

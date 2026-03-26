@@ -7,7 +7,7 @@ import {
   ChartDonut, UsersFour, Sparkle, CirclesThreePlus,
   ArrowSquareOut, Star, Gavel, Target,
   Newspaper, Crosshair, CurrencyEur, Funnel, ChartBar,
-  UserCircle, Briefcase, CurrencyDollar, Percent,
+  UserCircle, Briefcase, CookingPot, CurrencyDollar, Percent,
 } from "@phosphor-icons/react";
 import { useT, useLang, useTheme } from "../context";
 

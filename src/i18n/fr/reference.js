@@ -105,6 +105,12 @@ export default {
     changelog_financelink_card_title: "Correction : retrait du FinanceLink dans le titre de la carte Ratio d'endettement (page Financement).",
     // v0.1.23.0
     // v0.1.24.0
+    // v0.1.30.0
+    cl_marketing_channels: "Nouveau : page Canaux marketing — gestion complète des canaux d'acquisition (Meta, Google, LinkedIn, TikTok, SEO, E-mailing) avec KPIs, donut et auto-link vers les charges",
+    cl_marketing_campaigns: "Nouveau : page Campagnes — création et suivi de campagnes par canal, objectif et statut (brouillon, active, en pause, terminée)",
+    cl_marketing_budget: "Nouveau : page Budget marketing — vue globale du budget par canal avec % du CA, donut interactif et tableau récapitulatif",
+    cl_marketing_conversions: "Nouveau : page Conversions — entonnoir d'acquisition (impressions → clics → conversions → revenu) et comparaison des canaux par ROAS",
+
     // v0.1.25.0
     // v0.1.29.0
     cl_production_modal_scroll: "Correction : la modale recette utilise un scrollbar personnalisé au lieu du scrollbar natif du navigateur",
