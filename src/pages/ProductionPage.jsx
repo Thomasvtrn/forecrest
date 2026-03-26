@@ -837,12 +837,17 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         });
         var found = false;
         cats.forEach(function (cat) { (cat.items || []).forEach(function (s) { if (s._linkedProduction === recipeId) found = true; }); });
-        if (!found && cats.length > 0) {
-          cats[0] = Object.assign({}, cats[0], { items: (cats[0].items || []).concat([{
+        if (!found) {
+          var newItem = {
             id: makeId("str"), behavior: "per_transaction", price: recipe.sellingPrice, qty: recipe.monthlySales,
             l: recipe.name, _linkedProduction: recipeId, _readOnly: true, _linkedPage: "production",
             tva: recipe.tvaRate || 0.21, growthRate: 0, seasonProfile: recipe.seasonProfile || "flat",
-          }]) });
+          };
+          if (cats.length > 0) {
+            cats[0] = Object.assign({}, cats[0], { items: (cats[0].items || []).concat([newItem]) });
+          } else {
+            cats.push({ cat: lk === "fr" ? "Revenus" : "Revenue", items: [newItem] });
+          }
         }
         return cats;
       });
@@ -878,12 +883,17 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         });
         var found = false;
         cats.forEach(function (cat) { (cat.items || []).forEach(function (c) { if (c._linkedProduction === recipeId) found = true; }); });
-        if (!found && cats.length > 0) {
-          cats[0] = Object.assign({}, cats[0], { items: (cats[0].items || []).concat([{
+        if (!found) {
+          var newCost = {
             id: makeId("cost"), l: (lk === "fr" ? "Ingrédients \u2014 " : "Ingredients \u2014 ") + recipe.name,
             a: Math.round(monthlyIngCost * 100) / 100, freq: "monthly", pcmn: "6000", pu: false, u: 1,
             _linkedProduction: recipeId, _readOnly: true, _linkedPage: "production",
-          }]) });
+          };
+          if (cats.length > 0) {
+            cats[0] = Object.assign({}, cats[0], { items: (cats[0].items || []).concat([newCost]) });
+          } else {
+            cats.push({ cat: lk === "fr" ? "Charges" : "Costs", items: [newCost] });
+          }
         }
         return cats;
       });
