@@ -946,8 +946,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     ];
     cfgSet("recipes", demoRecipes);
     cfgSet("enabled", true);
-    // Sync all links
-    demoRecipes.forEach(function (r) { syncLinks(r); });
   }
 
   /* ── Wizard (when not enabled) ── */
