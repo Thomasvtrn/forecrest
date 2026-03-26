@@ -3776,13 +3776,13 @@ function EmployeeCostTool({ lk, chartPalette, chartPaletteMode, onChartPaletteCh
 
           <p style={Object.assign({}, SECTION_LABEL, { marginTop: "var(--sp-2)" })}>{lk === "fr" ? "Taux de cotisation" : "Contribution rates"}</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--sp-3)" }}>
-            <FormField label={lk === "fr" ? "ONSS salarié (%)" : "Employee ONSS (%)"} hint="13.07%">
+            <FormField label={<span>{lk === "fr" ? "ONSS" : "ONSS"} <FinanceLink term="onss" /> {lk === "fr" ? "salarié (%)" : "employee (%)"}</span>} hint="13.07%">
               {function (p) { return <input {...p} type="number" step="0.01" min="0" max="50" value={onss} onChange={function (e) { setOnss(Number(e.target.value) || 0); }} style={Object.assign({}, p.style, { fontVariantNumeric: "tabular-nums" })} />; }}
             </FormField>
             <FormField label={lk === "fr" ? "Précompte (%)" : "Withholding (%)"} hint="17.23%">
               {function (p) { return <input {...p} type="number" step="0.01" min="0" max="60" value={prec} onChange={function (e) { setPrec(Number(e.target.value) || 0); }} style={Object.assign({}, p.style, { fontVariantNumeric: "tabular-nums" })} />; }}
             </FormField>
-            <FormField label={lk === "fr" ? "ONSS patronal (%)" : "Employer ONSS (%)"} hint="25.07%">
+            <FormField label={<span>{lk === "fr" ? "ONSS" : "ONSS"} <FinanceLink term="onss" /> {lk === "fr" ? "patronal (%)" : "employer (%)"}</span>} hint="25.07%">
               {function (p) { return <input {...p} type="number" step="0.01" min="0" max="50" value={patr} onChange={function (e) { setPatr(Number(e.target.value) || 0); }} style={Object.assign({}, p.style, { fontVariantNumeric: "tabular-nums" })} />; }}
             </FormField>
           </div>
@@ -4092,14 +4092,23 @@ function EmployeeCostTool({ lk, chartPalette, chartPaletteMode, onChartPaletteCh
               ["", "", null],
               [lk === "fr" ? "COÛT TOTAL MENSUEL" : "TOTAL MONTHLY COST", fmt(totalMonthly) + " €", "var(--brand)"],
               [lk === "fr" ? "COÛT TOTAL ANNUEL" : "TOTAL ANNUAL COST", fmt(totalAnnual) + " €", "var(--brand)"],
-              [lk === "fr" ? "Multiplicateur (coût/net)" : "Multiplier (cost/net)", "×" + multiplier.toFixed(2), "var(--color-warning)"],
+              [lk === "fr" ? "Multiplicateur (coût/net)" : "Multiplier (cost/net)", "×" + multiplier.toFixed(2), "var(--color-warning)", true],
             ].map(function (row, i) {
               if (!row[0] && !row[1]) return <tr key={i}><td colSpan={2} style={{ height: 8 }} /></tr>;
               var isBold = row[0].toUpperCase() === row[0] && row[0].length > 5;
+              var hasTooltip = row[3];
               return (
                 <tr key={i}>
                   <td style={{ padding: "6px 0", color: "var(--text-secondary)", fontWeight: isBold ? 700 : 400 }}>{row[0]}</td>
-                  <td style={{ padding: "6px 0", textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: isBold ? 700 : 500, color: row[2] || "var(--text-primary)" }}>{row[1]}</td>
+                  <td style={{ padding: "6px 0", textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: isBold ? 700 : 500, color: row[2] || "var(--text-primary)" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      {row[1]}
+                      {hasTooltip ? <InfoTip content={lk === "fr"
+                        ? "Le multiplicateur indique combien un employ\u00e9 co\u00fbte r\u00e9ellement par rapport \u00e0 son salaire net. Un multiplicateur de 2,5\u00d7 signifie que pour 1\u20ac net vers\u00e9, l\u2019employeur paie 2,50\u20ac au total."
+                        : "The multiplier shows the real cost of an employee compared to their net salary. A 2.5\u00d7 multiplier means for every \u20ac1 net paid, the employer pays \u20ac2.50 total."
+                      } /> : null}
+                    </span>
+                  </td>
                 </tr>
               );
             })}
@@ -4212,8 +4221,8 @@ function FreelanceTool({ lk, chartPalette, chartPaletteMode, onChartPaletteChang
           </div>
           <p style={{ fontSize: 11, color: "var(--text-faint)", margin: 0, lineHeight: 1.5, marginTop: "var(--sp-2)" }}>
             {lk === "fr"
-              ? "Simulation uniquement — Les montants ne sont pas intégrés au module Finance. Barèmes IPP 2026 et taux INASTI standards."
-              : "Simulation only — Amounts are not integrated into the Finance module. 2026 IPP brackets and standard INASTI rates."}
+              ? <span>{"Simulation uniquement \u2014 Les montants ne sont pas int\u00e9gr\u00e9s au module Finance. Bar\u00e8mes "}<FinanceLink term="ipp" />{" 2026 et taux INASTI standards."}</span>
+              : <span>{"Simulation only \u2014 Amounts are not integrated into the Finance module. 2026 "}<FinanceLink term="ipp" />{" brackets and standard INASTI rates."}</span>}
           </p>
         </div>
 
@@ -4227,8 +4236,9 @@ function FreelanceTool({ lk, chartPalette, chartPaletteMode, onChartPaletteChang
                 [lk === "fr" ? "Cotisations sociales (" + socialPct + "%)" : "Social contributions (" + socialPct + "%)", "- " + fmt(result.socialContrib) + " €", null],
                 [lk === "fr" ? "Frais déductibles" : "Deductible expenses", "- " + fmt(deductibleExpenses) + " €", null],
                 [lk === "fr" ? "Revenu imposable" : "Taxable income", fmt(result.taxableIncome) + " €", null],
+                [lk === "fr" ? "Quotit\u00e9 exempt\u00e9e d\u2019imp\u00f4t" : "Tax-free allowance", fmt(Math.min(result.taxableIncome, 10160)) + " €", "var(--color-success)"],
                 ["", "", null],
-                [lk === "fr" ? "Impôt (IPP + communal)" : "Tax (IPP + municipal)", "- " + fmt(result.tax) + " €", null],
+                [lk === "fr" ? "Imp\u00f4t (IPP + communal)" : "Tax (IPP + municipal)", "- " + fmt(result.tax) + " €", null],
                 ["", "", null],
                 [lk === "fr" ? "REVENU NET ANNUEL" : "ANNUAL NET INCOME", fmt(result.netIncome) + " €", "var(--color-success)"],
                 [lk === "fr" ? "REVENU NET MENSUEL" : "MONTHLY NET INCOME", fmt(result.netMonthly) + " €", "var(--color-success)"],
@@ -4886,6 +4896,7 @@ function CurrencyTool({ lk }) {
   var [loading, setLoading] = useState(false);
   var [error, setError] = useState(null);
   var [lastUpdate, setLastUpdate] = useState(null);
+  var [swapRotation, setSwapRotation] = useState(0);
 
   function fetchRates() {
     setLoading(true);
@@ -4909,6 +4920,7 @@ function CurrencyTool({ lk }) {
   useEffect(function () { fetchRates(); }, [fromCurrency]);
 
   function swap() {
+    setSwapRotation(function (prev) { return prev + 180; });
     var temp = fromCurrency;
     setFromCurrency(toCurrency);
     setToCurrency(temp);
@@ -4920,7 +4932,7 @@ function CurrencyTool({ lk }) {
 
   function fmt(v, dec) {
     var d = dec !== undefined ? dec : 2;
-    return v.toLocaleString("fr-BE", { minimumFractionDigits: d, maximumFractionDigits: d });
+    return v.toLocaleString(lk === "fr" ? "fr-BE" : "en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
   }
 
   return (
@@ -4944,7 +4956,9 @@ function CurrencyTool({ lk }) {
             background: "var(--bg-card)", cursor: "pointer", marginBottom: 4,
             color: "var(--text-secondary)", transition: "all 0.15s ease",
           }}>
-            <ArrowsLeftRight size={18} weight="bold" />
+            <ArrowsLeftRight size={20} weight="bold" color="var(--brand)"
+              style={{ transform: "rotate(" + swapRotation + "deg)", transition: "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)" }}
+            />
           </button>
 
           {/* To */}
@@ -4962,6 +4976,14 @@ function CurrencyTool({ lk }) {
             </div>
           </div>
         </div>
+
+        {/* Loading indicator */}
+        {loading ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-muted)", fontSize: 12, marginTop: "var(--sp-2)" }}>
+            <CircleNotch size={14} className="spin" />
+            {lk === "fr" ? "Chargement des taux..." : "Loading rates..."}
+          </div>
+        ) : null}
 
         {/* Rate info */}
         {rate && !loading ? (
@@ -5084,15 +5106,30 @@ function VatTool({ lk }) {
           </FormField>
 
           <p style={Object.assign({}, SECTION_LABEL, { marginTop: "var(--sp-2)" })}>{lk === "fr" ? "Taux de TVA" : "VAT rate"}</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {vatRates.map(function (vr) {
-              var active = vatRate === vr.rate;
+          <div style={{ display: "flex", gap: 0 }}>
+            {vatRates.map(function (vr, i) {
+              var isActive = vatRate === vr.rate;
               return (
-                <label key={vr.rate} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "8px 12px", borderRadius: "var(--r-md)", border: "1px solid " + (active ? "var(--brand)" : "var(--border)"), background: active ? "var(--brand-bg)" : "transparent", transition: "all 0.15s ease" }}>
-                  <input type="radio" name="vat_rate" checked={active} onChange={function () { setVatRate(vr.rate); }} style={{ accentColor: "var(--brand)" }} />
-                  <span style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? "var(--brand)" : "var(--text-primary)" }}>{vr.label[lk]}</span>
-                </label>
+                <button key={vr.rate} type="button" onClick={function () { setVatRate(vr.rate); }}
+                  style={{
+                    flex: 1, height: 40, border: "1px solid " + (isActive ? "var(--brand)" : "var(--border)"),
+                    background: isActive ? "var(--brand-bg)" : "transparent",
+                    color: isActive ? "var(--brand)" : "var(--text-muted)",
+                    fontSize: 13, fontWeight: isActive ? 700 : 400,
+                    cursor: "pointer", fontFamily: "inherit",
+                    borderRadius: i === 0 ? "var(--r-md) 0 0 var(--r-md)" : i === vatRates.length - 1 ? "0 var(--r-md) var(--r-md) 0" : 0,
+                    marginLeft: i > 0 ? -1 : 0,
+                    position: "relative", zIndex: isActive ? 1 : 0,
+                    transition: "all 0.15s ease",
+                  }}>
+                  {vr.rate + "%"}
+                </button>
               );
+            })}
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 4 }}>
+            {vatRates.map(function (vr) {
+              return vatRate === vr.rate ? <span key={vr.rate}>{vr.label[lk]}</span> : null;
             })}
           </div>
         </div>
@@ -5149,8 +5186,8 @@ function VatTool({ lk }) {
 
       <p style={{ fontSize: 11, color: "var(--text-faint)", margin: 0, lineHeight: 1.5 }}>
         {lk === "fr"
-          ? "Taux TVA belges en vigueur. 21% = taux normal (biens et services). 12% = taux intermédiaire (restauration sur place, logement social). 6% = taux réduit (alimentation de base, livres, médicaments, eau). 0% = exonéré (médical, éducation, assurances)."
-          : "Belgian VAT rates in effect. 21% = standard rate (goods and services). 12% = intermediate rate (dine-in restaurants, social housing). 6% = reduced rate (basic food, books, medicine, water). 0% = exempt (medical, education, insurance)."}
+          ? <span>{"Taux "}<FinanceLink term="tva" />{" belges en vigueur. 21% = taux normal (biens et services). 12% = taux interm\u00e9diaire (restauration sur place, logement social). 6% = taux r\u00e9duit (alimentation de base, livres, m\u00e9dicaments, eau). 0% = exon\u00e9r\u00e9 (m\u00e9dical, \u00e9ducation, assurances)."}</span>
+          : <span>{"Belgian "}<FinanceLink term="tva" />{" rates in effect. 21% = standard rate (goods and services). 12% = intermediate rate (dine-in restaurants, social housing). 6% = reduced rate (basic food, books, medicine, water). 0% = exempt (medical, education, insurance)."}</span>}
       </p>
     </div>
   );
