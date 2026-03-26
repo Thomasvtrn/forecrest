@@ -615,7 +615,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     var newRecipe = Object.assign({ id: makeId("rec"), createdAt: new Date().toISOString() }, data);
     var newRecipes = recipes.concat([newRecipe]);
     cfgSet("recipes", newRecipes);
-    /* syncLinks disabled for debugging */
+    syncLinks(newRecipe);
   }
 
   function saveRecipe(idx, data) {
@@ -1180,18 +1180,21 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         data={filteredRecipes}
         columns={[
           { id: "name", accessorKey: "name", header: "Nom", cell: function (info) { return info.getValue() || "\u2014"; } },
-          { id: "category", accessorFn: function (row) { return row.category || "main"; }, header: lk === "fr" ? "Catégorie" : "Category", cell: function (info) { var cat = info.getValue(); var m = RECIPE_CATEGORIES[cat]; return m ? m.label[lk] : cat; } },
+          { id: "category", accessorFn: function (row) { return row.category || "main"; }, header: lk === "fr" ? "Catégorie" : "Category", cell: function (info) { var cat = info.getValue(); var m = RECIPE_CATEGORIES[cat]; if (!m) return cat; return <Badge color={m.badge} size="sm" dot>{m.label[lk]}</Badge>; } },
           { id: "totalCost", accessorFn: function (row) { return calcUnitCost(row, config); }, header: lk === "fr" ? "Coût" : "Cost", meta: { align: "right" }, cell: function (info) { return eur(info.getValue()); } },
           { id: "sellingPrice", accessorFn: function (row) { return row.sellingPrice || 0; }, header: "Prix", meta: { align: "right" }, cell: function (info) { return eur(info.getValue()); } },
-          { id: "materialCost", accessorFn: function (row) { return calcMaterialCostPct(row, config); }, header: "Coût matière %", meta: { align: "center" }, cell: function (info) { var v = info.getValue(); return v > 0 ? v.toFixed(1) + "%" : "\u2014"; } },
-          { id: "margin", accessorFn: function (row) { return calcMargin(row, config); }, header: "Marge", meta: { align: "right" }, cell: function (info) { return eur(info.getValue()); } },
+          { id: "materialCost", accessorFn: function (row) { return calcMaterialCostPct(row, config); }, header: lk === "fr" ? "Coût matière %" : "Material cost %", meta: { align: "center", minWidth: 120 }, cell: function (info) { var v = info.getValue(); if (v <= 0) return <span style={{ color: "var(--text-faint)" }}>{"\u2014"}</span>; return (<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}><Badge color={v < 25 ? "success" : v <= 35 ? "warning" : "error"} size="sm">{v.toFixed(1)}%</Badge><MaterialCostGauge pct={v} lk={lk} mini /></div>); } },
+          { id: "margin", accessorFn: function (row) { return calcMargin(row, config); }, header: lk === "fr" ? "Marge" : "Margin", meta: { align: "right" }, cell: function (info) { var v = info.getValue(); return <span style={{ fontWeight: 600, color: v >= 0 ? "var(--color-success)" : "var(--color-error)", fontVariantNumeric: "tabular-nums" }}>{eur(v)}</span>; } },
           { id: "monthlySales", accessorFn: function (row) { return row.monthlySales || 0; }, header: "Ventes/mois", meta: { align: "right" }, cell: function (info) { var v = info.getValue(); return v > 0 ? String(v) : "\u2014"; } },
+          { id: "actions", header: "", enableSorting: false, meta: { align: "center", compactPadding: true, width: 1 }, cell: function (info) { var row = info.row.original; var idx = recipes.findIndex(function (r) { return r.id === row.id; }); return (<div style={{ display: "flex", gap: 2, justifyContent: "center" }}><ActionBtn icon={<PencilSimple size={14} />} title={lk === "fr" ? "Modifier" : "Edit"} onClick={function () { setEditing({ idx: idx, item: row }); }} /><ActionBtn icon={<Copy size={14} />} title={lk === "fr" ? "Dupliquer" : "Duplicate"} onClick={function () { cloneRecipe(idx); }} /><ActionBtn icon={<Trash size={14} />} title={lk === "fr" ? "Supprimer" : "Delete"} variant="danger" onClick={function () { requestDelete(idx); }} /></div>); } },
         ]}
         toolbar={toolbarNode}
         emptyState={emptyNode}
         emptyMinHeight={200}
         pageSize={10}
         getRowId={function (row) { return String(row.id); }}
+        selectable
+        onDeleteSelected={bulkDeleteRecipes}
       />
     </PageLayout>
   );
