@@ -890,13 +890,36 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         },
       },
       {
+        id: "tva",
+        header: "TVA",
+        enableSorting: true, meta: { align: "center" },
+        accessorFn: function (row) { return row.tvaRate || 0.21; },
+        cell: function (info) { var v = info.getValue(); return <Badge color="gray" size="sm">{Math.round(v * 100) + "%"}</Badge>; },
+        meta: { formatPrint: function (v) { return Math.round(v * 100) + "%"; } },
+      },
+      {
+        id: "portions",
+        header: lk === "fr" ? "Portions" : "Portions",
+        enableSorting: true, meta: { align: "center" },
+        accessorFn: function (row) { return row.portionCount || 1; },
+        cell: function (info) { return String(info.getValue()); },
+      },
+      {
+        id: "season",
+        header: lk === "fr" ? "Saisonnalité" : "Seasonality",
+        enableSorting: true, meta: { align: "left" },
+        accessorFn: function (row) { return row.seasonProfile || "flat"; },
+        cell: function (info) { var sp = SEASON_PROFILES.find(function (s) { return s.value === info.getValue(); }); return sp ? sp.label[lk] : info.getValue(); },
+        meta: { formatPrint: function (v) { var sp = SEASON_PROFILES.find(function (s) { return s.value === v; }); return sp ? sp.label.fr : v; } },
+      },
+      {
         id: "monthlySales",
         header: lk === "fr" ? "Ventes/mois" : "Sales/mo",
         enableSorting: true, meta: { align: "right" },
         accessorFn: function (row) { return row.monthlySales || 0; },
         cell: function (info) {
           var v = info.getValue();
-          return v > 0 ? String(v) : <span style={{ color: "var(--text-faint)" }}>—</span>;
+          return v > 0 ? String(v) : <span style={{ color: "var(--text-faint)" }}>{"\u2014"}</span>;
         },
       },
       {
@@ -907,9 +930,9 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
           var idx = recipes.findIndex(function (r) { return r.id === row.id; });
           return (
             <div style={{ display: "flex", gap: 2, justifyContent: "center" }}>
-              <ActionBtn icon={PencilSimple} tooltip={lk === "fr" ? "Modifier" : "Edit"} onClick={function () { setEditing({ idx: idx, item: row }); }} />
-              <ActionBtn icon={Copy} tooltip={lk === "fr" ? "Dupliquer" : "Duplicate"} onClick={function () { cloneRecipe(idx); }} />
-              <ActionBtn icon={Trash} tooltip={lk === "fr" ? "Supprimer" : "Delete"} variant="danger" onClick={function () { requestDelete(idx); }} />
+              <ActionBtn icon={<PencilSimple size={14} />} title={lk === "fr" ? "Modifier" : "Edit"} onClick={function () { setEditing({ idx: idx, item: row }); }} />
+              <ActionBtn icon={<Copy size={14} />} title={lk === "fr" ? "Dupliquer" : "Duplicate"} onClick={function () { cloneRecipe(idx); }} />
+              <ActionBtn icon={<Trash size={14} />} title={lk === "fr" ? "Supprimer" : "Delete"} variant="danger" onClick={function () { requestDelete(idx); }} />
             </div>
           );
         },
@@ -1183,6 +1206,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         getRowId={function (row) { return String(row.id); }}
         selectable
         onDeleteSelected={bulkDeleteRecipes}
+        scrollable
       />
     </PageLayout>
   );
