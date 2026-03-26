@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import {
   Plus, Trash, PencilSimple, Copy, ToggleRight,
   CookingPot, Cookie, Clock, Lightning, Factory,
-  ForkKnife, BowlFood, Wine, Hamburger, Cube, Wrench,
+  ForkKnife, BowlFood, Wine, Hamburger, Cube,
   Oven, Fire, Snowflake, Prohibit,
   Sparkle, Warning, X,
 } from "@phosphor-icons/react";
@@ -24,7 +24,6 @@ var RECIPE_CATEGORIES = {
   drink: { icon: Wine, badge: "success", label: { fr: "Boisson", en: "Drink" } },
   snack: { icon: Hamburger, badge: "gray", label: { fr: "Snack", en: "Snack" } },
   product: { icon: Cube, badge: "info", label: { fr: "Produit artisanal", en: "Handmade product" } },
-  service: { icon: Wrench, badge: "gray", label: { fr: "Service", en: "Service" } },
 };
 var CATEGORY_KEYS = Object.keys(RECIPE_CATEGORIES);
 
@@ -72,28 +71,123 @@ function SeasonSpark(props) {
   );
 }
 
-/* ── Recipe suggestion templates ── */
-var RECIPE_SUGGESTIONS = [
-  { name: { fr: "Bowl végétarien", en: "Veggie bowl" }, category: "main", ingredients: [
-    { name: { fr: "Quinoa", en: "Quinoa" }, cost: 4.50, qty: 0.08, unit: "kg" },
-    { name: { fr: "Avocat", en: "Avocado" }, cost: 1.20, qty: 0.5, unit: "pcs" },
-    { name: { fr: "Pois chiches", en: "Chickpeas" }, cost: 1.80, qty: 0.06, unit: "kg" },
-    { name: { fr: "Patate douce", en: "Sweet potato" }, cost: 2.50, qty: 0.12, unit: "kg" },
-    { name: { fr: "Sauce tahini", en: "Tahini sauce" }, cost: 8.00, qty: 0.02, unit: "kg" },
-  ], prepTimeMinutes: 20, sellingPrice: 14.50, tvaRate: 0.12 },
-  { name: { fr: "Soupe de saison", en: "Seasonal soup" }, category: "starter", ingredients: [
-    { name: { fr: "Légumes de saison", en: "Seasonal vegetables" }, cost: 3.00, qty: 0.30, unit: "kg" },
-    { name: { fr: "Oignon", en: "Onion" }, cost: 1.50, qty: 0.08, unit: "kg" },
-    { name: { fr: "Crème fraîche", en: "Fresh cream" }, cost: 3.20, qty: 0.03, unit: "L" },
-    { name: { fr: "Bouillon", en: "Broth" }, cost: 0.80, qty: 0.25, unit: "L" },
-  ], prepTimeMinutes: 25, sellingPrice: 8.50, tvaRate: 0.12 },
-  { name: { fr: "Thé glacé maison", en: "Homemade iced tea" }, category: "drink", ingredients: [
-    { name: { fr: "Thé en vrac", en: "Loose leaf tea" }, cost: 12.00, qty: 0.005, unit: "kg" },
-    { name: { fr: "Miel", en: "Honey" }, cost: 8.00, qty: 0.015, unit: "kg" },
-    { name: { fr: "Citron", en: "Lemon" }, cost: 0.40, qty: 0.5, unit: "pcs" },
-    { name: { fr: "Menthe fraîche", en: "Fresh mint" }, cost: 0.30, qty: 1, unit: "pcs" },
-  ], prepTimeMinutes: 10, sellingPrice: 4.50, tvaRate: 0.21 },
-];
+/* ── Suggestion templates by activity type ── */
+/* Suggestions keyed by category — shown based on selected category in modal */
+var SUGGESTIONS_BY_CATEGORY = {
+  starter: [
+    { name: { fr: "Soupe de saison", en: "Seasonal soup" }, ingredients: [
+      { name: { fr: "Légumes de saison", en: "Seasonal vegetables" }, cost: 3.00, qty: 0.30, unit: "kg" },
+      { name: { fr: "Oignon", en: "Onion" }, cost: 1.50, qty: 0.08, unit: "kg" },
+      { name: { fr: "Crème fraîche", en: "Fresh cream" }, cost: 3.20, qty: 0.03, unit: "L" },
+      { name: { fr: "Bouillon", en: "Broth" }, cost: 0.80, qty: 0.25, unit: "L" },
+    ], prepTimeMinutes: 25, sellingPrice: 8.50, tvaRate: 0.12 },
+    { name: { fr: "Bruschetta tomate-basilic", en: "Tomato-basil bruschetta" }, ingredients: [
+      { name: { fr: "Pain ciabatta", en: "Ciabatta bread" }, cost: 1.20, qty: 2, unit: "pcs" },
+      { name: { fr: "Tomates", en: "Tomatoes" }, cost: 3.00, qty: 0.15, unit: "kg" },
+      { name: { fr: "Basilic frais", en: "Fresh basil" }, cost: 0.30, qty: 1, unit: "pcs" },
+      { name: { fr: "Huile d'olive", en: "Olive oil" }, cost: 8.00, qty: 0.02, unit: "L" },
+    ], prepTimeMinutes: 10, sellingPrice: 7.00, tvaRate: 0.12 },
+    { name: { fr: "Plateau apéro (10 pers.)", en: "Appetizer platter (10 ppl)" }, ingredients: [
+      { name: { fr: "Houmous maison", en: "Homemade hummus" }, cost: 2.00, qty: 0.30, unit: "kg" },
+      { name: { fr: "Crudités", en: "Raw vegetables" }, cost: 3.00, qty: 0.50, unit: "kg" },
+      { name: { fr: "Pain pita", en: "Pita bread" }, cost: 1.50, qty: 5, unit: "pcs" },
+    ], prepTimeMinutes: 20, sellingPrice: 35.00, tvaRate: 0.12 },
+  ],
+  main: [
+    { name: { fr: "Bowl végétarien", en: "Veggie bowl" }, ingredients: [
+      { name: { fr: "Quinoa", en: "Quinoa" }, cost: 4.50, qty: 0.08, unit: "kg" },
+      { name: { fr: "Avocat", en: "Avocado" }, cost: 1.20, qty: 0.5, unit: "pcs" },
+      { name: { fr: "Pois chiches", en: "Chickpeas" }, cost: 1.80, qty: 0.06, unit: "kg" },
+      { name: { fr: "Patate douce", en: "Sweet potato" }, cost: 2.50, qty: 0.12, unit: "kg" },
+    ], prepTimeMinutes: 20, sellingPrice: 14.50, tvaRate: 0.12 },
+    { name: { fr: "Risotto aux champignons", en: "Mushroom risotto" }, ingredients: [
+      { name: { fr: "Riz arborio", en: "Arborio rice" }, cost: 3.50, qty: 0.08, unit: "kg" },
+      { name: { fr: "Champignons", en: "Mushrooms" }, cost: 8.00, qty: 0.10, unit: "kg" },
+      { name: { fr: "Parmesan", en: "Parmesan" }, cost: 18.00, qty: 0.02, unit: "kg" },
+      { name: { fr: "Bouillon", en: "Broth" }, cost: 0.80, qty: 0.30, unit: "L" },
+    ], prepTimeMinutes: 30, sellingPrice: 16.00, tvaRate: 0.12 },
+    { name: { fr: "Curry de légumes", en: "Vegetable curry" }, ingredients: [
+      { name: { fr: "Lait de coco", en: "Coconut milk" }, cost: 2.50, qty: 0.20, unit: "L" },
+      { name: { fr: "Légumes variés", en: "Mixed vegetables" }, cost: 3.00, qty: 0.25, unit: "kg" },
+      { name: { fr: "Pâte de curry", en: "Curry paste" }, cost: 6.00, qty: 0.02, unit: "kg" },
+      { name: { fr: "Riz basmati", en: "Basmati rice" }, cost: 2.00, qty: 0.08, unit: "kg" },
+    ], prepTimeMinutes: 25, sellingPrice: 13.50, tvaRate: 0.12 },
+  ],
+  dessert: [
+    { name: { fr: "Tiramisu maison", en: "Homemade tiramisu" }, ingredients: [
+      { name: { fr: "Mascarpone", en: "Mascarpone" }, cost: 5.00, qty: 0.25, unit: "kg" },
+      { name: { fr: "Biscuits", en: "Biscuits" }, cost: 3.00, qty: 0.10, unit: "kg" },
+      { name: { fr: "Café", en: "Coffee" }, cost: 15.00, qty: 0.02, unit: "kg" },
+      { name: { fr: "Oeufs", en: "Eggs" }, cost: 0.30, qty: 3, unit: "pcs" },
+    ], prepTimeMinutes: 20, sellingPrice: 7.50, tvaRate: 0.12 },
+    { name: { fr: "Fondant au chocolat", en: "Chocolate lava cake" }, ingredients: [
+      { name: { fr: "Chocolat noir", en: "Dark chocolate" }, cost: 12.00, qty: 0.08, unit: "kg" },
+      { name: { fr: "Beurre", en: "Butter" }, cost: 8.00, qty: 0.05, unit: "kg" },
+      { name: { fr: "Oeufs", en: "Eggs" }, cost: 0.30, qty: 2, unit: "pcs" },
+      { name: { fr: "Sucre", en: "Sugar" }, cost: 1.50, qty: 0.03, unit: "kg" },
+    ], prepTimeMinutes: 15, sellingPrice: 8.00, tvaRate: 0.12 },
+    { name: { fr: "Panna cotta fruits rouges", en: "Berry panna cotta" }, ingredients: [
+      { name: { fr: "Crème", en: "Cream" }, cost: 4.00, qty: 0.15, unit: "L" },
+      { name: { fr: "Fruits rouges", en: "Mixed berries" }, cost: 10.00, qty: 0.05, unit: "kg" },
+      { name: { fr: "Gélatine", en: "Gelatin" }, cost: 8.00, qty: 0.003, unit: "kg" },
+      { name: { fr: "Sucre", en: "Sugar" }, cost: 1.50, qty: 0.02, unit: "kg" },
+    ], prepTimeMinutes: 15, sellingPrice: 7.00, tvaRate: 0.12 },
+  ],
+  drink: [
+    { name: { fr: "Thé glacé maison", en: "Homemade iced tea" }, ingredients: [
+      { name: { fr: "Thé en vrac", en: "Loose leaf tea" }, cost: 12.00, qty: 0.005, unit: "kg" },
+      { name: { fr: "Miel", en: "Honey" }, cost: 8.00, qty: 0.015, unit: "kg" },
+      { name: { fr: "Citron", en: "Lemon" }, cost: 0.40, qty: 0.5, unit: "pcs" },
+      { name: { fr: "Menthe fraîche", en: "Fresh mint" }, cost: 0.30, qty: 1, unit: "pcs" },
+    ], prepTimeMinutes: 10, sellingPrice: 4.50, tvaRate: 0.21 },
+    { name: { fr: "Smoothie vert", en: "Green smoothie" }, ingredients: [
+      { name: { fr: "Épinards", en: "Spinach" }, cost: 4.00, qty: 0.05, unit: "kg" },
+      { name: { fr: "Banane", en: "Banana" }, cost: 0.25, qty: 1, unit: "pcs" },
+      { name: { fr: "Lait d'avoine", en: "Oat milk" }, cost: 2.50, qty: 0.25, unit: "L" },
+    ], prepTimeMinutes: 5, sellingPrice: 5.50, tvaRate: 0.21 },
+    { name: { fr: "Cocktail signature", en: "Signature cocktail" }, ingredients: [
+      { name: { fr: "Jus de fruits frais", en: "Fresh fruit juice" }, cost: 3.00, qty: 0.15, unit: "L" },
+      { name: { fr: "Sirop maison", en: "Homemade syrup" }, cost: 5.00, qty: 0.03, unit: "L" },
+      { name: { fr: "Eau pétillante", en: "Sparkling water" }, cost: 0.80, qty: 0.20, unit: "L" },
+    ], prepTimeMinutes: 5, sellingPrice: 6.00, tvaRate: 0.21 },
+  ],
+  snack: [
+    { name: { fr: "Granola maison", en: "Homemade granola" }, ingredients: [
+      { name: { fr: "Flocons d'avoine", en: "Oat flakes" }, cost: 2.00, qty: 0.15, unit: "kg" },
+      { name: { fr: "Miel", en: "Honey" }, cost: 8.00, qty: 0.03, unit: "kg" },
+      { name: { fr: "Noix mélangées", en: "Mixed nuts" }, cost: 12.00, qty: 0.05, unit: "kg" },
+    ], prepTimeMinutes: 25, sellingPrice: 6.00, tvaRate: 0.12 },
+    { name: { fr: "Energy balls", en: "Energy balls" }, ingredients: [
+      { name: { fr: "Dattes", en: "Dates" }, cost: 6.00, qty: 0.10, unit: "kg" },
+      { name: { fr: "Amandes", en: "Almonds" }, cost: 14.00, qty: 0.05, unit: "kg" },
+      { name: { fr: "Cacao", en: "Cocoa" }, cost: 10.00, qty: 0.02, unit: "kg" },
+    ], prepTimeMinutes: 15, sellingPrice: 3.50, tvaRate: 0.12 },
+    { name: { fr: "Cookies véganes", en: "Vegan cookies" }, ingredients: [
+      { name: { fr: "Farine", en: "Flour" }, cost: 1.50, qty: 0.12, unit: "kg" },
+      { name: { fr: "Huile de coco", en: "Coconut oil" }, cost: 8.00, qty: 0.04, unit: "kg" },
+      { name: { fr: "Pépites de chocolat", en: "Chocolate chips" }, cost: 10.00, qty: 0.04, unit: "kg" },
+      { name: { fr: "Sucre de coco", en: "Coconut sugar" }, cost: 5.00, qty: 0.04, unit: "kg" },
+    ], prepTimeMinutes: 20, sellingPrice: 3.00, tvaRate: 0.12 },
+  ],
+  product: [
+    { name: { fr: "Bougie parfumée", en: "Scented candle" }, ingredients: [
+      { name: { fr: "Cire de soja", en: "Soy wax" }, cost: 8.00, qty: 0.20, unit: "kg" },
+      { name: { fr: "Mèche coton", en: "Cotton wick" }, cost: 0.15, qty: 1, unit: "pcs" },
+      { name: { fr: "Huile essentielle", en: "Essential oil" }, cost: 12.00, qty: 0.01, unit: "L" },
+      { name: { fr: "Pot en verre", en: "Glass jar" }, cost: 1.20, qty: 1, unit: "pcs" },
+    ], prepTimeMinutes: 30, sellingPrice: 18.00, tvaRate: 0.21 },
+    { name: { fr: "Savon naturel", en: "Natural soap" }, ingredients: [
+      { name: { fr: "Huile d'olive", en: "Olive oil" }, cost: 6.00, qty: 0.15, unit: "L" },
+      { name: { fr: "Beurre de karité", en: "Shea butter" }, cost: 15.00, qty: 0.03, unit: "kg" },
+      { name: { fr: "Soude caustique", en: "Lye" }, cost: 4.00, qty: 0.02, unit: "kg" },
+    ], prepTimeMinutes: 45, sellingPrice: 8.50, tvaRate: 0.21 },
+    { name: { fr: "T-shirt sérigraphié", en: "Screen-printed t-shirt" }, ingredients: [
+      { name: { fr: "T-shirt blanc", en: "Blank t-shirt" }, cost: 3.50, qty: 1, unit: "pcs" },
+      { name: { fr: "Encre textile", en: "Textile ink" }, cost: 15.00, qty: 0.01, unit: "L" },
+      { name: { fr: "Emballage", en: "Packaging" }, cost: 0.40, qty: 1, unit: "pcs" },
+    ], prepTimeMinutes: 15, sellingPrice: 25.00, tvaRate: 0.21 },
+  ],
+};
 
 /* ── Activity types for wizard ── */
 var ACTIVITY_TYPES = [
@@ -291,7 +385,6 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
   /* Apply a suggestion template */
   function applySuggestion(sug) {
     setName(sug.name[lk]);
-    setCategory(sug.category);
     setSellingPrice(sug.sellingPrice);
     setTvaRate(sug.tvaRate);
     setPrepTimeMinutes(sug.prepTimeMinutes);
@@ -339,7 +432,7 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
                   {lk === "fr" ? "Démarrer depuis un modèle" : "Quick-start template"}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--sp-2)" }}>
-                  {RECIPE_SUGGESTIONS.map(function (sug, si) {
+                  {(SUGGESTIONS_BY_CATEGORY[category] || []).map(function (sug, si) {
                     var catMeta = RECIPE_CATEGORIES[sug.category] || {};
                     var SIcon = catMeta.icon || Cube;
                     return (
@@ -894,7 +987,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
           return (
             <>
               <span style={{ fontWeight: 600 }}>Total</span>
-              <span style={{ fontWeight: 400, color: "var(--text-muted)", marginLeft: 8 }}>{recipes.length} {lk === "fr" ? "recettes" : "recipes"}</span>
+              <span style={{ fontWeight: 400, color: "var(--text-muted)", marginLeft: 8 }}>{recipes.length} {lk === "fr" ? "productions" : "productions"}</span>
             </>
           );
         },
@@ -1060,12 +1153,12 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
             </div>
             <div style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "var(--sp-4)", textAlign: "left" }}>
               {lk === "fr"
-                ? "Calculez le coût réel de chaque recette ou produit en décomposant les ingrédients, la main d'œuvre et l'énergie. Optimisez vos marges et fixez les bons prix."
-                : "Calculate the real cost of each recipe or product by breaking down ingredients, labor and energy. Optimize your margins and set the right prices."}
+                ? "Calculez le coût réel de chaque production en décomposant les ingrédients, la main d'œuvre et l'énergie. Optimisez vos marges et fixez les bons prix."
+                : "Calculate the real cost of each production by breaking down ingredients, labor and energy. Optimize your margins and set the right prices."}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--sp-3)", marginBottom: "var(--sp-5)", textAlign: "left" }}>
               {[
-                { icon: Cookie, title: lk === "fr" ? "Ingrédients" : "Ingredients", desc: lk === "fr" ? "Le coût des matières premières pour chaque recette ou produit." : "Raw material costs for each recipe or product." },
+                { icon: Cookie, title: lk === "fr" ? "Ingrédients" : "Ingredients", desc: lk === "fr" ? "Le coût des matières premières pour chaque production." : "Raw material costs for each production." },
                 { icon: Clock, title: lk === "fr" ? "Main d'œuvre" : "Labor", desc: lk === "fr" ? "Le temps de préparation multiplié par le coût horaire de votre équipe." : "Preparation time multiplied by your team's hourly rate." },
                 { icon: Lightning, title: lk === "fr" ? "Énergie & emballage" : "Energy & packaging", desc: lk === "fr" ? "Les coûts d'énergie (four, frigo) et d'emballage si applicable." : "Energy costs (oven, fridge) and packaging if applicable." },
               ].map(function (card, ci) {
@@ -1091,8 +1184,8 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
             </div>
             <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: "var(--sp-4)", textAlign: "center" }}>
               {lk === "fr"
-                ? "Ces valeurs serviront de base pour estimer le coût total de chaque recette."
-                : "These values will be used as the base for estimating each recipe's total cost."}
+                ? "Ces valeurs serviront de base pour estimer le coût total de chaque production."
+                : "These values will be used as the base for estimating each production's total cost."}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
               <div>
@@ -1160,7 +1253,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     return (
       <PageLayout
         title={lk === "fr" ? "Production" : "Production"}
-        subtitle={lk === "fr" ? "Calculez le coût de revient de vos recettes et produits." : "Calculate the cost price of your recipes and products."}
+        subtitle={lk === "fr" ? "Calculez le coût de revient de vos productions." : "Calculate the cost price of your productions."}
         icon={CookingPot} iconColor="var(--brand)"
       >
         <Wizard
@@ -1197,8 +1290,8 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
       <div style={{ width: 48, height: 48, borderRadius: "var(--r-lg)", background: "var(--bg-accordion)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <CookingPot size={24} weight="duotone" color="var(--text-muted)" />
       </div>
-      <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{lk === "fr" ? "Aucune recette" : "No recipes"}</div>
-      <div style={{ fontSize: 13, color: "var(--text-muted)", maxWidth: 360, textAlign: "center" }}>{lk === "fr" ? "Ajoutez vos recettes ou produits pour calculer les coûts de production." : "Add your recipes or products to calculate production costs."}</div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{lk === "fr" ? "Aucune production" : "No productions"}</div>
+      <div style={{ fontSize: 13, color: "var(--text-muted)", maxWidth: 360, textAlign: "center" }}>{lk === "fr" ? "Ajoutez vos productions pour calculer les coûts de revient." : "Add your productions to calculate cost prices."}</div>
       <Button color="primary" size="md" onClick={function () { setShowCreate(true); }} iconLeading={<Plus size={14} weight="bold" />} sx={{ marginTop: "var(--sp-2)" }}>
         {lk === "fr" ? "Ajouter" : "Add"}
       </Button>
@@ -1208,7 +1301,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
   return (
     <PageLayout
       title={lk === "fr" ? "Production" : "Production"}
-      subtitle={lk === "fr" ? "Calculez le coût de revient de vos recettes et produits." : "Calculate the cost price of your recipes and products."}
+      subtitle={lk === "fr" ? "Calculez le coût de revient de vos productions." : "Calculate the cost price of your productions."}
       icon={CookingPot} iconColor="var(--brand)"
     >
       {showCreate ? <RecipeModal onSave={addRecipe} onClose={function () { setShowCreate(false); }} lang={lang} config={config} /> : null}
@@ -1218,8 +1311,8 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         onCancel={function () { setPendingDelete(null); }}
         skipNext={skipDeleteConfirm} setSkipNext={setSkipDeleteConfirm}
         t={{
-          confirm_title: lk === "fr" ? "Supprimer cette recette ?" : "Delete this recipe?",
-          confirm_body: lk === "fr" ? "Cette recette et ses liens (revenus, charges) seront supprimés." : "This recipe and its links (revenue, costs) will be removed.",
+          confirm_title: lk === "fr" ? "Supprimer cette production ?" : "Delete this production?",
+          confirm_body: lk === "fr" ? "Cette production et ses liens (revenus, charges) seront supprimés." : "This production and its links (revenue, costs) will be removed.",
           confirm_skip: lk === "fr" ? "Ne plus demander" : "Don't ask again",
           cancel: lk === "fr" ? "Annuler" : "Cancel",
           delete: lk === "fr" ? "Supprimer" : "Delete",
@@ -1228,7 +1321,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
 
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
-        <KpiCard label={lk === "fr" ? "Recettes" : "Recipes"} value={String(kpiCount)} glossaryKey="production_count" />
+        <KpiCard label={lk === "fr" ? "Productions" : "Productions"} value={String(kpiCount)} glossaryKey="production_count" />
         <KpiCard label={lk === "fr" ? "Coût matière moyen" : "Avg. material cost"} value={avgMaterialCost > 0 ? avgMaterialCost.toFixed(1) + "%" : "\u2014"} glossaryKey="production_material_cost" />
         <KpiCard label={lk === "fr" ? "Marge moyenne" : "Avg. margin"} value={avgMargin !== 0 ? eur(avgMargin) : "\u2014"} glossaryKey="production_margin" />
         <KpiCard label={lk === "fr" ? "CA estimé / mois" : "Est. revenue / mo"} value={estimatedRevenue > 0 ? eurShort(estimatedRevenue) : "\u2014"} fullValue={estimatedRevenue > 0 ? eur(estimatedRevenue) : undefined} glossaryKey="production_revenue" />
@@ -1345,17 +1438,17 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
               </div>
             ) : (
               <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-faint)", fontSize: 13 }}>
-                {lk === "fr" ? "Ajoutez des recettes avec un prix de vente" : "Add recipes with a selling price"}
+                {lk === "fr" ? "Ajoutez des productions avec un prix de vente" : "Add productions with a selling price"}
               </div>
             )}
           </div>
         </div>
 
-      {/* Tablist: Recettes / Ingrédients */}
+      {/* Tablist: Productions / Ingrédients */}
       <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border-light)", marginBottom: "var(--sp-4)" }}>
         {["recipes", "ingredients"].map(function (tabKey) {
           var isActive = prodTab === tabKey;
-          var tabLabels = { recipes: lk === "fr" ? "Recettes" : "Recipes", ingredients: lk === "fr" ? "Ingrédients" : "Ingredients" };
+          var tabLabels = { recipes: lk === "fr" ? "Productions" : "Productions", ingredients: lk === "fr" ? "Ingrédients" : "Ingredients" };
           var tabCounts = { recipes: recipes.length, ingredients: ingredientConsumption.length };
           return (
             <button key={tabKey} type="button" onClick={function () { setProdTab(tabKey); }}
@@ -1435,7 +1528,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         </div>
       ) : null}
 
-      {/* Tab: Recipes */}
+      {/* Tab: Productions */}
       {prodTab === "recipes" ? (
         <DataTable
           data={filteredRecipes}
@@ -1491,7 +1584,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
                 { id: "unit", accessorKey: "unit", header: lk === "fr" ? "Unité" : "Unit" },
                 { id: "totalQty", accessorFn: function (r) { return r.totalQty; }, header: lk === "fr" ? "Qté/mois" : "Qty/mo", meta: { align: "right", suffix: "", rawNumber: true } },
                 { id: "totalCost", accessorFn: function (r) { return r.totalCost; }, header: lk === "fr" ? "Coût/mois" : "Cost/mo", meta: { align: "right" } },
-                { id: "recipeCount", accessorFn: function (r) { return r.recipeCount; }, header: lk === "fr" ? "Recettes" : "Recipes", meta: { align: "right", suffix: "", rawNumber: true } },
+                { id: "recipeCount", accessorFn: function (r) { return r.recipeCount; }, header: lk === "fr" ? "Productions" : "Productions", meta: { align: "right", suffix: "", rawNumber: true } },
               ]} filename="ingredients" title={lk === "fr" ? "Ingrédients" : "Ingredients"} subtitle={lk === "fr" ? "Consommation mensuelle" : "Monthly consumption"} />
             </>
           }
@@ -1548,7 +1641,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
             },
             {
               id: "recipeCount",
-              header: lk === "fr" ? "Recettes" : "Recipes",
+              header: lk === "fr" ? "Productions" : "Productions",
               enableSorting: true, meta: { align: "center" },
               accessorFn: function (row) { return row.recipeCount; },
               cell: function (info) { return String(info.getValue()); },
@@ -1556,7 +1649,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
           ]}
           emptyState={
             <div style={{ textAlign: "center", padding: "var(--sp-6)", color: "var(--text-faint)" }}>
-              {lk === "fr" ? "Ajoutez des recettes avec des ingrédients pour voir la consommation." : "Add recipes with ingredients to see consumption."}
+              {lk === "fr" ? "Ajoutez des productions avec des ingrédients pour voir la consommation." : "Add productions with ingredients to see consumption."}
             </div>
           }
           emptyMinHeight={150}
