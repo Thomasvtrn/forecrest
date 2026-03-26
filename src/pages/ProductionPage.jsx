@@ -830,15 +830,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
     return list;
   }, [recipes, filter, search]);
 
-  /* ── Chart data — category distribution ── */
-  var categoryDistribution = useMemo(function () {
-    var dist = {};
-    recipes.forEach(function (r) {
-      var ck = r.category || "main";
-      dist[ck] = (dist[ck] || 0) + 1;
-    });
-    return dist;
-  }, [recipes]);
 
   /* ── Top recipe by margin ── */
   var topRecipe = useMemo(function () {
@@ -912,7 +903,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         id: "category",
         accessorFn: function (row) { return row.category || "main"; },
         header: lk === "fr" ? "Catégorie" : "Category",
-        enableSorting: true, meta: { align: "left" },
+        enableSorting: true, meta: { align: "left", formatPrint: function (v) { var m = RECIPE_CATEGORIES[v]; return m ? m.label[lk] : v; } },
         cell: function (info) {
           var cat = info.getValue();
           var m = RECIPE_CATEGORIES[cat];
@@ -956,8 +947,8 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
       },
       {
         id: "materialCost",
-        header: "Coût matière %",
-        enableSorting: true, meta: { align: "center", minWidth: 120 },
+        header: lk === "fr" ? "Coût matière %" : "Material cost %",
+        enableSorting: true, meta: { align: "center", minWidth: 120, formatPrint: function (v) { return typeof v === "number" ? v.toFixed(1).replace(".", ",") + " %" : String(v); } },
         accessorFn: function (row) { return calcMaterialCostPct(row, config); },
         cell: function (info) {
           var v = info.getValue();
@@ -1309,6 +1300,29 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
                     <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{lk === "fr" ? "de marge / portion" : "margin / portion"}</span>
                   </div>
                 </div>
+                {/* Stacked bar: cost vs margin */}
+                {(function () {
+                  var cost = calcUnitCost(topRecipe.recipe, config);
+                  var price = topRecipe.recipe.sellingPrice || 0;
+                  var costPct = price > 0 ? (cost / price) * 100 : 0;
+                  var marginPct = 100 - costPct;
+                  return (
+                    <div>
+                      <div style={{ display: "flex", borderRadius: "var(--r-md)", overflow: "hidden", height: 24 }}>
+                        <div style={{ width: costPct + "%", background: "var(--color-error-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 600, color: "var(--color-error)", padding: "0 6px" }}>
+                          {costPct > 15 ? costPct.toFixed(0) + "%" : ""}
+                        </div>
+                        <div style={{ width: marginPct + "%", background: "var(--color-success-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 600, color: "var(--color-success)", padding: "0 6px" }}>
+                          {marginPct > 15 ? marginPct.toFixed(0) + "%" : ""}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 11 }}>
+                        <span style={{ color: "var(--color-error)" }}>{lk === "fr" ? "Coût " : "Cost "}{eur(cost)}</span>
+                        <span style={{ color: "var(--color-success)" }}>{lk === "fr" ? "Marge " : "Margin "}{eur(topRecipe.margin)}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
                 {/* Detail rows */}
                 <div style={{ padding: "var(--sp-3)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6 }}>
