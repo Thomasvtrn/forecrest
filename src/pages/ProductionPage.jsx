@@ -1243,9 +1243,8 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         <KpiCard label={lk === "fr" ? "CA estimé / mois" : "Est. revenue / mo"} value={estimatedRevenue > 0 ? eurShort(estimatedRevenue) : "\u2014"} fullValue={estimatedRevenue > 0 ? eur(estimatedRevenue) : undefined} glossaryKey="production_revenue" />
       </div>
 
-      {/* Insights section */}
-      {recipes.length > 0 ? (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
+      {/* Insights section — always visible, skeleton when empty */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
           {/* Left column: two donuts stacked */}
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-md)" }}>
             <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
@@ -1332,7 +1331,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
             )}
           </div>
         </div>
-      ) : null}
 
       {/* Tablist: Recettes / Ingrédients */}
       <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border-light)", marginBottom: "var(--sp-4)" }}>
