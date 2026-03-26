@@ -27,6 +27,20 @@ var RECIPE_CATEGORIES = {
 };
 var CATEGORY_KEYS = Object.keys(RECIPE_CATEGORIES);
 
+/* Categories visible per activity type */
+var CATEGORIES_BY_ACTIVITY = {
+  restaurant: ["starter", "main", "dessert", "drink", "snack"],
+  handmade: ["product"],
+  manufacturing: ["product"],
+  catering: ["starter", "main", "dessert", "drink"],
+};
+var DEFAULT_CATEGORY_BY_ACTIVITY = {
+  restaurant: "main",
+  handmade: "product",
+  manufacturing: "product",
+  catering: "main",
+};
+
 /* ── Energy types ── */
 var ENERGY_TYPES = {
   oven: { icon: Oven, label: { fr: "Four", en: "Oven" }, costPerHour: 0.50 },
@@ -296,7 +310,9 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
 
   /* Step 1 fields */
   var [name, setName] = useState(recipe ? recipe.name : "");
-  var [category, setCategory] = useState(recipe ? recipe.category : "main");
+  var defaultCat = DEFAULT_CATEGORY_BY_ACTIVITY[config.activityType] || "main";
+  var visibleCategories = CATEGORIES_BY_ACTIVITY[config.activityType] || CATEGORY_KEYS;
+  var [category, setCategory] = useState(recipe ? recipe.category : defaultCat);
   var [portionCount, setPortionCount] = useState(recipe ? recipe.portionCount : 1);
   var [sellingPrice, setSellingPrice] = useState(recipe ? recipe.sellingPrice : 0);
   var [tvaRate, setTvaRate] = useState(recipe ? recipe.tvaRate : 0.21);
@@ -467,8 +483,8 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
 
             <div style={{ marginBottom: "var(--sp-3)" }}>
               <label style={labelStyle}>{lk === "fr" ? "Catégorie" : "Category"}</label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "var(--sp-2)" }}>
-                {CATEGORY_KEYS.map(function (ck) {
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(" + Math.min(visibleCategories.length, 4) + ", 1fr)", gap: "var(--sp-2)" }}>
+                {visibleCategories.map(function (ck) {
                   var m = RECIPE_CATEGORIES[ck];
                   var CIcon = m.icon;
                   var isActive = category === ck;
