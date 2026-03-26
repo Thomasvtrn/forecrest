@@ -1186,9 +1186,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
           { id: "materialCost", accessorFn: function (row) { return calcMaterialCostPct(row, config); }, header: "Coût matière %", meta: { align: "center" }, cell: function (info) { var v = info.getValue(); return v > 0 ? v.toFixed(1) + "%" : "\u2014"; } },
           { id: "margin", accessorFn: function (row) { return calcMargin(row, config); }, header: "Marge", meta: { align: "right" }, cell: function (info) { return eur(info.getValue()); } },
           { id: "monthlySales", accessorFn: function (row) { return row.monthlySales || 0; }, header: "Ventes/mois", meta: { align: "right" }, cell: function (info) { var v = info.getValue(); return v > 0 ? String(v) : "\u2014"; } },
-          { id: "actions", header: "", enableSorting: false, meta: { align: "center", compactPadding: true, width: 1 }, cell: function (info) { var row = info.row.original; var idx = recipes.findIndex(function (r) { return r.id === row.id; }); return (<div style={{ display: "flex", gap: 2, justifyContent: "center" }}><ActionBtn icon={PencilSimple} tooltip="Modifier" onClick={function () { setEditing({ idx: idx, item: row }); }} /><ActionBtn icon={Trash} tooltip="Supprimer" variant="danger" onClick={function () { requestDelete(idx); }} /></div>); } },
         ]}
-        toolbar={toolbarNode}
         emptyState={emptyNode}
         emptyMinHeight={200}
         pageSize={10}
