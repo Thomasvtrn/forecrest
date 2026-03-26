@@ -42,7 +42,7 @@ function SectionLabel({ children, desc }) {
   );
 }
 
-export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebitda, netP, resLeg, debts, sals, salCosts, stocks, esopMonthly, esopEnabled }) {
+export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP, resLeg, debts, sals, salCosts, stocks, esopMonthly, esopEnabled }) {
   var t = useT().ratios;
   var bizType = cfg.businessType || "other";
 
@@ -104,10 +104,10 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebitda, ne
     var roe = equity > 0 ? netP / equity : 0;
     var roa = totalActif > 0 ? netP / totalActif : 0;
     var netMargin = totalRevenue > 0 ? netP / totalRevenue : 0;
-    var ebitdaMargin = totalRevenue > 0 ? ebitda / totalRevenue : 0;
+    var ebitMargin = totalRevenue > 0 ? ebit / totalRevenue : 0;
 
     // DSCR
-    var dscr = annualDebtService > 0 ? ebitda / annualDebtService : null;
+    var dscr = annualDebtService > 0 ? ebit / annualDebtService : null;
 
     // Business metrics
     var employeeCount = (sals || []).filter(function (s) { return s.net > 0; }).length;
@@ -143,13 +143,13 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebitda, ne
       equity, totalDebt, totalPassif, cash,
       solvency, autonomy, leverage,
       currentRatio, acidRatio,
-      roe, roa, netMargin, ebitdaMargin,
+      roe, roa, netMargin, ebitMargin,
       dscr, annualDebtService,
       revPerEmployee, salaryRatio, costRatio, employeeCount,
       burnRate, runway,
       dso, dpo, dio, receivables, payables, stockValue, bfr, cashConversionCycle,
     };
-  }, [cfg, totalRevenue, monthlyCosts, ebitda, netP, resLeg, debts, sals, salCosts, stocks]);
+  }, [cfg, totalRevenue, monthlyCosts, ebit, netP, resLeg, debts, sals, salCosts, stocks]);
 
   return (
     <PageLayout title={t.title} subtitle={t.subtitle} icon={TrendUp} iconColor="#06B6D4">
@@ -184,7 +184,7 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebitda, ne
           <SectionLabel desc={t.section_profitability_desc}>{t.section_profitability}</SectionLabel>
           <div className="resp-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "var(--gap-md)" }}>
             <RatioCard label={t.net_margin} value={computed.netMargin} format="pct" tip={t.net_margin_tip} thresholds={{ good: 0.1, ok: 0 }} />
-            <RatioCard label={t.ebitda_margin} value={computed.ebitdaMargin} format="pct" tip={t.ebitda_margin_tip} thresholds={{ good: 0.2, ok: 0.05 }} />
+            <RatioCard label={t.ebitda_margin} value={computed.ebitMargin} format="pct" tip={t.ebitda_margin_tip} thresholds={{ good: 0.2, ok: 0.05 }} />
             <RatioCard label={t.roe} value={computed.roe} format="pct" tip={t.roe_tip} thresholds={{ good: 0.15, ok: 0.05 }} />
             <RatioCard label={t.roa} value={computed.roa} format="pct" tip={t.roa_tip} thresholds={{ good: 0.1, ok: 0.03 }} />
           </div>

@@ -13,12 +13,12 @@ export function costItemMonthly(item) {
 // PME reduced rate: 20% on first 100K, 25% on excess.
 // Reserve legale: 5% of net profit, capped at 10% of capital social.
 
-export function calcIsoc(ebitda, capitalSocial) {
-  var isocR = ebitda > 0 ? Math.min(ebitda, 100000) * 0.20 : 0;
-  var isocS = ebitda > 100000 ? (ebitda - 100000) * 0.25 : 0;
+export function calcIsoc(taxBase, capitalSocial) {
+  var isocR = taxBase > 0 ? Math.min(taxBase, 100000) * 0.20 : 0;
+  var isocS = taxBase > 100000 ? (taxBase - 100000) * 0.25 : 0;
   var isoc = isocR + isocS;
-  var isocEff = ebitda > 0 ? isoc / ebitda : 0;
-  var netP = ebitda - isoc;
+  var isocEff = taxBase > 0 ? isoc / taxBase : 0;
+  var netP = taxBase - isoc;
   var resLeg = netP > 0 ? Math.min(netP * 0.05, capitalSocial * 0.10) : 0;
   return { isocR: isocR, isocS: isocS, isoc: isoc, isocEff: isocEff, netP: netP, resLeg: resLeg };
 }
@@ -100,7 +100,7 @@ export function projectFinancials(params) {
       year: y,
       revenue: totalRev,
       costs: totalCost,
-      ebitda: totalRev - totalCost,
+      ebit: totalRev - totalCost,
       endCash: yRows.length > 0 ? yRows[yRows.length - 1].cumulative : cum,
     });
   }
@@ -161,7 +161,7 @@ export function indepCalc(netAnnual) {
     prev = b.limit;
   });
 
-  var taxFree = Math.min(taxable * 0.25, 10160);
+  var taxFree = Math.min(taxable, 10160);
   tax = Math.max(tax - taxFree * 0.25, 0);
   tax = tax * 1.07; // municipal surcharge ~7%
 
@@ -206,7 +206,7 @@ export function grantCalc(g) {
 export function calcHealthScore(params) {
   var totalRevenue = params.totalRevenue || 0;
   var monthlyCosts = params.monthlyCosts || 0;
-  var ebitda = params.ebitda || 0;
+  var ebitda = params.ebit || params.ebitda || 0;
   var cfg = params.cfg || {};
 
   function clamp(v) { return Math.max(0, Math.min(100, Math.round(v))); }
@@ -217,9 +217,11 @@ export function calcHealthScore(params) {
   }
 
   var ebitdaMargin = totalRevenue > 0 ? ebitda / totalRevenue : 0;
-  var profitability = ebitdaMargin < 0 ? lerp(ebitdaMargin, -0.5, 0, 0, 25)
-    : ebitdaMargin < 0.10 ? lerp(ebitdaMargin, 0, 0.10, 50, 75)
-    : lerp(ebitdaMargin, 0.10, 0.20, 75, 100);
+  var profitability;
+  if (ebitdaMargin < -0.20) profitability = 0;
+  else if (ebitdaMargin < 0) profitability = 25 + (ebitdaMargin + 0.20) / 0.20 * 25;
+  else if (ebitdaMargin < 0.10) profitability = 50 + ebitdaMargin / 0.10 * 25;
+  else profitability = 75 + Math.min((ebitdaMargin - 0.10) / 0.10 * 25, 25);
 
   var cash = cfg.initialCash || 0;
   var monthlyRevenue = totalRevenue / 12;

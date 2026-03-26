@@ -37,7 +37,7 @@ function TableHeader() {
 }
 
 export default function DebugCalculationsPage({
-  cfg, totalRevenue, monthlyCosts, ebitda, netP,
+  cfg, totalRevenue, monthlyCosts, ebit, netP,
   costs, sals, streams, debts, grants,
   esopMonthly, esopEnabled, opCosts, salCosts,
   isoc, isocR, isocS, isocEff,
@@ -94,7 +94,7 @@ export default function DebugCalculationsPage({
   debtDetails.forEach(function (d) { annualInterest += d.annualInterest; });
 
   var annC = monthlyCosts * 12;
-  var ebt = ebitda - annualInterest;
+  var ebt = ebit - annualInterest;
   var monthlyRevenue = totalRevenue / 12;
   var cash = cfg.initialCash || 0;
   var burn = monthlyCosts - monthlyRevenue;
@@ -180,7 +180,7 @@ export default function DebugCalculationsPage({
       <Accordion title={"4. Tax Calculations"} sub={"ISOC " + eur(isoc) + " · TVA " + eur(vatBalance)}>
         <Card>
           <TableHeader />
-          <CalcRow name="EBT (Earnings Before Tax)" inputs={eur(ebitda) + " - " + eur(annualInterest)} formula="EBITDA - interest" result={eur(ebt)} color={ebt >= 0 ? "var(--color-success)" : "var(--color-error)"} />
+          <CalcRow name="EBT (Earnings Before Tax)" inputs={eur(ebit) + " - " + eur(annualInterest)} formula="EBITDA - interest" result={eur(ebt)} color={ebt >= 0 ? "var(--color-success)" : "var(--color-error)"} />
           <CalcRow name="ISOC PME (20%)" inputs={"min(EBT, 100k)"} formula={"min(" + eur(ebt) + ", 100k) × 0.20"} result={eur(isocR)} />
           <CalcRow name="ISOC Standard (25%)" inputs={"max(EBT - 100k, 0)"} formula={"max(" + eur(ebt) + " - 100k, 0) × 0.25"} result={eur(isocS)} />
           <CalcRow name="ISOC Total" inputs={eur(isocR) + " + " + eur(isocS)} formula="ISOC PME + ISOC Std" result={eur(isoc)} color="var(--color-error)" />
@@ -277,7 +277,7 @@ export default function DebugCalculationsPage({
       <Accordion title="8. Health Score" sub="3 components">
         <Card>
           <TableHeader />
-          <CalcRow name="EBITDA Margin" inputs={eur(ebitda) + " / " + eur(totalRevenue)} formula="ebitda / revenue" result={totalRevenue > 0 ? pct(ebitda / totalRevenue) : "—"} />
+          <CalcRow name="EBITDA Margin" inputs={eur(ebit) + " / " + eur(totalRevenue)} formula="ebit / revenue" result={totalRevenue > 0 ? pct(ebit / totalRevenue) : "—"} />
           <CalcRow name="Burn Rate" inputs={eur(monthlyCosts) + " - " + eur(monthlyRevenue)} formula="costs - revenue" result={burn > 0 ? eur(burn) : "Profitable"} />
           <CalcRow name="Coverage" inputs={eur(totalRevenue) + " / " + eur(annC)} formula="revenue / annualCosts" result={annC > 0 ? pct(totalRevenue / annC) : "—"} />
         </Card>

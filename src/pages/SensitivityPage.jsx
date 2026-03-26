@@ -4,7 +4,7 @@ import SensitivityChart from "../components/SensitivityChart";
 import { eur } from "../utils";
 import { useT, useLang } from "../context";
 
-export default function SensitivityPage({ totalRevenue, monthlyCosts, salCosts, ebitda, cfg }) {
+export default function SensitivityPage({ totalRevenue, monthlyCosts, salCosts, ebit, cfg }) {
   var tAll = useT();
   var t = tAll.sensitivity;
   var { lang } = useLang();
@@ -23,7 +23,7 @@ export default function SensitivityPage({ totalRevenue, monthlyCosts, salCosts, 
         totalRevenue={totalRevenue}
         monthlyCosts={monthlyCosts}
         salCosts={salCosts}
-        ebitda={ebitda}
+        ebit={ebit}
         cfg={cfg}
         t={t}
       />

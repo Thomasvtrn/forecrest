@@ -26,7 +26,7 @@ function TermDetail({ entry, g, navigate, termKey, financials, setTab, currentTa
   function formatValue(v) {
     if (v == null) return "—";
     if (typeof v === "number") {
-      if (valueKey === "costCoverage" || valueKey === "ebitdaMargin" || valueKey === "utilizationRate") return v + " %";
+      if (valueKey === "costCoverage" || valueKey === "ebitMargin" || valueKey === "utilizationRate") return v + " %";
       if (valueKey === "runway") return v + " " + (g.unit_months || "months");
       if (valueKey === "activeSources") return String(v);
       if (valueKey === "healthScore") return v + "/100";

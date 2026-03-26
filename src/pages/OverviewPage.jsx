@@ -24,7 +24,7 @@ function getGreeting(lang, userName) {
 
 export default function OverviewPage({
   arrV, totalRevenue, extraStreamsMRR, streams,
-  monthlyCosts, totS, annC, ebitda, annualInterest,
+  monthlyCosts, totS, annC, ebit, annualInterest,
   isocR, isocS, isoc, isocEff, netP,
   resLeg, resTarget, dirRem, dirOk,
   divGross, mGross, strPct, strNeed, cfg,
@@ -50,25 +50,31 @@ export default function OverviewPage({
     return calcHealthScore({
       totalRevenue: totalRevenue,
       monthlyCosts: monthlyCosts,
-      ebitda: ebitda,
+      ebit: ebit,
       cfg: cfg,
       revY1: totalRevenue,
     });
-  }, [totalRevenue, monthlyCosts, ebitda, cfg]);
+  }, [totalRevenue, monthlyCosts, ebit, cfg]);
 
   /* ─── shared values ─── */
   var totalMRR = totalRevenue / 12;
   var monthlyRevenue = totalRevenue / 12;
   var isProfitable = monthlyRevenue >= monthlyCosts;
   var netBurn = monthlyCosts - monthlyRevenue;
-  var ebitdaMargin = totalRevenue > 0 ? ebitda / totalRevenue : 0;
+  var ebitMargin = totalRevenue > 0 ? ebit / totalRevenue : 0;
   var netMargin = totalRevenue > 0 ? netP / totalRevenue : 0;
   var totalDebt = 0;
   (debts || []).forEach(function (d) { if (d.amount > 0) totalDebt += d.amount; });
 
   var fr = cfg.capitalSocial + resLeg + netP;
-  var bfr = -monthlyCosts;
-  var tresoNette = fr - bfr;
+  var receivableDays = cfg.receivableDays || 30;
+  var payableDays = cfg.payableDays || 30;
+  var annualRevenue = totalRevenue;
+  var annualCosts = monthlyCosts * 12;
+  var receivables = annualRevenue * receivableDays / 365;
+  var payables = annualCosts * payableDays / 365;
+  var bfr = receivables - payables;
+  var tresoNette = (cfg.initialCash || 0) - bfr;
 
   var OVERVIEW_TABS = [
     { id: "summary", label: t.tab_summary || (lang === "fr" ? "Résumé" : "Summary") },
@@ -136,7 +142,7 @@ export default function OverviewPage({
         <OverviewSummary
           t={t} lang={lang}
           totalRevenue={totalRevenue} arrV={arrV} extraStreamsMRR={extraStreamsMRR} streams={streams}
-          monthlyCosts={monthlyCosts} annC={annC} ebitda={ebitda} annualInterest={annualInterest}
+          monthlyCosts={monthlyCosts} annC={annC} ebit={ebit} annualInterest={annualInterest}
           isocR={isocR} isocS={isocS} isoc={isoc} isocEff={isocEff} netP={netP}
           resLeg={resLeg} resTarget={resTarget} dirRem={dirRem} dirOk={dirOk}
           totalMRR={totalMRR} monthlyRevenue={monthlyRevenue}
@@ -150,9 +156,9 @@ export default function OverviewPage({
       {overviewTab === "analysis" ? (
         <OverviewAnalysis
           t={t} lang={lang}
-          totalRevenue={totalRevenue} monthlyCosts={monthlyCosts} ebitda={ebitda} netP={netP}
+          totalRevenue={totalRevenue} monthlyCosts={monthlyCosts} ebit={ebit} netP={netP}
           monthlyRevenue={monthlyRevenue} isProfitable={isProfitable} netBurn={netBurn}
-          ebitdaMargin={ebitdaMargin} netMargin={netMargin}
+          ebitMargin={ebitMargin} netMargin={netMargin}
           health={health}
           bizKpis={bizKpis} cfg={cfg}
           setTab={setTab} onNavigate={onNavigate}
@@ -163,7 +169,7 @@ export default function OverviewPage({
         <OverviewAdvanced
           t={t} lang={lang}
           totalRevenue={totalRevenue} monthlyCosts={monthlyCosts} monthlyRevenue={monthlyRevenue}
-          ebitda={ebitda} annualInterest={annualInterest} netP={netP}
+          ebit={ebit} annualInterest={annualInterest} netP={netP}
           cfg={cfg}
           isocR={isocR} isocS={isocS} isoc={isoc} isocEff={isocEff}
           annVatC={annVatC} annVatD={annVatD} vatBalance={vatBalance}

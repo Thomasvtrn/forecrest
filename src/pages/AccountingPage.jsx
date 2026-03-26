@@ -67,7 +67,7 @@ function AdviceRow({ label, value, bold, color, tip }) {
 
 // ── Page ──
 
-export default function AccountingPage({ costs, sals, cfg, debts, streams, stocks, totalRevenue, monthlyCosts, opCosts, salCosts, ebitda, isoc, netP, resLeg, annVatC, annVatD, vatBalance, esopMonthly, esopEnabled, setCosts, onNavigate, onRandomizeAll }) {
+export default function AccountingPage({ costs, sals, cfg, debts, streams, stocks, totalRevenue, monthlyCosts, opCosts, salCosts, ebit, isoc, netP, resLeg, annVatC, annVatD, vatBalance, esopMonthly, esopEnabled, setCosts, onNavigate, onRandomizeAll }) {
   var tAll = useT();
   var t = tAll.accounting;
   var { lang } = useLang();
@@ -283,7 +283,7 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
     }
   });
 
-  var ebt = ebitda - annualInterest;
+  var ebt = ebit - annualInterest;
   var resultNet = ebt - isoc;
 
   // ── 3. Balance sheet ──
@@ -518,7 +518,7 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
     incHtml += '<div class="row"><span class="lbl">62 - ' + t.inc_salaries + '</span><span class="amt">' + fmt(-salCostsAnnual) + '</span></div>';
     if (esopAnnual > 0) incHtml += '<div class="row"><span class="lbl">62 - ' + t.inc_esop + '</span><span class="amt">' + fmt(-esopAnnual) + '</span></div>';
     if (depreciationAnnual > 0) incHtml += '<div class="row"><span class="lbl">63 - ' + t.inc_depreciation + '</span><span class="amt">' + fmt(-depreciationAnnual) + '</span></div>';
-    incHtml += '<div class="row sep"><span class="lbl b">' + t.inc_ebitda + '</span><span class="amt b">' + fmt(ebitda) + '</span></div>';
+    incHtml += '<div class="row sep"><span class="lbl b">' + t.inc_ebitda + '</span><span class="amt b">' + fmt(ebit) + '</span></div>';
     if (annualInterest > 0) incHtml += '<div class="row"><span class="lbl">65 - ' + t.inc_interest + '</span><span class="amt">' + fmt(-annualInterest) + '</span></div>';
     incHtml += '<div class="row sep"><span class="lbl">' + t.inc_ebt + '</span><span class="amt">' + fmt(ebt) + '</span></div>';
     incHtml += '<div class="row"><span class="lbl">67 - ' + t.inc_isoc + '</span><span class="amt">' + fmt(-isoc) + '</span></div>';
@@ -773,7 +773,7 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
             <div style={{ height: 1, background: "var(--border-light)", margin: "4px 0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{t.insight_operating_result}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--text-primary)" }}>{eur(ebitda)}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, fontVariantNumeric: "tabular-nums", color: "var(--text-primary)" }}>{eur(ebit)}</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
               <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{t.isoc_label}</span>
@@ -981,9 +981,9 @@ export default function AccountingPage({ costs, sals, cfg, debts, streams, stock
               <Row label={(cfg.showPcmn ? "62 - " : "") + t.inc_salaries} value={<DevVal v={eur(-salCostsAnnual)} f={eur(salCosts) + "/mois × 12 = " + eur(salCostsAnnual)} />} />
               {esopAnnual > 0 ? <Row label={(cfg.showPcmn ? "62 - " : "") + t.inc_esop} value={<DevVal v={eur(-esopAnnual)} f={eur(esopMonthly) + "/mois × 12 = " + eur(esopAnnual)} />} /> : null}
               {depreciationAnnual > 0 ? <Row label={(cfg.showPcmn ? "63 - " : "") + t.inc_depreciation} value={eur(-depreciationAnnual)} /> : null}
-              <Row label={t.inc_ebitda} value={<DevVal v={eur(ebitda)} f={eur(totalRevenue) + " - " + eur(totalRevenue - ebitda) + " = " + eur(ebitda)} />} bold border />
+              <Row label={t.inc_ebitda} value={<DevVal v={eur(ebit)} f={eur(totalRevenue) + " - " + eur(totalRevenue - ebit) + " = " + eur(ebit)} />} bold border />
               {annualInterest > 0 ? <Row label={(cfg.showPcmn ? "65 - " : "") + t.inc_interest} value={eur(-annualInterest)} /> : null}
-              <Row label={t.inc_ebt} value={<DevVal v={eur(ebt)} f={eur(ebitda) + " - " + eur(annualInterest) + " = " + eur(ebt)} />} bold={false} border />
+              <Row label={t.inc_ebt} value={<DevVal v={eur(ebt)} f={eur(ebit) + " - " + eur(annualInterest) + " = " + eur(ebt)} />} bold={false} border />
               <Row label={(cfg.showPcmn ? "67 - " : "") + t.inc_isoc} value={<DevVal v={eur(-isoc)} f={"20% × min(EBT,100k) + 25% × max(EBT-100k,0) = " + eur(isoc)} />} />
               <Row label={t.inc_net} value={<DevVal v={eur(resultNet)} f={eur(ebt) + " - " + eur(isoc) + " = " + eur(resultNet)} />} bold border color={resultNet >= 0 ? "var(--color-success)" : "var(--color-error)"} />
 

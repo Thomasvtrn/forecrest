@@ -139,7 +139,7 @@ function DebtModal({ onAdd, onSave, onClose, lang, initialData, initialLabel }) 
 }
 
 /* ── Main Page ── */
-export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, setCfg, setTab, onNavigate, crowdfunding, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
+export default function DebtPage({ debts, setDebts, ebit, capitalSocial, cfg, setCfg, setTab, onNavigate, crowdfunding, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
   var t = useT().debt || {};
   var { lang } = useLang();
   var [activeTab, setActiveTab] = useState("all");
@@ -229,7 +229,7 @@ export default function DebtPage({ debts, setDebts, ebitda, capitalSocial, cfg, 
     if (c.type !== "subsidy" && c.type !== "crowdfunding" && c.duration > 0) annualInterest += Math.max(0, c.monthly * 12 - c.amount / c.duration * 12);
   });
   var annualDebtService = totalMonthly * 12;
-  var dscr = annualDebtService > 0 && ebitda != null ? ebitda / annualDebtService : 0;
+  var dscr = annualDebtService > 0 && ebit != null ? ebit / annualDebtService : 0;
   var debtRatio = capitalSocial > 0 ? totalRemaining / capitalSocial : 0;
 
   /* Tab mapping */

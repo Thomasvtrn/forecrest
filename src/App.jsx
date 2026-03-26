@@ -574,20 +574,26 @@ export default function App() {
   }, [streams, affiliation, crowdfunding]);
 
   var annC = monthlyCosts * 12;
-  var ebitda = totalRevenue - annC;
+  // Note: 'ebit' includes depreciation (from opCosts items with PCMN 63xx).
+  // True EBITDA would add back depreciation, but we use EBIT for tax base.
+  var ebit = totalRevenue - annC;
   var annualInterest = 0;
   debts.forEach(function (d) {
-    if (d.rate > 0 && d.amount > 0 && d.duration > d.elapsed) {
+    if (d.rate > 0 && d.amount > 0 && d.duration > (d.elapsed || 0)) {
       var r = d.rate / 12;
       if (r > 0) {
         var pow = Math.pow(1 + r, d.duration);
-        var powE = Math.pow(1 + r, d.elapsed);
-        var bal = d.amount * (pow - powE) / (pow - 1);
-        annualInterest += bal * d.rate;
+        var elapsed = d.elapsed || 0;
+        var powBegin = Math.pow(1 + r, elapsed);
+        var balanceBegin = d.amount * (pow - powBegin) / (pow - 1);
+        var elapsedEnd = Math.min(elapsed + 12, d.duration);
+        var balanceEnd = elapsedEnd >= d.duration ? 0 : d.amount * (pow - Math.pow(1 + r, elapsedEnd)) / (pow - 1);
+        var avgBalance = (balanceBegin + balanceEnd) / 2;
+        annualInterest += avgBalance * d.rate;
       }
     }
   });
-  var ebt = ebitda - annualInterest;
+  var ebt = ebit - annualInterest;
   var { isocR, isocS, isoc, isocEff, netP, resLeg } = calcIsoc(ebt, cfg.capitalSocial);
   var resTarget = cfg.capitalSocial * 0.10;
   var dirRem = 0;
@@ -606,10 +612,10 @@ export default function App() {
   var bizKpis = useMemo(function () {
     return calcBusinessKpis(cfg.businessType, {
       totalRevenue: totalRevenue, monthlyCosts: monthlyCosts,
-      ebitda: ebitda, netP: netP, cfg: cfg, sals: sals,
+      ebit: ebit, netP: netP, cfg: cfg, sals: sals,
       streams: streams, debts: debts,
     });
-  }, [cfg, totalRevenue, monthlyCosts, ebitda, netP, sals, streams, debts]);
+  }, [cfg, totalRevenue, monthlyCosts, ebit, netP, sals, streams, debts]);
 
   /* Push financial values to glossary context for live display */
   useEffect(function () {
@@ -619,31 +625,33 @@ export default function App() {
       annualRevenue: totalRevenue,
       totalCosts: annC,
       fixedCosts: annC, /* simplified — could split fixed/variable */
-      ebitda: ebitda,
-      ebitdaMargin: totalRevenue > 0 ? Math.round(ebitda / totalRevenue * 100) : 0,
+      ebit: ebit,
+      ebitMargin: totalRevenue > 0 ? Math.round(ebit / totalRevenue * 100) : 0,
       netProfit: netP,
       isoc: isoc,
-      burnRate: ebitda < 0 ? Math.abs(ebitda / 12) : 0,
-      runway: ebitda < 0 && (cfg.initialCash || 0) > 0 ? Math.round((cfg.initialCash || 0) / Math.abs(ebitda / 12)) : null,
+      burnRate: ebit < 0 ? Math.abs(ebit / 12) : 0,
+      runway: ebit < 0 && (cfg.initialCash || 0) > 0 ? Math.round((cfg.initialCash || 0) / Math.abs(ebit / 12)) : null,
       treasury: cfg.initialCash || 0,
       costCoverage: annC > 0 ? Math.round(totalRevenue / annC * 100) : null,
       salaryCost: salCosts * 12,
       showPcmn: cfg.showPcmn || false,
     });
-  }, [totalRevenue, annC, ebitda, netP, isoc, cfg.initialCash, cfg.showPcmn, salCosts, setGlossaryFinancials]);
+  }, [totalRevenue, annC, ebit, netP, isoc, cfg.initialCash, cfg.showPcmn, salCosts, setGlossaryFinancials]);
 
   function handlePrint() {
-    var ebitdaMargin = totalRevenue > 0 ? ebitda / totalRevenue : 0;
+    var ebitMargin = totalRevenue > 0 ? ebit / totalRevenue : 0;
     var monthlyRevenue = totalRevenue / 12;
     var isProfitable = monthlyRevenue >= monthlyCosts;
     var netBurn = monthlyCosts - monthlyRevenue;
     var frV = cfg.capitalSocial + resLeg + netP;
-    var bfrV = -monthlyCosts;
+    var recDays = cfg.receivableDays || 30;
+    var payDays = cfg.payableDays || 30;
+    var bfrV = totalRevenue * recDays / 365 - monthlyCosts * 12 * payDays / 365;
     openInvestorReport({
       totalRevenue: totalRevenue, totalMRR: totalRevenue / 12, totS: 0,
-      monthlyCosts: monthlyCosts, ebitda: ebitda, ebitdaMargin: ebitdaMargin, netP: netP,
+      monthlyCosts: monthlyCosts, ebit: ebit, ebitMargin: ebitMargin, netP: netP,
       isProfitable: isProfitable, netBurn: netBurn,
-      divGross: divGross, fr: frV, bfr: bfrV, tresoNette: frV - bfrV,
+      divGross: divGross, fr: frV, bfr: bfrV, tresoNette: (cfg.initialCash || 0) - bfrV,
       ltv: 0, ltvCac: 0, payback: 0, arpuMonthly: 0,
       cfg: cfg, resLeg: resLeg, isoc: isoc, vatBalance: vatBalance,
     }, lang);
@@ -832,7 +840,7 @@ export default function App() {
               <OverviewPage
                 totalRevenue={totalRevenue}
                 monthlyCosts={monthlyCosts} annC={annC}
-                ebitda={ebitda} annualInterest={annualInterest}
+                ebit={ebit} annualInterest={annualInterest}
                 isocR={isocR} isocS={isocS} isoc={isoc} isocEff={isocEff}
                 netP={netP} resLeg={resLeg} resTarget={resTarget} dirRem={dirRem} dirOk={dirOk}
                 divGross={divGross} cfg={cfg}
@@ -847,7 +855,7 @@ export default function App() {
                 costs={costs} sals={sals} cfg={cfg} debts={debts} streams={streams} stocks={stocks}
                 totalRevenue={totalRevenue} monthlyCosts={monthlyCosts}
                 opCosts={opCosts} salCosts={salCosts}
-                ebitda={ebitda} isoc={isoc} netP={netP} resLeg={resLeg}
+                ebit={ebit} isoc={isoc} netP={netP} resLeg={resLeg}
                 annVatC={annVatC} annVatD={annVatD} vatBalance={vatBalance}
                 esopMonthly={esopMonthly} esopEnabled={esopEnabled}
                 setCosts={setCosts} onNavigate={navigateWithToast}
@@ -876,7 +884,7 @@ export default function App() {
             {tab === "ratios" ? (
               <RatiosPage
                 cfg={cfg} totalRevenue={totalRevenue} monthlyCosts={monthlyCosts}
-                ebitda={ebitda} netP={netP} resLeg={resLeg} debts={debts}
+                ebit={ebit} netP={netP} resLeg={resLeg} debts={debts}
                 sals={sals} salCosts={salCosts} stocks={stocks}
                 esopMonthly={esopMonthly} esopEnabled={esopEnabled}
                 bizKpis={bizKpis}
@@ -891,7 +899,7 @@ export default function App() {
               <CashFlowPage
                 totalRevenue={totalRevenue}
                 monthlyCosts={monthlyCosts} annC={annC}
-                ebitda={ebitda}
+                ebit={ebit}
                 debts={debts} salCosts={salCosts} assets={assets}
                 annVatC={annVatC} annVatD={annVatD}
                 cfg={cfg} setCfg={setCfg} setTab={setTab}
@@ -932,7 +940,7 @@ export default function App() {
             {tab === "sensitivity" ? (
               <SensitivityPage
                 totalRevenue={totalRevenue} monthlyCosts={monthlyCosts}
-                salCosts={salCosts} ebitda={ebitda} cfg={cfg}
+                salCosts={salCosts} ebit={ebit} cfg={cfg}
               />
             ) : null}
 
@@ -958,7 +966,7 @@ export default function App() {
             ) : null}
 
             {tab === "debt" ? (
-              <DebtPage debts={debts} setDebts={setDebts} ebitda={ebitda} capitalSocial={cfg.capitalSocial} cfg={cfg} setCfg={setCfg} setTab={setTab} onNavigate={navigateWithToast} crowdfunding={crowdfunding} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} pendingAdd={pendingAdd && pendingAdd.target === "debt" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd} pendingEdit={pendingEdit && pendingEdit.target === "debt" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit} pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "debt" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate} />
+              <DebtPage debts={debts} setDebts={setDebts} ebit={ebit} capitalSocial={cfg.capitalSocial} cfg={cfg} setCfg={setCfg} setTab={setTab} onNavigate={navigateWithToast} crowdfunding={crowdfunding} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} pendingAdd={pendingAdd && pendingAdd.target === "debt" ? pendingAdd : null} onClearPendingAdd={clearPendingAdd} pendingEdit={pendingEdit && pendingEdit.target === "debt" ? pendingEdit : null} onClearPendingEdit={clearPendingEdit} pendingDuplicate={pendingDuplicate && pendingDuplicate.target === "debt" ? pendingDuplicate : null} onClearPendingDuplicate={clearPendingDuplicate} />
             ) : null}
 
             {tab === "crowdfunding" ? (
@@ -1012,7 +1020,7 @@ export default function App() {
             {tab === "dev-calc" && devMode ? (
               <DebugCalculationsPage
                 cfg={cfg} totalRevenue={totalRevenue} monthlyCosts={monthlyCosts}
-                ebitda={ebitda} netP={netP} costs={costs} sals={sals}
+                ebit={ebit} netP={netP} costs={costs} sals={sals}
                 streams={streams} debts={debts} grants={grants}
                 esopMonthly={esopMonthly} esopEnabled={esopEnabled}
                 opCosts={opCosts} salCosts={salCosts}
@@ -1046,8 +1054,8 @@ export default function App() {
             data={{
               companyName: cfg.companyName,
               totalRevenue: totalRevenue,
-              ebitda: ebitda,
-              ebitdaMargin: totalRevenue > 0 ? ebitda / totalRevenue : 0,
+              ebit: ebit,
+              ebitMargin: totalRevenue > 0 ? ebit / totalRevenue : 0,
               netP: netP,
               monthlyCosts: monthlyCosts,
               arpuMonthly: 0,

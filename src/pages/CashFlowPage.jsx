@@ -537,7 +537,7 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, debts, salCos
       {/* ── Year summary cards ── */}
       <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(" + Math.min(proj.years.length, 3) + ", 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
         {proj.years.map(function (yr) {
-          var margin = yr.revenue > 0 ? yr.ebitda / yr.revenue : 0;
+          var margin = yr.revenue > 0 ? yr.ebit / yr.revenue : 0;
           return (
             <div key={yr.year} style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
@@ -546,17 +546,17 @@ export default function CashFlowPage({ totalRevenue, monthlyCosts, debts, salCos
                 </h4>
                 <span style={{
                   fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: "var(--r-full)",
-                  background: yr.ebitda >= 0 ? "var(--color-success-bg)" : "var(--color-error-bg)",
-                  color: yr.ebitda >= 0 ? "var(--color-success)" : "var(--color-error)",
-                  border: "1px solid " + (yr.ebitda >= 0 ? "var(--color-success-border)" : "var(--color-error-border)"),
+                  background: yr.ebit >= 0 ? "var(--color-success-bg)" : "var(--color-error-bg)",
+                  color: yr.ebit >= 0 ? "var(--color-success)" : "var(--color-error)",
+                  border: "1px solid " + (yr.ebit >= 0 ? "var(--color-success-border)" : "var(--color-error-border)"),
                 }}>
-                  {yr.ebitda >= 0 ? "+" : ""}{pct(margin)}
+                  {yr.ebit >= 0 ? "+" : ""}{pct(margin)}
                 </span>
               </div>
               {[
                 { label: t.proj_revenue || "Revenus", value: eur(yr.revenue), color: "var(--color-success)" },
                 { label: t.proj_costs || "Charges", value: eur(yr.costs), color: "var(--text-primary)" },
-                { label: "EBITDA", value: eur(yr.ebitda), color: yr.ebitda >= 0 ? "var(--color-success)" : "var(--color-error)", bold: true },
+                { label: "EBITDA", value: eur(yr.ebit), color: yr.ebit >= 0 ? "var(--color-success)" : "var(--color-error)", bold: true },
                 { label: t.proj_end_cash || "Trésorerie fin", value: eur(yr.endCash), color: yr.endCash >= 0 ? "var(--text-primary)" : "var(--color-error)" },
               ].map(function (row, i) {
                 return (

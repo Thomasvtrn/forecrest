@@ -119,7 +119,7 @@ var SECTIONS = [
 
 export default function FinancialPlanPage({
   totalRevenue, monthlyCosts, opCosts, salCosts,
-  ebitda, netP, sals, cfg,
+  ebit, netP, sals, cfg,
   planSections, setPlanSections,
 }) {
   var t = useT().plan;
@@ -179,7 +179,7 @@ export default function FinancialPlanPage({
       return [
         { icon: CurrencyEur, label: t.data_revenue, value: eur(totalRevenue) },
         { icon: ChartBar, label: t.data_costs, value: eur(monthlyCosts * 12) },
-        { icon: TrendUp, label: "EBITDA", value: eur(ebitda), color: ebitda >= 0 ? "var(--color-success)" : "var(--color-error)" },
+        { icon: TrendUp, label: "EBITDA", value: eur(ebit), color: ebit >= 0 ? "var(--color-success)" : "var(--color-error)" },
         { icon: TrendUp, label: t.data_net, value: eur(netP), color: netP >= 0 ? "var(--color-success)" : "var(--color-error)" },
       ];
     }
