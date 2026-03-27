@@ -407,6 +407,11 @@ export default {
     wizard_finish: "Get started",
     minority_explain: "A minority shareholder owns less than 50% of shares. These clauses protect them against unilateral decisions by the majority.",
     majority_explain: "A majority shareholder owns more than 50% of shares. These clauses allow them to move forward without being blocked by minorities.",
+
+    // Prerequisite wall
+    prereq_title: "Add your shareholders first",
+    prereq_desc: "The shareholders' agreement defines the rules between your company's shareholders. Add at least one shareholder in the cap table to get started.",
+    prereq_cta: "Go to cap table",
   },
 
   crowdfunding: {

@@ -410,6 +410,11 @@ export default {
     wizard_finish: "Commencer",
     minority_explain: "Un actionnaire minoritaire détient moins de 50% des parts. Ces clauses le protègent contre les décisions unilatérales des majoritaires.",
     majority_explain: "Un actionnaire majoritaire détient plus de 50% des parts. Ces clauses lui permettent d'avancer sans être bloqué par les minoritaires.",
+
+    // Prerequisite wall
+    prereq_title: "Ajoutez d'abord vos actionnaires",
+    prereq_desc: "Le pacte d'associés définit les règles entre les actionnaires de votre entreprise. Ajoutez au moins un actionnaire dans la table de capitalisation pour commencer.",
+    prereq_cta: "Aller aux actionnaires",
   },
 
   crowdfunding: {
