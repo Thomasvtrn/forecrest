@@ -394,6 +394,9 @@ export default {
     export_title: "Exporter le résumé",
     export_desc: "Générez un résumé de vos clauses à transmettre à votre avocat ou notaire.",
     export_btn: "Exporter",
+    export_pdf: "PDF juridique",
+    export_pdf_tip: "Génère un document au format juridique belge, prêt à transmettre à votre avocat.",
+    all_explain: "Cette clause protège tous les actionnaires de manière égale, qu'ils soient minoritaires ou majoritaires.",
 
     // Wizard
     wizard_intro_title: "Protégez votre entreprise et vos associés",

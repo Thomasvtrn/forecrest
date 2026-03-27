@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
-import { Card, PageLayout, KpiCard, Wizard, NumberField, CurrencyInput, SelectDropdown, Button, Checkbox } from "../../components";
+import { Card, PageLayout, KpiCard, Wizard, NumberField, CurrencyInput, SelectDropdown, Button, Checkbox, Tooltip } from "../../components";
 import {
   ShieldCheck, UsersThree, ArrowRight, Lock, Clock, UserMinus,
   Prohibit, HandPalm, FileText, Scales, Calculator, CaretDown,
-  Printer, Sparkle, Gear,
+  Printer, Sparkle, Gear, DownloadSimple,
 } from "@phosphor-icons/react";
 import { useT, useLang } from "../../context";
 
@@ -160,7 +160,7 @@ var CLAUSE_SECTIONS = [
             options: [
               { value: "mediation", label: { fr: "Médiation", en: "Mediation" } },
               { value: "arbitration", label: { fr: "Arbitrage", en: "Arbitration" } },
-              { value: "russian_roulette", label: { fr: "Clause de roulette russe", en: "Russian roulette clause" } },
+              { value: "russian_roulette", label: { fr: "Offre croisée (chacun propose un prix)", en: "Cross offer (each proposes a price)" } },
             ],
           },
         ],
@@ -183,13 +183,13 @@ var CLAUSE_SECTIONS = [
           {
             key: "method", label: { fr: "Méthode", en: "Method" }, type: "select", default: "multiple",
             options: [
-              { value: "dcf", label: { fr: "DCF (flux actualisés)", en: "DCF (discounted cash flows)" } },
-              { value: "multiple", label: { fr: "Multiple d'EBITDA", en: "EBITDA multiple" } },
-              { value: "book_value", label: { fr: "Valeur comptable", en: "Book value" } },
-              { value: "expert", label: { fr: "Expert indépendant", en: "Independent expert" } },
+              { value: "dcf", label: { fr: "Projection des revenus futurs", en: "Future revenue projection" } },
+              { value: "multiple", label: { fr: "Multiple du résultat annuel", en: "Annual result multiple" } },
+              { value: "book_value", label: { fr: "Valeur comptable (actifs - dettes)", en: "Book value (assets - debts)" } },
+              { value: "expert", label: { fr: "Évaluation par un expert indépendant", en: "Independent expert valuation" } },
             ],
           },
-          { key: "multipleValue", label: { fr: "Multiple appliqué", en: "Applied multiple" }, type: "number", default: 5, min: 1, max: 50 },
+          { key: "multipleValue", label: { fr: "Coefficient multiplicateur", en: "Multiplier coefficient" }, type: "number", default: 5, min: 1, max: 50 },
         ],
       },
       {
@@ -204,8 +204,8 @@ var CLAUSE_SECTIONS = [
           {
             key: "type", label: { fr: "Type", en: "Type" }, type: "select", default: "weighted_avg",
             options: [
-              { value: "full_ratchet", label: { fr: "Full ratchet", en: "Full ratchet" } },
-              { value: "weighted_avg", label: { fr: "Moyenne pondérée", en: "Weighted average" } },
+              { value: "full_ratchet", label: { fr: "Compensation totale (prix ajusté au plus bas)", en: "Full compensation (price adjusted to lowest)" } },
+              { value: "weighted_avg", label: { fr: "Compensation proportionnelle (ajustement moyen)", en: "Proportional compensation (average adjustment)" } },
             ],
           },
         ],
@@ -261,6 +261,227 @@ function buildDefaultPact(recommended) {
 /* ── Recommended clauses for quick setup ────────────────────────── */
 
 var RECOMMENDED_IDS = ["preemption", "tag_along", "lock_up", "vesting", "good_bad_leaver", "non_compete", "reporting", "valuation_method"];
+
+/* ── Legal context per clause (Belgian law references) ─────────── */
+
+var LEGAL_CONTEXT = {
+  preemption: "Conformément aux articles 5:63 et suivants du Code des sociétés et des associations (CSA), les actionnaires bénéficient d'un droit de préférence lors de toute cession de parts sociales. Ce droit s'exerce proportionnellement à la participation de chaque actionnaire dans le capital social.",
+  tag_along: "En application du principe de protection des minoritaires (art. 5:140 CSA), tout actionnaire minoritaire dispose du droit de se joindre à une cession initiée par un actionnaire majoritaire, aux mêmes conditions et au même prix par part sociale.",
+  drag_along: "Dans le respect des conditions prévues à l'article 5:141 CSA, l'actionnaire ou le groupe d'actionnaires détenant la majorité requise peut contraindre les actionnaires minoritaires à céder leurs parts dans le cadre d'une offre de rachat global, sous réserve du respect du prix minimum convenu.",
+  lock_up: "Les parties conviennent d'une période d'incessibilité au sens de l'article 5:62 CSA, durant laquelle aucun actionnaire ne pourra céder, nantir ou transférer ses parts sociales, sauf accord unanime des autres actionnaires.",
+  vesting: "Les parts soumises à acquisition progressive sont régies par un calendrier de déblocage (vesting schedule), incluant une période d'attente initiale (cliff). Les parts non acquises en cas de départ anticipé seront rachetées par la Société ou les actionnaires restants selon les modalités prévues ci-après.",
+  good_bad_leaver: "En cas de départ d'un actionnaire, les conditions de rachat suivantes s'appliquent, conformément aux principes de bonne foi et d'équité contractuelle. La qualification de « good leaver » ou « bad leaver » sera déterminée par le conseil d'administration à la majorité qualifiée.",
+  non_compete: "Conformément à l'article 5:164 CSA et aux principes de droit commun en matière de non-concurrence, chaque actionnaire s'engage, pendant la durée de sa participation et durant la période post-contractuelle définie, à ne pas exercer d'activité concurrente directe ou indirecte.",
+  veto: "Les décisions suivantes requièrent l'unanimité des actionnaires conformément à l'article 5:100 CSA et ne peuvent être adoptées sans le consentement exprès de chaque actionnaire, quelle que soit sa participation au capital.",
+  reporting: "La Société s'engage à fournir aux Actionnaires les informations financières suivantes, conformément aux obligations de transparence prévues par le CSA et les statuts de la Société. Le non-respect de cette obligation constitue un manquement contractuel ouvrant droit à réparation.",
+  deadlock: "En cas de blocage décisionnel (deadlock), les parties conviennent du mécanisme suivant, conçu pour préserver la continuité de l'entreprise et éviter toute paralysie opérationnelle. À défaut de résolution amiable dans un délai raisonnable, la procédure ci-dessous sera mise en œuvre.",
+  valuation_method: "La valorisation des parts sociales sera déterminée selon la méthode suivante, appliquée de manière cohérente lors de toute cession, rachat ou événement de liquidité. En cas de désaccord sur la valorisation, un expert indépendant sera désigné conformément à l'article 5:70 CSA.",
+  anti_dilution: "En cas d'émission de nouvelles parts à un prix inférieur (down-round), les actionnaires existants bénéficieront d'un mécanisme d'ajustement de leur participation, destiné à compenser la dilution subie. Ce mécanisme s'applique conformément aux conditions convenues entre les parties.",
+};
+
+var LEGAL_CONTEXT_EN = {
+  preemption: "In accordance with articles 5:63 et seq. of the Belgian Code of Companies and Associations (CCA), shareholders benefit from a preferential right upon any transfer of shares. This right is exercised proportionally to each shareholder's participation in the share capital.",
+  tag_along: "In application of the minority protection principle (art. 5:140 CCA), any minority shareholder has the right to join a transfer initiated by a majority shareholder, under the same conditions and at the same price per share.",
+  drag_along: "In compliance with the conditions set out in article 5:141 CCA, the shareholder or group of shareholders holding the required majority may compel minority shareholders to transfer their shares as part of an overall buyout offer, subject to the agreed minimum price.",
+  lock_up: "The parties agree on a lock-up period within the meaning of article 5:62 CCA, during which no shareholder may transfer, pledge or assign their shares, except by unanimous agreement of the other shareholders.",
+  vesting: "Shares subject to progressive acquisition are governed by a vesting schedule, including an initial cliff period. Unvested shares in the event of early departure shall be repurchased by the Company or remaining shareholders under the terms set forth herein.",
+  good_bad_leaver: "In the event of a shareholder's departure, the following buyback conditions shall apply, in accordance with the principles of good faith and contractual fairness. The qualification as 'good leaver' or 'bad leaver' shall be determined by the board of directors by qualified majority.",
+  non_compete: "In accordance with article 5:164 CCA and the general principles of non-competition law, each shareholder undertakes, during the period of their participation and for the post-contractual period defined, not to engage in any direct or indirect competing activity.",
+  veto: "The following decisions require unanimity of shareholders pursuant to article 5:100 CCA and cannot be adopted without the express consent of each shareholder, regardless of their participation in the share capital.",
+  reporting: "The Company undertakes to provide Shareholders with the following financial information, in accordance with the transparency obligations set out in the CCA and the Company's articles of association. Failure to comply constitutes a contractual breach entitling the aggrieved party to compensation.",
+  deadlock: "In the event of a decisional deadlock, the parties agree on the following mechanism, designed to preserve business continuity and avoid any operational paralysis. Failing amicable resolution within a reasonable timeframe, the procedure below shall be implemented.",
+  valuation_method: "The valuation of shares shall be determined according to the following method, applied consistently upon any transfer, buyback or liquidity event. In case of valuation disagreement, an independent expert shall be appointed pursuant to article 5:70 CCA.",
+  anti_dilution: "In the event of issuance of new shares at a lower price (down-round), existing shareholders shall benefit from an adjustment mechanism for their participation, intended to compensate for the dilution suffered. This mechanism applies in accordance with the conditions agreed between the parties.",
+};
+
+/* ── PDF CSS for legal document ────────────────────────────────── */
+
+var LEGAL_PDF_CSS = [
+  '*{margin:0;padding:0;box-sizing:border-box}',
+  'body{font-family:Georgia,"Times New Roman",Times,serif;color:#1a1a1a;padding:40px 48px;font-size:12pt;line-height:1.6;text-align:justify}',
+  '@page{size:A4 portrait;margin:20mm 22mm}',
+  '@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}',
+  '.doc-header{border-bottom:3px solid #E25536;padding-bottom:16px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end}',
+  '.logo{display:flex;align-items:center;gap:10px}',
+  '.logo-icon{width:28px;height:28px;border-radius:6px;background:#E25536;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;font-family:system-ui,sans-serif}',
+  '.logo-text{font-size:16px;font-weight:800;letter-spacing:-0.03em;color:#1a1a1a;font-family:system-ui,sans-serif}',
+  '.doc-meta{text-align:right;font-size:10pt;color:#555;line-height:1.5}',
+  '.doc-meta strong{color:#1a1a1a}',
+  '.doc-title{text-align:center;margin:32px 0 8px;font-size:18pt;font-weight:bold;letter-spacing:0.1em;text-transform:uppercase}',
+  '.doc-disclaimer{text-align:center;font-size:9pt;color:#888;font-style:italic;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid #ddd}',
+  '.preamble{margin-bottom:28px;font-size:11pt;line-height:1.8}',
+  '.preamble strong{font-weight:bold}',
+  '.preamble .conclusion{text-align:center;font-weight:bold;font-variant:small-caps;font-size:12pt;margin-top:20px;letter-spacing:0.08em}',
+  '.article{margin-bottom:24px;page-break-inside:avoid}',
+  '.article-header{font-size:13pt;font-weight:bold;margin-bottom:10px;color:#1a1a1a;border-bottom:1px solid #e0e0e0;padding-bottom:6px}',
+  '.article-paragraph{margin-bottom:8px;font-size:11pt;text-indent:2em}',
+  '.article-paragraph.no-indent{text-indent:0}',
+  '.article-params{margin:10px 0 10px 2em;font-size:10.5pt}',
+  '.article-params li{margin-bottom:4px;list-style:disc}',
+  '.article-params li strong{font-weight:600}',
+  '.legal-context{font-size:10.5pt;color:#333;font-style:italic;margin-top:8px;text-indent:2em}',
+  '.signature-block{margin-top:48px;page-break-inside:avoid}',
+  '.signature-block .place-date{font-size:11pt;margin-bottom:32px}',
+  '.signature-block .copies{font-size:10pt;color:#555;margin-bottom:28px}',
+  '.sig-grid{display:flex;justify-content:space-between;gap:40px}',
+  '.sig-box{flex:1;font-size:10.5pt}',
+  '.sig-box .sig-title{font-weight:bold;margin-bottom:16px;font-size:11pt}',
+  '.sig-box .sig-line{border-bottom:1px solid #999;height:48px;margin-bottom:8px}',
+  '.sig-box .sig-label{color:#555;font-size:9.5pt}',
+  '.doc-footer{margin-top:40px;padding-top:16px;border-top:1px solid #ddd;text-align:center;font-size:9pt;color:#999;line-height:1.6}',
+  '.doc-footer a{color:#E25536;text-decoration:none}',
+].join('');
+
+/* ── Export legal PDF function ─────────────────────────────────── */
+
+function exportLegalPdf(cfg, pact, lang) {
+  var isFr = lang !== "en";
+  var now = new Date();
+  var dateStr = now.toLocaleDateString(isFr ? "fr-BE" : "en-GB", { year: "numeric", month: "long", day: "numeric" });
+
+  var companyName = (cfg && cfg.companyName) || "____________";
+  var legalForm = (cfg && cfg.legalForm) || "____________";
+  var tvaNumber = (cfg && cfg.tvaNumber) || "____________";
+  var address = (cfg && cfg.address) || "____________";
+
+  function esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+  var html = '<!DOCTYPE html><html lang="' + lang + '"><head><meta charset="UTF-8"><title>' +
+    (isFr ? "Convention d'actionnaires" : "Shareholders' Agreement") +
+    '</title><style>' + LEGAL_PDF_CSS + '</style></head><body>';
+
+  /* ── Header ── */
+  html += '<div class="doc-header"><div class="logo"><div class="logo-icon">F</div><div class="logo-text">Forecrest</div></div>';
+  html += '<div class="doc-meta">' + dateStr + '<br/>';
+  if (cfg && cfg.companyName) html += '<strong>' + esc(cfg.companyName) + '</strong>';
+  if (cfg && cfg.legalForm) html += ' · ' + esc(cfg.legalForm);
+  if (cfg && cfg.tvaNumber) html += '<br/>TVA ' + esc(cfg.tvaNumber);
+  html += '</div></div>';
+
+  /* ── Title ── */
+  html += '<div class="doc-title">' + (isFr ? "CONVENTION D'ACTIONNAIRES" : "SHAREHOLDERS' AGREEMENT") + '</div>';
+  html += '<div class="doc-disclaimer">' + (isFr
+    ? "Document préparatoire — à valider par un conseil juridique"
+    : "Preparatory document — to be validated by legal counsel") + '</div>';
+
+  /* ── Preamble ── */
+  html += '<div class="preamble">';
+  if (isFr) {
+    html += '<p>Entre les soussignés :</p>';
+    html += '<p><strong>' + esc(companyName) + '</strong>, ' + esc(legalForm) +
+      ', dont le siège social est établi à ' + esc(address) +
+      ', inscrite à la BCE sous le numéro ' + esc(tvaNumber) + ',</p>';
+    html += '<p>ci-après dénommée « la Société »,</p>';
+    html += '<p>Et ses actionnaires tels que repris dans le registre des actionnaires,</p>';
+    html += '<p>ci-après dénommés individuellement « l\'Actionnaire » et collectivement « les Actionnaires »,</p>';
+    html += '<p class="conclusion">IL A ÉTÉ CONVENU CE QUI SUIT :</p>';
+  } else {
+    html += '<p>Between the undersigned:</p>';
+    html += '<p><strong>' + esc(companyName) + '</strong>, ' + esc(legalForm) +
+      ', with registered office at ' + esc(address) +
+      ', registered with the CBE under number ' + esc(tvaNumber) + ',</p>';
+    html += '<p>hereinafter referred to as "the Company",</p>';
+    html += '<p>And its shareholders as listed in the register of shareholders,</p>';
+    html += '<p>hereinafter referred to individually as "the Shareholder" and collectively as "the Shareholders",</p>';
+    html += '<p class="conclusion">THE FOLLOWING HAS BEEN AGREED:</p>';
+  }
+  html += '</div>';
+
+  /* ── Articles — enabled clauses only ── */
+  var articleNum = 0;
+  CLAUSE_SECTIONS.forEach(function (section) {
+    section.clauses.forEach(function (clause) {
+      var cd = pact[clause.id];
+      if (!cd || !cd.enabled) return;
+      articleNum += 1;
+
+      var simpleLabel = isFr ? clause.simpleLabel.fr : clause.simpleLabel.en;
+      var techLabel = isFr ? clause.label.fr : clause.label.en;
+      var desc = isFr ? clause.desc.fr : clause.desc.en;
+      var legalCtx = isFr ? LEGAL_CONTEXT[clause.id] : LEGAL_CONTEXT_EN[clause.id];
+
+      html += '<div class="article">';
+      html += '<div class="article-header">Article ' + articleNum + ' — ' + esc(simpleLabel) + ' (' + esc(techLabel) + ')</div>';
+
+      /* N.1 — Description in legal style */
+      html += '<p class="article-paragraph">' + articleNum + '.1. ' + esc(desc) + '</p>';
+
+      /* N.2 — Parameters */
+      var fields = clause.configFields || [];
+      if (fields.length > 0) {
+        html += '<p class="article-paragraph">' + articleNum + '.2. ' + (isFr
+          ? 'Les paramètres suivants sont convenus entre les parties :'
+          : 'The following parameters have been agreed between the parties:') + '</p>';
+        html += '<ul class="article-params">';
+        fields.forEach(function (f) {
+          var val = cd[f.key] != null ? cd[f.key] : f.default;
+          if (f.type === "checkbox") val = val ? (isFr ? "Oui" : "Yes") : (isFr ? "Non" : "No");
+          if (f.type === "select" && f.options) {
+            f.options.forEach(function (opt) {
+              if (opt.value === val) val = isFr ? opt.label.fr : opt.label.en;
+            });
+          }
+          if (f.pct && typeof val === "number") val = val + " %";
+          if (f.type === "currency" && typeof val === "number") val = val.toLocaleString(isFr ? "fr-BE" : "en-GB") + " €";
+          var fieldLabel = isFr ? f.label.fr : f.label.en;
+          html += '<li><strong>' + esc(fieldLabel) + '</strong> : ' + esc(String(val)) + '</li>';
+        });
+        html += '</ul>';
+      }
+
+      /* N.3 — Legal context */
+      if (legalCtx) {
+        var nextNum = fields.length > 0 ? 3 : 2;
+        html += '<p class="legal-context">' + articleNum + '.' + nextNum + '. ' + esc(legalCtx) + '</p>';
+      }
+
+      html += '</div>';
+    });
+  });
+
+  /* ── Signature block ── */
+  html += '<div class="signature-block">';
+  html += '<p class="place-date">' + (isFr
+    ? 'Fait à _____________, le ' + dateStr
+    : 'Done at _____________, on ' + dateStr) + '</p>';
+  html += '<p class="copies">' + (isFr
+    ? 'En autant d\'exemplaires que de parties.'
+    : 'In as many copies as there are parties.') + '</p>';
+  html += '<div class="sig-grid">';
+  html += '<div class="sig-box"><div class="sig-title">' + (isFr ? 'Pour la Société :' : 'For the Company:') + '</div>';
+  html += '<div class="sig-line"></div>';
+  html += '<div class="sig-label">' + (isFr ? 'Nom :' : 'Name:') + '</div>';
+  html += '<div class="sig-label">' + (isFr ? 'Qualité :' : 'Title:') + '</div></div>';
+  html += '<div class="sig-box"><div class="sig-title">' + (isFr ? 'L\'Actionnaire :' : 'The Shareholder:') + '</div>';
+  html += '<div class="sig-line"></div>';
+  html += '<div class="sig-label">' + (isFr ? 'Nom :' : 'Name:') + '</div>';
+  html += '<div class="sig-label">' + (isFr ? 'Qualité :' : 'Title:') + '</div></div>';
+  html += '</div></div>';
+
+  /* ── Footer ── */
+  html += '<div class="doc-footer">';
+  html += (isFr
+    ? 'Document généré par <a href="https://forecrest.app">Forecrest</a> — forecrest.app<br/>Ce document est un support de travail. Il ne constitue pas un avis juridique<br/>et doit être validé par un professionnel du droit avant signature.'
+    : 'Document generated by <a href="https://forecrest.app">Forecrest</a> — forecrest.app<br/>This document is a working draft. It does not constitute legal advice<br/>and must be validated by a legal professional before signing.');
+  html += '</div>';
+
+  html += '</body></html>';
+
+  var w = window.open("", "_blank", "width=900,height=1000");
+  if (!w) {
+    var iframe = document.createElement("iframe");
+    iframe.style.cssText = "position:fixed;left:-9999px;width:0;height:0";
+    document.body.appendChild(iframe);
+    iframe.contentDocument.write(html);
+    iframe.contentDocument.close();
+    setTimeout(function () { iframe.contentWindow.print(); setTimeout(function () { document.body.removeChild(iframe); }, 1000); }, 250);
+    return;
+  }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(function () { w.print(); }, 400);
+}
 
 /* ── Component ──────────────────────────────────────────────────── */
 
@@ -568,7 +789,14 @@ export default function PactPage({ cfg, setCfg }) {
   /* ── Main page ── */
 
   return (
-    <PageLayout title={t.title} subtitle={t.subtitle} icon={ShieldCheck} iconColor="#E8431A">
+    <PageLayout title={t.title} subtitle={t.subtitle} icon={ShieldCheck} iconColor="#E8431A" actions={
+      <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center" }}>
+        <Button color="tertiary" size="lg" onClick={exportSummary} iconLeading={<Printer size={14} weight="bold" />} sx={{ width: 40, minWidth: 40, padding: 0, justifyContent: "center" }} />
+        <Button color="primary" size="lg" onClick={function () { exportLegalPdf(cfg, pact, lk); }} iconLeading={<DownloadSimple size={14} weight="bold" />}>
+          {lk === "fr" ? "Exporter" : "Export"}
+        </Button>
+      </div>
+    }>
 
       {/* KPI row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
@@ -721,13 +949,16 @@ export default function PactPage({ cfg, setCfg }) {
                           }}>
                             {lk === "fr" ? clause.label.fr : clause.label.en}
                           </span>
-                          {/* Protects badge */}
-                          <span style={{
-                            fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: "var(--r-full)",
-                            background: ps.bg, color: ps.text, border: "1px solid " + ps.border,
-                          }}>
-                            {lk === "fr" ? PROTECTS_LABEL[clause.protects].fr : PROTECTS_LABEL[clause.protects].en}
-                          </span>
+                          {/* Protects badge with tooltip */}
+                          <Tooltip tip={clause.protects === "minority" ? t.minority_explain : clause.protects === "majority" ? t.majority_explain : t.all_explain} width={240}>
+                            <span style={{
+                              fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: "var(--r-full)",
+                              background: ps.bg, color: ps.text, border: "1px solid " + ps.border,
+                              cursor: "help",
+                            }}>
+                              {lk === "fr" ? PROTECTS_LABEL[clause.protects].fr : PROTECTS_LABEL[clause.protects].en}
+                            </span>
+                          </Tooltip>
                         </div>
                         <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
                           {lk === "fr" ? clause.desc.fr : clause.desc.en}
@@ -785,22 +1016,6 @@ export default function PactPage({ cfg, setCfg }) {
         );
       })}
 
-      {/* Export section */}
-      <Card sx={{ marginTop: "var(--sp-4)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: "var(--sp-1)" }}>
-              {t.export_title}
-            </div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-              {t.export_desc}
-            </div>
-          </div>
-          <Button color="primary" size="lg" onClick={exportSummary} iconLeading={<Printer size={14} weight="bold" />}>
-            {t.export_btn}
-          </Button>
-        </div>
-      </Card>
     </PageLayout>
   );
 }

@@ -391,6 +391,9 @@ export default {
     export_title: "Export summary",
     export_desc: "Generate a clause summary to share with your lawyer or notary.",
     export_btn: "Export",
+    export_pdf: "Legal PDF",
+    export_pdf_tip: "Generates a Belgian-law-style document, ready to share with your lawyer.",
+    all_explain: "This clause protects all shareholders equally, whether they are minorities or majority holders.",
 
     // Wizard
     wizard_intro_title: "Protect your company and your partners",
