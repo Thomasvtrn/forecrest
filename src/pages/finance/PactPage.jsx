@@ -3,7 +3,7 @@ import { Card, PageLayout, KpiCard, Wizard, NumberField, CurrencyInput, SelectDr
 import {
   ShieldCheck, UsersThree, ArrowRight, Lock, Clock, UserMinus,
   Prohibit, HandPalm, FileText, Scales, Calculator, CaretDown,
-  Printer, Sparkle, Gear, DownloadSimple, Lightbulb, CircleNotch, CheckCircle,
+  Printer, Gear, DownloadSimple, Lightbulb, CircleNotch, CheckCircle,
 } from "@phosphor-icons/react";
 import { useT, useLang } from "../../context";
 
@@ -770,7 +770,6 @@ export default function PactPage({ cfg, setCfg, shareholders, setTab, chartPalet
 
   /* ── Protection balance bar ── */
 
-  var totalProtectClauses = ALL_CLAUSES.length;
   var minTotal = 0;
   var majTotal = 0;
   ALL_CLAUSES.forEach(function (c) {
@@ -948,9 +947,7 @@ export default function PactPage({ cfg, setCfg, shareholders, setTab, chartPalet
           ? <CircleNotch size={14} weight="bold" style={{ animation: "spin 1s linear infinite" }} />
           : <DownloadSimple size={14} weight="bold" />
         }>
-          {exporting
-            ? (lk === "fr" ? "Génération..." : "Generating...")
-            : (lk === "fr" ? "Exporter" : "Export")}
+          {exporting ? t.export_generating : t.export_btn}
         </Button>
       </div>
     }>
@@ -1020,7 +1017,7 @@ export default function PactPage({ cfg, setCfg, shareholders, setTab, chartPalet
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-4)" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-2)" }}>
-              <Badge color="success" size="sm">{lk === "fr" ? "Minoritaires" : "Minorities"}</Badge>
+              <Badge color="success" size="sm">{t.protects_minority}</Badge>
             </div>
             <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
               {t.minority_explain}
@@ -1028,7 +1025,7 @@ export default function PactPage({ cfg, setCfg, shareholders, setTab, chartPalet
           </div>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-2)" }}>
-              <Badge color="warning" size="sm">{lk === "fr" ? "Majoritaires" : "Majority"}</Badge>
+              <Badge color="warning" size="sm">{t.protects_majority}</Badge>
             </div>
             <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
               {t.majority_explain}
@@ -1057,7 +1054,7 @@ export default function PactPage({ cfg, setCfg, shareholders, setTab, chartPalet
               <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)", display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    {lk === "fr" ? "Répartition par type d'actions" : "Share class distribution"}
+                    {t.chart_class_dist}
                   </div>
                   <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
                 </div>
@@ -1085,7 +1082,7 @@ export default function PactPage({ cfg, setCfg, shareholders, setTab, chartPalet
               <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)", display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    {lk === "fr" ? "Répartition par actionnaire" : "Shareholder distribution"}
+                    {t.chart_owner_dist}
                   </div>
                   <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
                 </div>

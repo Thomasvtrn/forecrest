@@ -415,6 +415,13 @@ export default {
     prereq_title: "Ajoutez d'abord vos actionnaires",
     prereq_desc: "Le pacte d'associés définit les règles entre les actionnaires de votre entreprise. Ajoutez au moins un actionnaire dans la table de capitalisation pour commencer.",
     prereq_cta: "Aller aux actionnaires",
+
+    // Export actions
+    export_generating: "Génération...",
+
+    // Donut chart headers
+    chart_class_dist: "Répartition par type d'actions",
+    chart_owner_dist: "Répartition par actionnaire",
   },
 
   crowdfunding: {

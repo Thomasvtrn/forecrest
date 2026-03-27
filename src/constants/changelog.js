@@ -4,6 +4,22 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.34.0",
+    date: "2026-03-28",
+    entries: [
+      { type: "feature", key: "cl_pact_redesign" },
+      { type: "feature", key: "cl_pact_18_clauses" },
+      { type: "feature", key: "cl_pact_pdf_export" },
+      { type: "feature", key: "cl_pact_donut_charts" },
+      { type: "feature", key: "cl_prerequisite_walls" },
+      { type: "feature", key: "cl_marketing_4_pages" },
+      { type: "feature", key: "cl_per_stream_growth" },
+      { type: "feature", key: "cl_stock_forecast_link" },
+      { type: "improvement", key: "cl_pact_code_review" },
+      { type: "fix", key: "cl_financial_audit_fixes" },
+    ],
+  },
+  {
     version: "0.1.33.1",
     date: "2026-03-27",
     entries: [

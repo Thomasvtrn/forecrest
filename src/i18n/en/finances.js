@@ -412,6 +412,13 @@ export default {
     prereq_title: "Add your shareholders first",
     prereq_desc: "The shareholders' agreement defines the rules between your company's shareholders. Add at least one shareholder in the cap table to get started.",
     prereq_cta: "Go to cap table",
+
+    // Export actions
+    export_generating: "Generating...",
+
+    // Donut chart headers
+    chart_class_dist: "Share class distribution",
+    chart_owner_dist: "Shareholder distribution",
   },
 
   crowdfunding: {

@@ -120,6 +120,18 @@ export default {
     cl_sidebar_sticky: "Fix: sidebar stays fixed when scrolling (sticky + flex fix).",
     cl_glossary_scroll_lock: "Fix: background no longer scrolls when the glossary is open.",
 
+    // v0.1.34.0
+    cl_pact_redesign: "New: Shareholders' agreement — complete redesign with 5 clause categories, toggle on/off, inline configuration and legal export.",
+    cl_pact_18_clauses: "New: 18 clauses with Belgian law context (CCA), plain language explanations and practical examples.",
+    cl_pact_pdf_export: "New: PDF export in Belgian legal format with preamble, numbered articles and signature block.",
+    cl_pact_donut_charts: "New: donut charts for share class and shareholder distribution on the Pact page.",
+    cl_prerequisite_walls: "New: prerequisite walls on Production and Pact pages — guides user to required page before starting.",
+    cl_marketing_4_pages: "New: complete Marketing module with 4 sub-pages (Acquisition, Campaigns, Channels, Budget).",
+    cl_per_stream_growth: "New: individual growth rates per revenue stream and per cost, with mixed indicator.",
+    cl_stock_forecast_link: "New: 6-month stock forecast and automatic Production to Stocks linking.",
+    cl_pact_code_review: "Improvement: Pact code review — removed unused Sparkle import, dead variable, 6 hardcoded strings translated.",
+    cl_financial_audit_fixes: "Fix: financial audit — 7 fixes on calculations, cost frequencies and accounting consistency.",
+
     // v0.1.33.1
     cl_pact_plain_language: "Improvement: Shareholders' agreement — plain language for all clauses, beginner-friendly names, \"why it matters\" explanations.",
 

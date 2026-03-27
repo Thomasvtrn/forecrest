@@ -1,4 +1,5 @@
 export { default as AlertCard } from "./AlertCard";
+export { default as ConditionalWall } from "./ConditionalWall";
 export { default as InsightCarousel } from "./InsightCarousel";
 export { default as MobileActions } from "./MobileActions";
 export { default as StackedBar } from "./StackedBar";

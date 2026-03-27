@@ -123,6 +123,18 @@ export default {
     cl_sidebar_sticky: "Correction : la sidebar reste fixe lors du scroll (fix sticky + flex).",
     cl_glossary_scroll_lock: "Correction : l'arrière-plan ne scroll plus quand le glossaire est ouvert.",
 
+    // v0.1.34.0
+    cl_pact_redesign: "Nouveau : Pacte d'associés — refonte complète avec 5 catégories de clauses, toggle on/off, configuration inline et export juridique.",
+    cl_pact_18_clauses: "Nouveau : 18 clauses avec contexte juridique belge (CSA), explications en langage simple et exemples pratiques.",
+    cl_pact_pdf_export: "Nouveau : export PDF au format juridique belge avec préambule, articles numérotés et bloc de signature.",
+    cl_pact_donut_charts: "Nouveau : donut charts répartition par type d'actions et par actionnaire sur la page Pacte.",
+    cl_prerequisite_walls: "Nouveau : murs de prérequis sur les pages Production et Pacte — guide l'utilisateur vers la page requise avant de commencer.",
+    cl_marketing_4_pages: "Nouveau : module Marketing complet avec 4 sous-pages (Acquisition, Campagnes, Canaux, Budget).",
+    cl_per_stream_growth: "Nouveau : taux de croissance individuels par flux de revenu et par charge, avec indicateur mixte.",
+    cl_stock_forecast_link: "Nouveau : prévision de stocks sur 6 mois et liaison Production → Stocks automatique.",
+    cl_pact_code_review: "Amélioration : revue de code Pacte — suppression import Sparkle inutilisé, variable morte, 6 chaînes traduites.",
+    cl_financial_audit_fixes: "Correction : audit financier — 7 corrections sur les calculs, fréquences de coûts et cohérence comptable.",
+
     // v0.1.33.1
     cl_pact_plain_language: "Amélioration : Pacte d'associés — langage simplifié pour toutes les clauses, noms accessibles, explications « pourquoi c'est utile ».",
 
