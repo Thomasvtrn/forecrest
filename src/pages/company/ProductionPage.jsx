@@ -941,15 +941,26 @@ function RecipeModal({ recipe, onSave, onClose, lang, config }) {
             {lk === "fr" ? "Annuler" : "Cancel"}
           </Button>
         )}
-        {step < 2 ? (
-          <Button color="primary" size="lg" isDisabled={(step === 0 && !name.trim()) || (step === 1 && ingredients.length === 0)} onClick={function () { setStep(function (s) { return s + 1; }); }}>
-            {lk === "fr" ? "Suivant" : "Next"}
-          </Button>
-        ) : (
-          <Button color="primary" size="lg" onClick={handleSave} iconLeading={<Plus size={14} weight="bold" />}>
-            {recipe ? (lk === "fr" ? "Enregistrer" : "Save") : (lk === "fr" ? "Ajouter" : "Add")}
-          </Button>
-        )}
+        {(function () {
+          /* Step 0 validation: name, price, portions, sales */
+          var step0Valid = name.trim() && sellingPrice > 0 && portionCount > 0 && monthlySales > 0 && monthlySales >= portionCount;
+          /* Step 1 validation: at least 1 ingredient with cost > 0 and qty > 0 */
+          var step1Valid = ingredients.length > 0 && ingredients.some(function (ing) { return (ing.cost || 0) > 0 && (ing.qty || 0) > 0; });
+          /* Step 2 validation: always valid (labor/energy/packaging are optional) */
+          var canAdvance = step === 0 ? step0Valid : step === 1 ? step1Valid : true;
+          /* Save validation: all steps must be valid */
+          var canSave = step0Valid && step1Valid;
+
+          return step < 2 ? (
+            <Button color="primary" size="lg" isDisabled={!canAdvance} onClick={function () { setStep(function (s) { return s + 1; }); }}>
+              {lk === "fr" ? "Suivant" : "Next"}
+            </Button>
+          ) : (
+            <Button color="primary" size="lg" isDisabled={!canSave} onClick={handleSave} iconLeading={<Plus size={14} weight="bold" />}>
+              {recipe ? (lk === "fr" ? "Enregistrer" : "Save") : (lk === "fr" ? "Ajouter" : "Add")}
+            </Button>
+          );
+        })()}
       </ModalFooter>
     </Modal>
   );
