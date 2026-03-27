@@ -986,9 +986,8 @@ export default function PactPage({ cfg, setCfg, shareholders, chartPalette, char
         </div>
       </Card>
 
-      {/* Shareholder charts */}
-      {(shareholders || []).length > 0 ? (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
+      {/* Shareholder charts — always visible, skeleton when empty */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
           {/* Donut 1: Share class distribution */}
           {(function () {
             var CLASS_META = {
@@ -1040,8 +1039,7 @@ export default function PactPage({ cfg, setCfg, shareholders, chartPalette, char
               </div>
             );
           })()}
-        </div>
-      ) : null}
+      </div>
 
       {/* Clause sections */}
       {CLAUSE_SECTIONS.map(function (section) {
