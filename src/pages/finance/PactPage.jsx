@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import html2pdf from "html2pdf.js";
 import { Card, PageLayout, KpiCard, Wizard, NumberField, CurrencyInput, SelectDropdown, Button, Checkbox, Tooltip, Badge, DonutChart, ChartLegend, PaletteToggle } from "../../components";
 import {
   ShieldCheck, UsersThree, ArrowRight, Lock, Clock, UserMinus,
@@ -574,20 +575,34 @@ function exportLegalPdf(cfg, pact, lang) {
 
   html += '</body></html>';
 
+  return html;
+}
+
+function printPactHtml(html) {
   var w = window.open("", "_blank", "width=900,height=1000");
-  if (!w) {
-    var iframe = document.createElement("iframe");
-    iframe.style.cssText = "position:fixed;left:-9999px;width:0;height:0";
-    document.body.appendChild(iframe);
-    iframe.contentDocument.write(html);
-    iframe.contentDocument.close();
-    setTimeout(function () { iframe.contentWindow.print(); setTimeout(function () { document.body.removeChild(iframe); }, 1000); }, 250);
-    return;
-  }
+  if (!w) return;
   w.document.write(html);
   w.document.close();
   w.focus();
   setTimeout(function () { w.print(); }, 400);
+}
+
+function downloadPactPdf(html, lang) {
+  var container = document.createElement("div");
+  container.innerHTML = html;
+  var body = container.querySelector("body") || container;
+  document.body.appendChild(body);
+  var filename = lang !== "en" ? "pacte-associes.pdf" : "shareholders-agreement.pdf";
+  html2pdf().set({
+    margin: [10, 10, 10, 10],
+    filename: filename,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+  }).from(body).save().then(function () {
+    document.body.removeChild(body);
+  });
 }
 
 /* ── Component ──────────────────────────────────────────────────── */
@@ -898,8 +913,8 @@ export default function PactPage({ cfg, setCfg, shareholders, chartPalette, char
   return (
     <PageLayout title={t.title} subtitle={t.subtitle} icon={ShieldCheck} iconColor="var(--brand)" actions={
       <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center" }}>
-        <Button color="tertiary" size="lg" onClick={function () { exportLegalPdf(cfg, pact, lk); }} iconLeading={<Printer size={14} weight="bold" />} sx={{ width: 40, minWidth: 40, padding: 0, justifyContent: "center" }} />
-        <Button color="primary" size="lg" onClick={function () { exportLegalPdf(cfg, pact, lk); }} iconLeading={<DownloadSimple size={14} weight="bold" />}>
+        <Button color="tertiary" size="lg" onClick={function () { var h = exportLegalPdf(cfg, pact, lk); printPactHtml(h); }} iconLeading={<Printer size={14} weight="bold" />} sx={{ width: 40, minWidth: 40, padding: 0, justifyContent: "center" }} />
+        <Button color="primary" size="lg" onClick={function () { var h = exportLegalPdf(cfg, pact, lk); downloadPactPdf(h, lk); }} iconLeading={<DownloadSimple size={14} weight="bold" />}>
           {lk === "fr" ? "Exporter" : "Export"}
         </Button>
       </div>
