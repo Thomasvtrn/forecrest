@@ -1012,7 +1012,7 @@ export default function PactPage({ cfg, setCfg, shareholders, chartPalette, char
                 </div>
                 <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
                   <ChartLegend palette={chartPalette} distribution={classDist} meta={CLASS_META} total={totalShares} lk={lk}>
-                    <DonutChart data={classDist} palette={chartPalette} />
+                    <DonutChart data={classDist} palette={chartPalette} size={100} />
                   </ChartLegend>
                 </div>
               </div>
@@ -1039,7 +1039,7 @@ export default function PactPage({ cfg, setCfg, shareholders, chartPalette, char
                   <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
                 </div>
                 <ChartLegend palette={chartPalette} distribution={ownerDist} meta={ownerMeta} total={totalShares} lk={lk}>
-                  <DonutChart data={ownerDist} palette={chartPalette} />
+                  <DonutChart data={ownerDist} palette={chartPalette} size={100} />
                 </ChartLegend>
               </div>
             );
