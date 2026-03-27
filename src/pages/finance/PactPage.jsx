@@ -274,6 +274,7 @@ export default function PactPage({ cfg, setCfg }) {
 
   /* Expand/collapse state for clause config panels */
   var [expandedClause, setExpandedClause] = useState(null);
+  var [collapsedSections, setCollapsedSections] = useState({});
 
   /* Wizard state */
   var [wizardRecommended, setWizardRecommended] = useState(
@@ -639,11 +640,17 @@ export default function PactPage({ cfg, setCfg }) {
           if (cd && cd.enabled) sectionEnabled += 1;
         });
 
+        var isSectionCollapsed = !!collapsedSections[section.id];
+
         return (
-          <section key={section.id} style={{ marginBottom: "var(--sp-8)" }}>
-            {/* Section header */}
-            <div style={{ marginBottom: "var(--sp-4)" }}>
+          <section key={section.id} style={{ marginBottom: "var(--sp-6)" }}>
+            {/* Section header — clickable to collapse */}
+            <div
+              style={{ marginBottom: isSectionCollapsed ? 0 : "var(--sp-4)", cursor: "pointer" }}
+              onClick={function () { setCollapsedSections(function (prev) { var n = Object.assign({}, prev); n[section.id] = !n[section.id]; return n; }); }}
+            >
               <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-1)" }}>
+                <CaretDown size={12} weight="bold" color="var(--text-muted)" style={{ transform: isSectionCollapsed ? "rotate(-90deg)" : "rotate(0)", transition: "transform 0.15s" }} />
                 <span style={{
                   fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em",
                   color: "var(--brand)",
@@ -662,7 +669,7 @@ export default function PactPage({ cfg, setCfg }) {
             </div>
 
             {/* Clause cards */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-md)" }}>
+            {isSectionCollapsed ? null : <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-md)" }}>
               {section.clauses.map(function (clause) {
                 var cd = pact[clause.id] || {};
                 var isEnabled = !!cd.enabled;
@@ -672,8 +679,8 @@ export default function PactPage({ cfg, setCfg }) {
 
                 return (
                   <Card key={clause.id} sx={{
-                    borderLeft: isEnabled ? "3px solid var(--color-success)" : "3px solid var(--border)",
-                    transition: "border-color 0.2s",
+                    opacity: isEnabled ? 1 : 0.7,
+                    transition: "opacity 0.2s",
                     overflow: "visible",
                   }}>
                     {/* Main clause row */}
@@ -773,7 +780,7 @@ export default function PactPage({ cfg, setCfg }) {
                   </Card>
                 );
               })}
-            </div>
+            </div>}
           </section>
         );
       })}
