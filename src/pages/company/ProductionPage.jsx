@@ -997,10 +997,11 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
       (r.ingredients || []).forEach(function (ing) {
         var key = (ing.name || "").toLowerCase().trim();
         if (!key) return;
-        if (!map[key]) map[key] = { name: ing.name, unit: ing.unit, totalQty: 0, totalCost: 0, recipeCount: 0 };
+        if (!map[key]) map[key] = { name: ing.name, unit: ing.unit, totalQty: 0, totalCost: 0, recipeCount: 0, recipeNames: [] };
         map[key].totalQty += (ing.qty || 0) * sales;
         map[key].totalCost += (ing.cost || 0) * (ing.qty || 0) * sales;
         map[key].recipeCount += 1;
+        if (r.name && map[key].recipeNames.indexOf(r.name) < 0) map[key].recipeNames.push(r.name);
       });
     });
     return Object.values(map).sort(function (a, b) { return b.totalCost - a.totalCost; });
@@ -1723,6 +1724,21 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
               enableSorting: true, meta: { align: "center" },
               accessorFn: function (row) { return row.recipeCount; },
               cell: function (info) { return String(info.getValue()); },
+            },
+            {
+              id: "recipeNames",
+              header: lk === "fr" ? "Utilisé dans" : "Used in",
+              enableSorting: false, meta: { align: "left", minWidth: 160 },
+              accessorFn: function (row) { return (row.recipeNames || []).join(", "); },
+              cell: function (info) {
+                var names = info.row.original.recipeNames || [];
+                if (names.length === 0) return <span style={{ color: "var(--text-faint)" }}>—</span>;
+                return (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {names.map(function (n) { return <Badge key={n} color="gray" size="sm">{n}</Badge>; })}
+                  </div>
+                );
+              },
             },
           ]}
           emptyState={
