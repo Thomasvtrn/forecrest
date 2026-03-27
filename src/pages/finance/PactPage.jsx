@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Card, PageLayout, KpiCard, Wizard, NumberField, CurrencyInput, SelectDropdown, Button, Checkbox, Tooltip, Badge } from "../../components";
+import { Card, PageLayout, KpiCard, Wizard, NumberField, CurrencyInput, SelectDropdown, Button, Checkbox, Tooltip, Badge, DonutChart, ChartLegend, PaletteToggle } from "../../components";
 import {
   ShieldCheck, UsersThree, ArrowRight, Lock, Clock, UserMinus,
   Prohibit, HandPalm, FileText, Scales, Calculator, CaretDown,
@@ -592,7 +592,7 @@ function exportLegalPdf(cfg, pact, lang) {
 
 /* ── Component ──────────────────────────────────────────────────── */
 
-export default function PactPage({ cfg, setCfg }) {
+export default function PactPage({ cfg, setCfg, shareholders, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb }) {
   var t = useT().pact;
   var { lang } = useLang();
   var lk = lang;
@@ -985,6 +985,63 @@ export default function PactPage({ cfg, setCfg }) {
           </div>
         </div>
       </Card>
+
+      {/* Shareholder charts */}
+      {(shareholders || []).length > 0 ? (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)", marginBottom: "var(--gap-lg)" }}>
+          {/* Donut 1: Share class distribution */}
+          {(function () {
+            var CLASS_META = {
+              common: { label: { fr: "Ordinaires", en: "Common" }, badge: "brand" },
+              preferred: { label: { fr: "Préférentielles", en: "Preferred" }, badge: "info" },
+              esop: { label: { fr: "Réservées équipe", en: "Team reserved" }, badge: "warning" },
+            };
+            var classDist = {};
+            (shareholders || []).forEach(function (sh) {
+              var cl = sh.cl || "common";
+              classDist[cl] = (classDist[cl] || 0) + (sh.shares || 0);
+            });
+            var totalShares = 0;
+            Object.keys(classDist).forEach(function (k) { totalShares += classDist[k]; });
+            return (
+              <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--sp-3)" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    {lk === "fr" ? "Répartition par type d'actions" : "Share class distribution"}
+                  </div>
+                  <PaletteToggle value={chartPaletteMode} onChange={onChartPaletteChange} accentRgb={accentRgb} />
+                </div>
+                <ChartLegend palette={chartPalette} distribution={classDist} meta={CLASS_META} total={totalShares} lk={lk}>
+                  <DonutChart data={classDist} palette={chartPalette} />
+                </ChartLegend>
+              </div>
+            );
+          })()}
+
+          {/* Donut 2: Shareholder ownership */}
+          {(function () {
+            var ownerDist = {};
+            var ownerMeta = {};
+            (shareholders || []).forEach(function (sh) {
+              var name = sh.name || "?";
+              ownerDist[name] = (ownerDist[name] || 0) + (sh.shares || 0);
+              ownerMeta[name] = { label: { fr: name, en: name }, badge: "gray" };
+            });
+            var totalShares = 0;
+            Object.keys(ownerDist).forEach(function (k) { totalShares += ownerDist[k]; });
+            return (
+              <div style={{ border: "1px solid var(--border)", borderRadius: "var(--r-lg)", background: "var(--bg-card)", padding: "var(--sp-4)" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "var(--sp-3)" }}>
+                  {lk === "fr" ? "Répartition par actionnaire" : "Shareholder distribution"}
+                </div>
+                <ChartLegend palette={chartPalette} distribution={ownerDist} meta={ownerMeta} total={totalShares} lk={lk}>
+                  <DonutChart data={ownerDist} palette={chartPalette} />
+                </ChartLegend>
+              </div>
+            );
+          })()}
+        </div>
+      ) : null}
 
       {/* Clause sections */}
       {CLAUSE_SECTIONS.map(function (section) {
