@@ -549,6 +549,14 @@ export default {
     ctr_def: "Le pourcentage de personnes qui cliquent sur votre publicité après l'avoir vue. Un CTR élevé indique que votre annonce est pertinente pour votre audience.",
     ctr_aliases: "CTR, Click-Through Rate, taux de clic",
 
+    /* Pact */
+    pact_active_clauses_title: "Clauses actives",
+    pact_active_clauses_def: "Le nombre de clauses activées dans votre pacte d'associés. Plus vous en activez, mieux vous êtes protégé contre les conflits et les imprévus.",
+    pact_protection_level_title: "Niveau de protection",
+    pact_protection_level_def: "Évaluation globale de la couverture de votre pacte. Faible (< 30% des clauses), Moyen (30-60%), Élevé (> 60%). Un niveau élevé ne garantit pas l'absence de conflits mais réduit les risques.",
+    pact_balance_title: "Équilibre minoritaires / majoritaires",
+    pact_balance_def: "Répartition des clauses entre celles qui protègent les petits actionnaires (minoritaires) et celles qui protègent les gros actionnaires (majoritaires). Un bon pacte équilibre les deux.",
+
     /* Equity / Incentive plans */
     esop_pool_title: "Parts réservées",
     esop_pool_def: "Le nombre total de parts que l'assemblée générale de votre entreprise a autorisé à distribuer aux employés. Définit la taille maximale du plan d'intéressement.",
@@ -635,6 +643,8 @@ export default {
     location_equity: "Intéressement",
     location_affiliation: "Affiliation",
     location_production: "Production",
+    location_pact: "Pacte d'associés",
+    location_marketing: "Marketing",
     location_tool_trademark: "Recherche de marque",
     pcmn_label: "Code comptable (PCMN)",
     pcmn_class: "Classe",

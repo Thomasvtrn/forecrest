@@ -109,6 +109,11 @@ export var GLOSSARY = [
   { id: "cpc", category: "costs", formula: "monthly_budget / clicks", related: ["ctr", "cac"], location: { tab: "marketing" }, aliases: true },
   { id: "ctr", category: "kpi", formula: "clicks / impressions × 100", related: ["cpc", "roas"], location: { tab: "marketing" }, aliases: true },
 
+  // Pact
+  { id: "pact_active_clauses", category: "kpi", related: ["pact_protection_level"], location: { tab: "pact" } },
+  { id: "pact_protection_level", category: "kpi", related: ["pact_active_clauses"], location: { tab: "pact" } },
+  { id: "pact_balance", category: "kpi", related: ["pact_active_clauses"], location: { tab: "pact" } },
+
 ];
 
 export var GLOSSARY_MAP = {};

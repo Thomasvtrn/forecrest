@@ -898,7 +898,7 @@ export default function PactPage({ cfg, setCfg, shareholders, chartPalette, char
   return (
     <PageLayout title={t.title} subtitle={t.subtitle} icon={ShieldCheck} iconColor="#E8431A" actions={
       <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center" }}>
-        <Button color="tertiary" size="lg" onClick={exportSummary} iconLeading={<Printer size={14} weight="bold" />} sx={{ width: 40, minWidth: 40, padding: 0, justifyContent: "center" }} />
+        <Button color="tertiary" size="lg" onClick={function () { exportLegalPdf(cfg, pact, lk); }} iconLeading={<Printer size={14} weight="bold" />} sx={{ width: 40, minWidth: 40, padding: 0, justifyContent: "center" }} />
         <Button color="primary" size="lg" onClick={function () { exportLegalPdf(cfg, pact, lk); }} iconLeading={<DownloadSimple size={14} weight="bold" />}>
           {lk === "fr" ? "Exporter" : "Export"}
         </Button>
@@ -912,19 +912,20 @@ export default function PactPage({ cfg, setCfg, shareholders, chartPalette, char
           value={metrics.enabled + "/" + metrics.total}
           sub={t.kpi_active_sub}
           tip={Math.round(metrics.ratio * 100) + "%"}
+          glossaryKey="pact_active_clauses"
         />
         <KpiCard
           label={t.kpi_level}
           value={lk === "fr" ? levelLabel[metrics.levelKey].fr : levelLabel[metrics.levelKey].en}
           sub={t.kpi_level_sub}
-          icon={<Sparkle size={14} weight="bold" />}
           color={levelColor[metrics.levelKey]}
+          glossaryKey="pact_protection_level"
         />
         <KpiCard
           label={t.kpi_balance}
           value={metrics.minProt + " / " + metrics.majProt}
           sub={t.kpi_balance_sub}
-          icon={<Scales size={14} weight="bold" />}
+          glossaryKey="pact_balance"
         />
       </div>
 

@@ -546,6 +546,14 @@ export default {
     ctr_def: "The percentage of people who click on your ad after seeing it. A high CTR indicates that your ad is relevant to your audience.",
     ctr_aliases: "CTR, Click-Through Rate, click rate",
 
+    /* Pact */
+    pact_active_clauses_title: "Active clauses",
+    pact_active_clauses_def: "The number of clauses enabled in your shareholders' agreement. The more you enable, the better protected you are against conflicts and surprises.",
+    pact_protection_level_title: "Protection level",
+    pact_protection_level_def: "Overall assessment of your agreement's coverage. Low (< 30% of clauses), Medium (30-60%), High (> 60%). A high level doesn't guarantee no conflicts but reduces risks.",
+    pact_balance_title: "Minority / Majority balance",
+    pact_balance_def: "Distribution of clauses between those protecting small shareholders (minorities) and those protecting large shareholders (majority). A good agreement balances both.",
+
     /* Equity / Incentive plans */
     esop_pool_title: "Reserved shares",
     esop_pool_def: "The total number of shares your company's general assembly has authorized for distribution to employees. Defines the maximum size of the incentive plan.",
@@ -632,6 +640,8 @@ export default {
     location_equity: "Incentive plans",
     location_affiliation: "Affiliation",
     location_production: "Production",
+    location_pact: "Shareholders' agreement",
+    location_marketing: "Marketing",
     location_tool_trademark: "Trademark search",
     pcmn_label: "Accounting code (PCMN)",
     pcmn_class: "Class",
