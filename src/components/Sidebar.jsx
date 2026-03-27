@@ -46,7 +46,7 @@ function ForecrestLockup({ height }) {
 var BTN_H = 44; // sidebar button height — min 44px per WCAG touch target
 
 /* Pages flagged for redesign in roadmap phase 0 — show warning dot in nav */
-var NEEDS_REDESIGN = { overview: true, ratios: true, sensitivity: true };
+var NEEDS_REDESIGN = { overview: true, sensitivity: true };
 
 var modSwitchStyleInjected = false;
 function injectModSwitchStyle() {

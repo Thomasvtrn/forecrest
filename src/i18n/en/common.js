@@ -8,7 +8,7 @@ export default {
   palette_brand_desc: "Gradient",
   palette_multi: "Multi",
   palette_multi_desc: "Distinct colors",
-  legend_expand: "Show all ({count})",
+  legend_expand: "more",
   legend_collapse: "Collapse",
   calendar_label: "Calendar",
   calendar_prev: "Previous month",

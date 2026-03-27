@@ -256,7 +256,7 @@ export default {
 
   captable: {
     title: "Cap Table",
-    subtitle: "Shareholder register, capital structure and fundraising round simulator.",
+    subtitle: "Shareholder register and capital structure.",
 
     col_name: "Shareholder",
     col_class: "Class",
@@ -264,8 +264,6 @@ export default {
     col_price: "Price/share",
     col_date: "Date",
     col_pct: "% capital",
-    col_value: "Valuation (pre)",
-
     class_common: "Common",
     class_preferred: "Preferred",
     class_esop: "Team equity pool",
@@ -274,25 +272,9 @@ export default {
     tip_total_shares: "Sum of all issued shares across all shareholders (excluding ESOP pool).",
     fully_diluted: "Fully diluted",
     tip_fully_diluted: "Total shares + all granted ESOP shares (vested or not). Reflects the maximum potential dilution.",
-    pre_money: "Pre-money",
-    tip_pre_money: "Company valuation before the funding round. Used to calculate the price per share for new investors.",
-    tip_price_pre: "Pre-money ÷ total existing shares. Price at which new shares will be issued during the round.",
-
-    sim_title: "Round simulator",
-    sim_subtitle: "Calculate dilution for an upcoming funding round.",
-    sim_raise: "Amount raised (EUR)",
-    sim_premoney: "Pre-money valuation (EUR)",
-    sim_postmoney: "Post-money",
-    sim_price: "Issued price/share",
-    sim_new_shares: "New shares",
-    sim_investor_pct: "Investor stake",
-    sim_dilution: "Dilution of existing",
-
     esop_pool_row: "Team equity pool",
     esop_vested: function (n) { return n + " vested"; },
     esop_at_strike: "at strike (vested)",
-    investors_label: "Investor(s)",
-    price_pre: "Price/share (pre)",
 
     add_shareholder: "Add",
     empty: "Add your shareholders to structure your equity.",
@@ -337,9 +319,6 @@ export default {
     badge_auto: "Auto",
     esop_goto_equity: "Incentive plans",
 
-    view_without_invest: "Shareholders",
-    view_with_invest: "Round simulation",
-
     capital_subscribed: "Share capital",
     tip_capital_subscribed: "Sum of (shares × issue price) for each shareholder. Corresponds to the share capital in the company's bylaws.",
     price_nominal: "Price/share (nominal)",
@@ -348,6 +327,9 @@ export default {
     pre_label: "Pre-money",
     post_label: "Post-money",
     col_post_pct: "% post",
+
+    edu_title: "Understanding the cap table",
+    edu_body: "The cap table lists all shareholders and the number of shares they hold. It shows who owns what proportion of the company. During a fundraising round, new shares are created — which dilutes existing shareholders.",
 
     explain_toggle_show: "Understand the cap table",
     explain_toggle_hide: "Hide",

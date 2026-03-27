@@ -1,59 +1,181 @@
 import { useMemo } from "react";
-import { TrendUp } from "@phosphor-icons/react";
-import { Card, PageLayout } from "../../components";
-import { eur, pct } from "../../utils";
-import { useT } from "../../context";
+import { TrendUp, Heartbeat, CurrencyCircleDollar, Scales, ChartLineUp, Hourglass, Users, ArrowsClockwise } from "@phosphor-icons/react";
+import { Card, PageLayout, KpiCard, Badge, FinanceLink, ExplainerBox } from "../../components";
+import { eur, eurShort, pct } from "../../utils";
+import { useT, useLang } from "../../context";
 
-function RatioCard({ label, value, format, tip, thresholds, invertThreshold }) {
-  var display = value == null || !isFinite(value) ? "-"
+/* ── Status color helper ──────────────────────────────────────── */
+
+function statusColor(value, thresholds, invert) {
+  if (value == null || !isFinite(value)) return { color: "var(--text-faint)", status: "neutral" };
+  if (invert) {
+    if (value <= thresholds.good) return { color: "var(--color-success)", status: "good" };
+    if (value <= thresholds.ok) return { color: "var(--color-warning)", status: "warning" };
+    return { color: "var(--color-error)", status: "critical" };
+  }
+  if (value >= thresholds.good) return { color: "var(--color-success)", status: "good" };
+  if (value >= thresholds.ok) return { color: "var(--color-warning)", status: "warning" };
+  return { color: "var(--color-error)", status: "critical" };
+}
+
+function statusLabel(status, t) {
+  if (status === "good") return t.status_good;
+  if (status === "warning") return t.status_warning;
+  if (status === "critical") return t.status_critical;
+  return "";
+}
+
+function statusBadgeColor(status) {
+  if (status === "good") return "green";
+  if (status === "warning") return "amber";
+  if (status === "critical") return "red";
+  return "gray";
+}
+
+/* ── Section label ────────────────────────────────────────────── */
+
+function SectionHeader({ icon, title, desc }) {
+  var Icon = icon;
+  return (
+    <div style={{ marginBottom: "var(--sp-4)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginBottom: "var(--sp-1)" }}>
+        {Icon ? <Icon size={18} weight="duotone" color="var(--brand)" /> : null}
+        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>{title}</div>
+      </div>
+      {desc ? <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, paddingLeft: 26 }}>{desc}</div> : null}
+    </div>
+  );
+}
+
+/* ── Ratio row item ───────────────────────────────────────────── */
+
+function RatioRow({ label, techLabel, techTerm, value, format, explanation, thresholds, invert, t, lk, noData }) {
+  var display = noData ? "-"
+    : value == null || !isFinite(value) ? "-"
     : format === "pct" ? pct(value)
-    : format === "eur" ? eur(value)
-    : format === "months" ? Math.round(value) + " mo"
-    : format === "days" ? Math.round(value) + " j"
+    : format === "eur" ? eurShort(value)
+    : format === "months" ? Math.round(value) + " " + t.kpi_months
+    : format === "days" ? Math.round(value) + (lk === "fr" ? " j" : " d")
     : format === "x" ? value.toFixed(2) + "x"
     : value.toFixed(2);
-  var color = "var(--text-primary)";
-  if (thresholds && value != null && isFinite(value)) {
-    if (invertThreshold) {
-      if (value <= thresholds.good) color = "var(--color-success)";
-      else if (value <= thresholds.ok) color = "var(--color-warning)";
-      else color = "var(--color-error)";
-    } else {
-      if (value >= thresholds.good) color = "var(--color-success)";
-      else if (value >= thresholds.ok) color = "var(--color-warning)";
-      else color = "var(--color-error)";
-    }
-  }
+
+  var sc = thresholds && !noData ? statusColor(value, thresholds, invert) : { color: "var(--text-primary)", status: "neutral" };
+
   return (
-    <div style={{ padding: "var(--sp-3)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)" }}>
-      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: "var(--sp-2)", lineHeight: 1.3 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: color, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{display}</div>
-      {tip ? <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: "var(--sp-1)" }}>{tip}</div> : null}
+    <div style={{
+      padding: "var(--sp-4)",
+      background: "var(--bg-accordion)",
+      borderRadius: "var(--r-md)",
+      display: "flex", flexDirection: "column", gap: "var(--sp-2)",
+    }}>
+      {/* Label + technical badge */}
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", flexWrap: "wrap" }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{label}</span>
+        {techTerm ? (
+          <FinanceLink
+            term={techTerm}
+            label={techLabel}
+            desc={lk === "fr" ? "Voir la définition dans le glossaire." : "View definition in glossary."}
+          />
+        ) : techLabel ? (
+          <Badge color="gray" size="sm">{techLabel}</Badge>
+        ) : null}
+      </div>
+
+      {/* Value + status */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: "var(--sp-3)" }}>
+        <span style={{
+          fontSize: 26, fontWeight: 800, color: sc.color, lineHeight: 1,
+          fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif",
+          fontVariantNumeric: "tabular-nums",
+        }}>{display}</span>
+        {sc.status !== "neutral" ? (
+          <Badge color={statusBadgeColor(sc.status)} size="sm" dot>{statusLabel(sc.status, t)}</Badge>
+        ) : null}
+      </div>
+
+      {/* Explanation */}
+      {explanation ? (
+        <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
+          {explanation}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function SectionLabel({ children, desc }) {
+/* ── Gauge bar ────────────────────────────────────────────────── */
+
+function GaugeBar({ value, max, color, label }) {
+  var pctW = max > 0 ? Math.min(value / max, 1) * 100 : 0;
   return (
-    <div style={{ marginBottom: "var(--sp-3)", marginTop: "var(--sp-2)" }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--brand)", textTransform: "uppercase", letterSpacing: 0.5 }}>{children}</div>
-      {desc ? <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: "var(--sp-1)", lineHeight: 1.4 }}>{desc}</div> : null}
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-1)" }}>
+      {label ? <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{label}</span> : null}
+      <div style={{ height: 8, background: "var(--border)", borderRadius: 4, overflow: "hidden" }}>
+        <div style={{
+          height: "100%", width: pctW + "%",
+          background: color || "var(--brand)",
+          borderRadius: 4, transition: "width 0.4s ease",
+        }} />
+      </div>
     </div>
   );
 }
+
+/* ── Runway timeline bar ──────────────────────────────────────── */
+
+function RunwayBar({ months, t }) {
+  var maxMonths = 24;
+  var capped = months != null && isFinite(months) ? Math.min(months, maxMonths) : 0;
+  var pctW = (capped / maxMonths) * 100;
+  var sc = statusColor(months, { good: 12, ok: 6 }, false);
+
+  return (
+    <div style={{ marginTop: "var(--sp-2)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--sp-1)" }}>
+        <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{t.runway_bar_label}</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: sc.color }}>
+          {months != null && isFinite(months) ? Math.round(months) + " " + t.runway_months : "-"}
+        </span>
+      </div>
+      <div style={{ height: 10, background: "var(--border)", borderRadius: 5, overflow: "hidden", position: "relative" }}>
+        <div style={{
+          height: "100%", width: pctW + "%",
+          background: sc.color,
+          borderRadius: 5, transition: "width 0.5s ease",
+        }} />
+        {/* Markers at 6 and 12 months */}
+        <div style={{ position: "absolute", top: 0, left: (6 / maxMonths * 100) + "%", width: 1, height: "100%", background: "var(--text-faint)", opacity: 0.3 }} />
+        <div style={{ position: "absolute", top: 0, left: (12 / maxMonths * 100) + "%", width: 1, height: "100%", background: "var(--text-faint)", opacity: 0.3 }} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+        <span style={{ fontSize: 10, color: "var(--text-faint)" }}>0</span>
+        <span style={{ fontSize: 10, color: "var(--text-faint)" }}>6</span>
+        <span style={{ fontSize: 10, color: "var(--text-faint)" }}>12</span>
+        <span style={{ fontSize: 10, color: "var(--text-faint)" }}>18</span>
+        <span style={{ fontSize: 10, color: "var(--text-faint)" }}>24+</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main page ────────────────────────────────────────────────── */
 
 export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP, resLeg, debts, sals, salCosts, stocks, esopMonthly, esopEnabled }) {
   var t = useT().ratios;
+  var { lang } = useLang();
+  var lk = lang;
   var bizType = cfg.businessType || "other";
 
   var computed = useMemo(function () {
-    // Equity
+    /* Equity */
     var retainedEarnings = netP - resLeg;
     var equity = cfg.capitalSocial + resLeg + retainedEarnings;
 
-    // Debt
+    /* Debt */
     var totalDebt = 0;
     var annualDebtService = 0;
+    var annualInterest = 0;
     debts.forEach(function (d) {
       if (d.amount <= 0 || d.duration <= d.elapsed) return;
       var r = d.rate / 12;
@@ -63,7 +185,9 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
         var powE = Math.pow(1 + r, d.elapsed);
         bal = d.amount * (pow - powE) / (pow - 1);
         var payment = d.amount * r * pow / (pow - 1);
+        var interestPortion = bal * r;
         annualDebtService += payment * 12;
+        annualInterest += interestPortion * 12;
       } else if (d.duration > 0) {
         bal = d.amount - (d.amount / d.duration) * d.elapsed;
         annualDebtService += (d.amount / d.duration) * 12;
@@ -75,12 +199,10 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
     var cash = (cfg.initialCash || 0) + Math.max(netP, 0);
     var totalActif = cash;
 
-    // Solvency ratios
-    var solvency = totalPassif > 0 ? equity / totalPassif : 0;
-    var autonomy = totalActif > 0 ? equity / totalActif : 0;
-    var leverage = equity > 0 ? totalDebt / equity : 0;
+    /* Solvency */
+    var leverage = equity > 0 ? totalDebt / equity : (totalDebt > 0 ? Infinity : 0);
 
-    // Liquidity ratios
+    /* Liquidity */
     var debtCT = 0;
     debts.forEach(function (d) {
       if (d.amount <= 0) return;
@@ -98,35 +220,36 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
     });
     var monthlyLiabilities = monthlyCosts + (debtCT > 0 ? debtCT / 12 : 0);
     var currentRatio = monthlyLiabilities > 0 ? cash / (monthlyLiabilities * 3) : 0;
-    var acidRatio = currentRatio;
+    var quickRatio = currentRatio; /* same for businesses without physical stock */
 
-    // Profitability ratios
+    /* Profitability */
     var roe = equity > 0 ? netP / equity : 0;
     var roa = totalActif > 0 ? netP / totalActif : 0;
     var netMargin = totalRevenue > 0 ? netP / totalRevenue : 0;
     var ebitMargin = totalRevenue > 0 ? ebit / totalRevenue : 0;
 
-    // DSCR
+    /* DSCR */
     var dscr = annualDebtService > 0 ? ebit / annualDebtService : null;
 
-    // Business metrics
+    /* Interest coverage */
+    var interestCoverage = annualInterest > 0 ? ebit / annualInterest : null;
+
+    /* Business metrics */
     var employeeCount = (sals || []).filter(function (s) { return s.net > 0; }).length;
     var revPerEmployee = employeeCount > 0 ? totalRevenue / employeeCount : null;
     var salaryRatio = totalRevenue > 0 ? (salCosts * 12) / totalRevenue : 0;
     var costRatio = totalRevenue > 0 ? (monthlyCosts * 12) / totalRevenue : 0;
 
-    // Break-even
+    /* Break-even & Runway */
     var monthlyRevenue = totalRevenue / 12;
     var burnRate = monthlyCosts - monthlyRevenue;
     var runway = burnRate > 0 && (cfg.initialCash || 0) > 0 ? (cfg.initialCash || 0) / burnRate : null;
 
-    // BFR (Working Capital Requirement)
-    var dso = cfg.paymentTermsClient || 30; // Days Sales Outstanding
-    var dpo = cfg.paymentTermsSupplier || 30; // Days Payable Outstanding
+    /* BFR */
+    var dso = cfg.paymentTermsClient || 30;
+    var dpo = cfg.paymentTermsSupplier || 30;
     var receivables = totalRevenue > 0 ? (totalRevenue / 365) * dso : 0;
     var payables = monthlyCosts > 0 ? (monthlyCosts * 12 / 365) * dpo : 0;
-
-    // DIO — Days Inventory Outstanding
     var stockValue = 0;
     var monthlyCogs = 0;
     (stocks || []).forEach(function (s) {
@@ -135,94 +258,317 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
     });
     var annualCogs = monthlyCogs * 12;
     var dio = annualCogs > 0 ? (stockValue / annualCogs) * 365 : 0;
-
     var bfr = receivables + stockValue - payables;
     var cashConversionCycle = dso + dio - dpo;
 
     return {
-      equity, totalDebt, totalPassif, cash,
-      solvency, autonomy, leverage,
-      currentRatio, acidRatio,
+      equity, totalDebt, totalPassif, cash, totalActif,
+      leverage,
+      currentRatio, quickRatio,
       roe, roa, netMargin, ebitMargin,
-      dscr, annualDebtService,
+      dscr, annualDebtService, annualInterest, interestCoverage,
       revPerEmployee, salaryRatio, costRatio, employeeCount,
       burnRate, runway,
       dso, dpo, dio, receivables, payables, stockValue, bfr, cashConversionCycle,
     };
   }, [cfg, totalRevenue, monthlyCosts, ebit, netP, resLeg, debts, sals, salCosts, stocks]);
 
+  /* KPI card helpers */
+  var ebitMarginSc = statusColor(computed.ebitMargin, { good: 0.15, ok: 0.05 }, false);
+  var runwaySc = computed.runway != null ? statusColor(computed.runway, { good: 12, ok: 6 }, false) : { color: "var(--color-success)", status: "good" };
+  var currentRatioSc = statusColor(computed.currentRatio, { good: 1.5, ok: 1.0 }, false);
+  var debtSc = statusColor(computed.leverage, { good: 1, ok: 2 }, true);
+
+  var runwayDisplay = computed.burnRate <= 0
+    ? t.kpi_no_burn
+    : computed.runway != null
+      ? Math.round(computed.runway) + " " + t.kpi_months
+      : "-";
+
+  var debtDisplay = computed.totalDebt <= 0
+    ? t.kpi_no_debt
+    : computed.leverage != null && isFinite(computed.leverage)
+      ? computed.leverage.toFixed(2) + "x"
+      : "-";
+
   return (
     <PageLayout title={t.title} subtitle={t.subtitle} icon={TrendUp} iconColor="#06B6D4">
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-lg)" }}>
 
-        {/* Solvency */}
-        <Card>
-          <SectionLabel desc={t.section_solvency_desc}>{t.section_solvency}</SectionLabel>
-          <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--gap-md)" }}>
-            <RatioCard label={t.solvency} value={computed.solvency} format="pct" tip={t.solvency_tip} thresholds={{ good: 0.3, ok: 0.2 }} />
-            <RatioCard label={t.autonomy} value={computed.autonomy} format="pct" tip={t.autonomy_tip} thresholds={{ good: 0.5, ok: 0.3 }} />
-            <RatioCard label={t.leverage} value={computed.leverage} format="x" tip={t.leverage_tip} thresholds={{ good: 0.5, ok: 1 }} invertThreshold />
-          </div>
-        </Card>
+        {/* ── KPI cards ──────────────────────────────────────── */}
+        <div className="resp-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "var(--gap-md)" }}>
+          <KpiCard
+            label={t.kpi_ebitda_margin}
+            value={pct(computed.ebitMargin)}
+            color={ebitMarginSc.color}
+            glossaryKey="ebitda_margin"
+          />
+          <KpiCard
+            label={t.kpi_runway}
+            value={runwayDisplay}
+            color={runwaySc.color}
+            glossaryKey="runway"
+          />
+          <KpiCard
+            label={t.kpi_current_ratio}
+            value={computed.currentRatio.toFixed(2) + "x"}
+            color={currentRatioSc.color}
+            glossaryKey="current_ratio"
+          />
+          <KpiCard
+            label={t.kpi_debt_weight}
+            value={debtDisplay}
+            color={debtSc.color}
+            glossaryKey="debt_to_equity"
+          />
+        </div>
 
-        {/* Liquidity */}
+        {/* ── Section 1: Profitability ───────────────────────── */}
         <Card>
-          <SectionLabel desc={t.section_liquidity_desc}>{t.section_liquidity}</SectionLabel>
-          <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--gap-md)" }}>
-            <RatioCard label={t.current_ratio} value={computed.currentRatio} format="x" tip={t.current_ratio_tip} thresholds={{ good: 1.5, ok: 1.0 }} />
-            <RatioCard label={t.acid_ratio} value={computed.acidRatio} format="x" tip={t.acid_ratio_tip} thresholds={{ good: 1.0, ok: 0.7 }} />
-            {computed.dscr != null ? (
-              <RatioCard label={t.dscr} value={computed.dscr} format="x" tip={t.dscr_tip} thresholds={{ good: 1.25, ok: 1.0 }} />
-            ) : (
-              <RatioCard label={t.dscr} value={null} format="x" tip={t.dscr_no_debt} />
-            )}
-          </div>
-        </Card>
-
-        {/* Profitability */}
-        <Card>
-          <SectionLabel desc={t.section_profitability_desc}>{t.section_profitability}</SectionLabel>
+          <SectionHeader icon={Heartbeat} title={t.section_profitable} desc={t.section_profitable_desc} />
           <div className="resp-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "var(--gap-md)" }}>
-            <RatioCard label={t.net_margin} value={computed.netMargin} format="pct" tip={t.net_margin_tip} thresholds={{ good: 0.1, ok: 0 }} />
-            <RatioCard label={t.ebitda_margin} value={computed.ebitMargin} format="pct" tip={t.ebitda_margin_tip} thresholds={{ good: 0.2, ok: 0.05 }} />
-            <RatioCard label={t.roe} value={computed.roe} format="pct" tip={t.roe_tip} thresholds={{ good: 0.15, ok: 0.05 }} />
-            <RatioCard label={t.roa} value={computed.roa} format="pct" tip={t.roa_tip} thresholds={{ good: 0.1, ok: 0.03 }} />
+            <RatioRow
+              label={t.ebitda_margin} techLabel={t.ebitda_margin_tech} techTerm="ebitda_margin"
+              value={computed.ebitMargin} format="pct"
+              explanation={t.ebitda_margin_what}
+              thresholds={{ good: 0.15, ok: 0.05 }}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.net_margin} techLabel={t.net_margin_tech}
+              value={computed.netMargin} format="pct"
+              explanation={t.net_margin_what}
+              thresholds={{ good: 0.1, ok: 0 }}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.burn_rate} techLabel={t.burn_rate_tech} techTerm="burn_rate"
+              value={computed.burnRate > 0 ? computed.burnRate : 0} format="eur"
+              explanation={computed.burnRate <= 0 ? t.burn_positive : t.burn_rate_what}
+              thresholds={computed.burnRate > 0 ? { good: 0, ok: 5000 } : undefined} invert
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.break_even} techLabel={t.break_even_tech} techTerm="break_even"
+              value={computed.burnRate <= 0 ? null : computed.runway}
+              format="months"
+              explanation={computed.burnRate <= 0 ? t.break_even_reached : t.break_even_what}
+              thresholds={computed.burnRate > 0 ? { good: 6, ok: 12 } : undefined} invert
+              noData={computed.burnRate <= 0}
+              t={t} lk={lk}
+            />
           </div>
+          <ExplainerBox variant="tip" title={lk === "fr" ? "Le saviez-vous ?" : "Did you know?"}>
+            {t.hint_profitable}
+          </ExplainerBox>
         </Card>
 
-        {/* Business Metrics */}
+        {/* ── Section 2: Liquidity ───────────────────────────── */}
         <Card>
-          <SectionLabel desc={t["section_biz_desc_" + bizType] || t.section_biz_desc}>{t.section_biz}</SectionLabel>
+          <SectionHeader icon={CurrencyCircleDollar} title={t.section_bills} desc={t.section_bills_desc} />
+          <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
+              <RatioRow
+                label={t.current_ratio} techLabel={t.current_ratio_tech} techTerm="current_ratio"
+                value={computed.currentRatio} format="x"
+                explanation={t.current_ratio_what}
+                thresholds={{ good: 1.5, ok: 1.0 }}
+                t={t} lk={lk}
+              />
+              <GaugeBar
+                value={computed.currentRatio}
+                max={3}
+                color={statusColor(computed.currentRatio, { good: 1.5, ok: 1.0 }, false).color}
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
+              <RatioRow
+                label={t.quick_ratio} techLabel={t.quick_ratio_tech} techTerm="quick_ratio"
+                value={computed.quickRatio} format="x"
+                explanation={t.quick_ratio_what}
+                thresholds={{ good: 1.0, ok: 0.7 }}
+                t={t} lk={lk}
+              />
+              <GaugeBar
+                value={computed.quickRatio}
+                max={3}
+                color={statusColor(computed.quickRatio, { good: 1.0, ok: 0.7 }, false).color}
+              />
+            </div>
+          </div>
+          <ExplainerBox variant="tip" title={lk === "fr" ? "Le saviez-vous ?" : "Did you know?"}>
+            {t.hint_bills}
+          </ExplainerBox>
+        </Card>
+
+        {/* ── Section 3: Debt ────────────────────────────────── */}
+        <Card>
+          <SectionHeader icon={Scales} title={t.section_debt} desc={t.section_debt_desc} />
           <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--gap-md)" }}>
-            <RatioCard label={t.rev_per_employee} value={computed.revPerEmployee} format="eur" tip={t["rev_per_employee_tip_" + bizType] || t.rev_per_employee_tip} />
-            <RatioCard label={t.salary_ratio} value={computed.salaryRatio} format="pct" tip={t.salary_ratio_tip} thresholds={{ good: 0.3, ok: 0.5 }} invertThreshold />
-            <RatioCard label={t.cost_ratio} value={computed.costRatio} format="pct" tip={t.cost_ratio_tip} thresholds={{ good: 0.7, ok: 0.9 }} invertThreshold />
+            <RatioRow
+              label={t.debt_to_equity} techLabel={t.debt_to_equity_tech} techTerm="debt_to_equity"
+              value={computed.leverage} format="x"
+              explanation={t.debt_to_equity_what}
+              thresholds={{ good: 1, ok: 2 }} invert
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.dscr} techLabel={t.dscr_tech} techTerm="dscr"
+              value={computed.dscr} format="x"
+              explanation={computed.dscr != null ? t.dscr_what : t.dscr_no_debt}
+              thresholds={computed.dscr != null ? { good: 1.25, ok: 1.0 } : undefined}
+              noData={computed.dscr == null}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.interest_coverage} techLabel={t.interest_coverage_tech} techTerm="interest_coverage"
+              value={computed.interestCoverage} format="x"
+              explanation={computed.interestCoverage != null ? t.interest_coverage_what : t.interest_coverage_no_interest}
+              thresholds={computed.interestCoverage != null ? { good: 3, ok: 1.5 } : undefined}
+              noData={computed.interestCoverage == null}
+              t={t} lk={lk}
+            />
+          </div>
+          <ExplainerBox variant="info">
+            {t.hint_debt}
+          </ExplainerBox>
+        </Card>
+
+        {/* ── Section 4: ROI ─────────────────────────────────── */}
+        <Card>
+          <SectionHeader icon={ChartLineUp} title={t.section_roi} desc={t.section_roi_desc} />
+          <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--gap-md)" }}>
+            <RatioRow
+              label={t.roa} techLabel={t.roa_tech} techTerm="roa"
+              value={computed.roa} format="pct"
+              explanation={t.roa_what}
+              thresholds={{ good: 0.1, ok: 0.05 }}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.roe} techLabel={t.roe_tech} techTerm="roe"
+              value={computed.roe} format="pct"
+              explanation={t.roe_what}
+              thresholds={{ good: 0.15, ok: 0.05 }}
+              t={t} lk={lk}
+            />
+          </div>
+          <ExplainerBox variant="tip" title={lk === "fr" ? "Repère" : "Benchmark"}>
+            {t.hint_roi}
+          </ExplainerBox>
+        </Card>
+
+        {/* ── Section 5: Runway ──────────────────────────────── */}
+        <Card>
+          <SectionHeader icon={Hourglass} title={t.section_runway} desc={t.section_runway_desc} />
+          <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--gap-md)" }}>
+            <RatioRow
+              label={t.runway} techLabel={t.runway_tech} techTerm="runway"
+              value={computed.runway}
+              format="months"
+              explanation={computed.burnRate <= 0 ? t.runway_infinite : t.runway_what}
+              thresholds={computed.runway != null ? { good: 12, ok: 6 } : undefined}
+              noData={computed.burnRate <= 0}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.cash_position}
+              value={computed.cash} format="eur"
+              explanation={t.cash_tip}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.burn_monthly} techLabel={t.burn_rate_tech} techTerm="burn_rate"
+              value={computed.burnRate > 0 ? computed.burnRate : 0} format="eur"
+              explanation={computed.burnRate <= 0 ? t.burn_positive : (eurShort(computed.burnRate) + " " + t.per_month)}
+              t={t} lk={lk}
+            />
+          </div>
+          <RunwayBar months={computed.burnRate > 0 ? computed.runway : 24} t={t} />
+          <ExplainerBox variant="tip" title={lk === "fr" ? "Conseil" : "Tip"}>
+            {t.hint_runway}
+          </ExplainerBox>
+        </Card>
+
+        {/* ── Section 6: Business metrics ────────────────────── */}
+        <Card>
+          <SectionHeader icon={Users} title={t.section_biz} desc={t["section_biz_desc_" + bizType] || t.section_biz_desc} />
+          <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--gap-md)" }}>
+            <RatioRow
+              label={t.rev_per_employee}
+              value={computed.revPerEmployee} format="eur"
+              explanation={t["rev_per_employee_tip_" + bizType] || t.rev_per_employee_tip}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.salary_ratio}
+              value={computed.salaryRatio} format="pct"
+              explanation={t.salary_ratio_tip}
+              thresholds={{ good: 0.3, ok: 0.5 }} invert
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.cost_ratio}
+              value={computed.costRatio} format="pct"
+              explanation={t.cost_ratio_tip}
+              thresholds={{ good: 0.7, ok: 0.9 }} invert
+              t={t} lk={lk}
+            />
           </div>
         </Card>
 
-        {/* Working Capital (BFR) */}
+        {/* ── Section 7: Working capital (BFR) ───────────────── */}
         <Card>
-          <SectionLabel desc={t.section_bfr_desc}>{t.section_bfr}</SectionLabel>
+          <SectionHeader icon={ArrowsClockwise} title={t.section_bfr} desc={t.section_bfr_desc} />
           <div className="resp-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "var(--gap-md)" }}>
-            <RatioCard label={t.dso} value={computed.dso} format="days" tip={t.dso_tip} thresholds={{ good: 30, ok: 60 }} invertThreshold />
-            <RatioCard label={t.dpo} value={computed.dpo} format="days" tip={t.dpo_tip} thresholds={{ good: 45, ok: 30 }} />
-            <RatioCard label={t.dio} value={computed.dio} format="days" tip={computed.stockValue > 0 ? t.dio_tip : t.dio_no_stock} thresholds={computed.stockValue > 0 ? { good: 30, ok: 60 } : undefined} invertThreshold />
-            <RatioCard label={t.cash_conversion} value={computed.cashConversionCycle} format="days" tip={t.cash_conversion_tip} thresholds={{ good: 30, ok: 60 }} invertThreshold />
+            <RatioRow
+              label={t.dso} techLabel={t.dso_tech}
+              value={computed.dso} format="days"
+              explanation={t.dso_tip}
+              thresholds={{ good: 30, ok: 60 }} invert
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.dpo} techLabel={t.dpo_tech}
+              value={computed.dpo} format="days"
+              explanation={t.dpo_tip}
+              thresholds={{ good: 45, ok: 30 }}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.dio} techLabel={t.dio_tech}
+              value={computed.dio} format="days"
+              explanation={computed.stockValue > 0 ? t.dio_tip : t.dio_no_stock}
+              thresholds={computed.stockValue > 0 ? { good: 30, ok: 60 } : undefined} invert
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.cash_conversion}
+              value={computed.cashConversionCycle} format="days"
+              explanation={t.cash_conversion_tip}
+              thresholds={{ good: 30, ok: 60 }} invert
+              t={t} lk={lk}
+            />
           </div>
           <div style={{ marginTop: "var(--gap-md)", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--gap-md)" }}>
-            <RatioCard label={t.receivables} value={computed.receivables} format="eur" tip={t.receivables_tip} />
-            <RatioCard label={t.payables} value={computed.payables} format="eur" tip={t.payables_tip} />
-            <RatioCard label={t.bfr} value={computed.bfr} format="eur" tip={t.bfr_tip} />
-          </div>
-        </Card>
-
-        {/* Cash & Runway */}
-        <Card>
-          <SectionLabel desc={t.section_cash_desc}>{t.section_cash}</SectionLabel>
-          <div className="resp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--gap-md)" }}>
-            <RatioCard label={t.cash_position} value={computed.cash} format="eur" tip={t.cash_tip} />
-            <RatioCard label={t.burn_rate} value={computed.burnRate > 0 ? computed.burnRate : 0} format="eur" tip={computed.burnRate <= 0 ? t.burn_positive : t.burn_tip} />
-            <RatioCard label={t.runway} value={computed.runway} format="months" tip={t.runway_tip} thresholds={computed.runway != null ? { good: 18, ok: 6 } : undefined} />
+            <RatioRow
+              label={t.receivables}
+              value={computed.receivables} format="eur"
+              explanation={t.receivables_tip}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.payables}
+              value={computed.payables} format="eur"
+              explanation={t.payables_tip}
+              t={t} lk={lk}
+            />
+            <RatioRow
+              label={t.bfr}
+              value={computed.bfr} format="eur"
+              explanation={t.bfr_tip}
+              t={t} lk={lk}
+            />
           </div>
         </Card>
 

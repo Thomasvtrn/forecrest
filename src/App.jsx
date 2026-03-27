@@ -966,7 +966,6 @@ export default function App() {
             {tab === "captable" ? (
               <CapTablePage
                 shareholders={shareholders} setShareholders={setShareholders}
-                roundSim={roundSim} setRoundSim={setRoundSim}
                 grants={grants} sals={sals}
                 cfg={cfg} setCfg={setCfg}
                 chartPalette={chartPalette} chartPaletteMode={chartPaletteMode}

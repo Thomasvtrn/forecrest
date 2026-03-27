@@ -11,7 +11,7 @@ export default {
   palette_brand_desc: "Dégradé",
   palette_multi: "Multi",
   palette_multi_desc: "Couleurs distinctes",
-  legend_expand: "Voir tout ({count})",
+  legend_expand: "de plus",
   legend_collapse: "Réduire",
   calendar_label: "Calendrier",
   calendar_prev: "Mois précédent",

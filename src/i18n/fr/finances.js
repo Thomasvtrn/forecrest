@@ -259,7 +259,7 @@ export default {
 
   captable: {
     title: "Table de capitalisation",
-    subtitle: "Registre des actionnaires, structure du capital et simulation de levée de fonds.",
+    subtitle: "Registre des actionnaires et structure du capital.",
 
     col_name: "Actionnaire",
     col_class: "Classe",
@@ -267,9 +267,6 @@ export default {
     col_price: "Prix/action",
     col_date: "Date",
     col_pct: "% capital",
-    col_value: "Valuation (pre)",
-    price_pre: "Prix/action (pre)",
-
     class_common: "Ordinaires",
     class_preferred: "Préférentielles",
     class_esop: "Parts réservées à l'équipe",
@@ -278,24 +275,9 @@ export default {
     tip_total_shares: "Somme de toutes les actions émises par l'ensemble des actionnaires (hors pool ESOP).",
     fully_diluted: "Entièrement dilué",
     tip_fully_diluted: "Total actions + toutes les actions ESOP attribuées (vested ou non). Reflète la dilution maximale potentielle.",
-    pre_money: "Pre-money",
-    tip_pre_money: "Valorisation de l'entreprise avant la levée de fonds. Sert à calculer le prix par action pour les nouveaux investisseurs.",
-    tip_price_pre: "Pre-money ÷ total actions existantes. Prix auquel les nouvelles actions seront émises lors de la levée.",
-
-    sim_title: "Simulateur de levée",
-    sim_subtitle: "Calculez la dilution d'une prochaine levée de fonds.",
-    sim_raise: "Montant levé (EUR)",
-    sim_premoney: "Valeur pre-money (EUR)",
-    sim_postmoney: "Post-money",
-    sim_price: "Prix/action émis",
-    sim_new_shares: "Nouvelles actions",
-    sim_investor_pct: "Part investisseur",
-    sim_dilution: "Dilution existants",
-
     esop_pool_row: "Parts réservées à l'équipe",
     esop_vested: function (n) { return n + " vestées"; },
     esop_at_strike: "au strike (vestées)",
-    investors_label: "Investisseur(s)",
 
     add_shareholder: "Ajouter",
     empty: "Ajoutez vos actionnaires pour structurer votre capital.",
@@ -340,17 +322,13 @@ export default {
     badge_auto: "Auto",
     esop_goto_equity: "Intéressement",
 
-    view_without_invest: "Actionnariat",
-    view_with_invest: "Simulation de levée",
-
     capital_subscribed: "Capital souscrit",
     tip_capital_subscribed: "Somme de (actions × prix d'émission) pour chaque actionnaire. Correspond au capital social inscrit aux statuts.",
     price_nominal: "Prix/action (nominal)",
     tip_price_nominal: "Capital souscrit ÷ total actions. Prix moyen pondéré d'émission par action.",
 
-    pre_label: "Pre-money",
-    post_label: "Post-money",
-    col_post_pct: "% post",
+    edu_title: "Comprendre la table de capitalisation",
+    edu_body: "La table de capitalisation liste tous les actionnaires et le nombre de parts qu'ils détiennent. Elle permet de voir qui possède quelle proportion de l'entreprise. Lors d'une levée de fonds, de nouvelles parts sont créées — ce qui dilue les actionnaires existants.",
 
     explain_toggle_show: "Comprendre la table de capitalisation",
     explain_toggle_hide: "Masquer",
