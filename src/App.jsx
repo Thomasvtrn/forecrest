@@ -977,7 +977,7 @@ export default function App() {
             ) : null}
 
             {tab === "pact" ? (
-              <PactPage cfg={cfg} setCfg={setCfg} shareholders={shareholders} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentObj.rgb} />
+              <PactPage cfg={cfg} setCfg={setCfg} shareholders={shareholders} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentObj.rgb} />
             ) : null}
 
             {tab === "debt" ? (
@@ -993,7 +993,7 @@ export default function App() {
             ) : null}
 
             {tab === "production" ? (
-              <ProductionPage appCfg={cfg} production={production} setProduction={setProduction} streams={streams} setStreams={setStreams} costs={costs} setCosts={setCosts} sals={sals} stocks={stocks} setStocks={setStocks} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
+              <ProductionPage appCfg={cfg} production={production} setProduction={setProduction} streams={streams} setStreams={setStreams} costs={costs} setCosts={setCosts} sals={sals} stocks={stocks} setStocks={setStocks} setTab={setTab} chartPalette={chartPalette} chartPaletteMode={chartPaletteMode} onChartPaletteChange={onChartPaletteChange} accentRgb={accentRgb} />
             ) : null}
 
             {TOOLS_TABS.indexOf(tab) >= 0 ? (

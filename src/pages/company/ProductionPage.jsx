@@ -4,7 +4,7 @@ import {
   CookingPot, Cookie, Clock, Lightning, Factory,
   ForkKnife, BowlFood, Wine, Hamburger, Cube,
   Oven, Fire, Snowflake, Prohibit,
-  Sparkle, Warning, X, Package, Link,
+  Sparkle, Warning, X, Package, Link, Users, ArrowRight,
 } from "@phosphor-icons/react";
 import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, ActionBtn, SearchInput, FilterDropdown, Wizard, ExportButtons, DevOptionsButton, Modal, ModalFooter, CurrencyInput, NumberField, SelectDropdown, DonutChart, ChartLegend, PaletteToggle, FinanceLink } from "../../components";
 import { eur, eurShort, makeId, calcItemAutonomy } from "../../utils";
@@ -1138,10 +1138,38 @@ function RecipeModal({ recipe, onSave, onClose, lang, config, sals, registry, on
 /* ══════════════════════════════════════════════════════════════════
    Main Page
    ══════════════════════════════════════════════════════════════════ */
-export default function ProductionPage({ appCfg, production, setProduction, streams, setStreams, costs, setCosts, sals, stocks, setStocks, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb }) {
+export default function ProductionPage({ appCfg, production, setProduction, streams, setStreams, costs, setCosts, sals, stocks, setStocks, setTab, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb }) {
   var { lang } = useLang();
   var lk = lang === "en" ? "en" : "fr";
   var { devMode } = useDevMode();
+
+  /* ── Prerequisite wall: need at least 1 team member ── */
+  if ((sals || []).length === 0) {
+    return (
+      <PageLayout
+        title={lk === "fr" ? "Production" : "Production"}
+        subtitle={lk === "fr" ? "Calculez le coût de revient de vos productions." : "Calculate the cost price of your productions."}
+        icon={CookingPot} iconColor="var(--brand)"
+      >
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 400 }}>
+          <div style={{ textAlign: "center", maxWidth: 480 }}>
+            <Users size={56} weight="duotone" color="var(--text-muted)" style={{ marginBottom: "var(--sp-4)" }} />
+            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif", marginBottom: "var(--sp-3)" }}>
+              {lk === "fr" ? "Ajoutez d'abord votre équipe" : "Add your team first"}
+            </div>
+            <div style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "var(--sp-5)" }}>
+              {lk === "fr"
+                ? "La page Production utilise les membres de votre équipe pour calculer les coûts de main d\u2019\u0153uvre. Ajoutez au moins un employé pour commencer."
+                : "The Production page uses your team members to calculate labor costs. Add at least one employee to get started."}
+            </div>
+            <Button color="primary" size="lg" onClick={function () { if (setTab) setTab("salaries"); }} iconLeading={<ArrowRight size={14} weight="bold" />}>
+              {lk === "fr" ? "Aller à l'équipe" : "Go to team"}
+            </Button>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   /* ── Run registry migration once on mount ── */
   useEffect(function () {
