@@ -776,17 +776,9 @@ function RecipeModal({ recipe, onSave, onClose, lang, config, sals, registry, on
                           height={36}
                         />
                       ) : (
-                        <div style={{ position: "relative" }}>
-                          <input value={ing.name} onChange={function (e) { updateIngredient(idx, "name", e.target.value); }}
-                            placeholder={lk === "fr" ? "ex. Farine" : "e.g. Flour"}
-                            style={Object.assign({}, inputStyle, { height: 36, fontSize: 13 })}
-                            list={"ing-datalist-" + idx} />
-                          <datalist id={"ing-datalist-" + idx}>
-                            {(registry || []).map(function (reg) {
-                              return <option key={reg.id} value={reg.name} />;
-                            })}
-                          </datalist>
-                        </div>
+                        <input value={ing.name} onChange={function (e) { updateIngredient(idx, "name", e.target.value); }}
+                          placeholder={lk === "fr" ? "Nouvel ingrédient" : "New ingredient"}
+                          style={Object.assign({}, inputStyle, { height: 36, fontSize: 13 })} />
                       )}
                       <CurrencyInput value={ing.unitCost} onChange={function (v) { updateIngredient(idx, "unitCost", v); }} suffix={"€/" + (ing.unit || "kg")} width="100%" decimals={2} disabled={isLinked} />
                       <NumberField value={ing.qty} onChange={function (v) { updateIngredient(idx, "qty", v); }} min={0} max={99999} step={0.001} width="100%" />
