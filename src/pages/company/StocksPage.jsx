@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Plus, Trash, PencilSimple, Copy,
   Package, ShoppingCart, Factory, Storefront, Barcode,
-  Warning,
+  Warning, ArrowRight,
 } from "@phosphor-icons/react";
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart } from "recharts";
 import { PageLayout, Badge, KpiCard, Button, DataTable, ConfirmDeleteModal, ActionBtn, SearchInput, FilterDropdown, PaletteToggle, ExportButtons, DevOptionsButton, DonutChart, ModalSideNav, CurrencyInput, NumberField, Modal, ModalFooter } from "../../components";
@@ -222,7 +222,7 @@ function ForecastChart({ items, lk, chartPalette }) {
 }
 
 /* ── Main Page ── */
-export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
+export default function StocksPage({ stocks, setStocks, cfg, setTab, chartPalette, chartPaletteMode, onChartPaletteChange, accentRgb, pendingAdd, onClearPendingAdd, pendingEdit, onClearPendingEdit, pendingDuplicate, onClearPendingDuplicate }) {
   var t = useT().stocks || {};
   var { lang } = useLang();
   var lk = lang === "en" ? "en" : "fr";
@@ -341,7 +341,6 @@ export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chart
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               {isAlert ? <Warning size={14} weight="fill" color="var(--color-error)" /> : null}
               <span style={{ fontWeight: 500 }}>{info.getValue() || "\u2014"}</span>
-              {isLinked ? <Badge color="info" size="sm">{lk === "fr" ? "Production" : "Production"}</Badge> : null}
             </div>
           );
         },
@@ -367,6 +366,34 @@ export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chart
         formatPrint: function (val) {
           var m = STOCK_CATEGORY_META[val];
           return m ? m.label[lk] : val;
+        },
+      },
+      {
+        id: "linkedTo",
+        header: lk === "fr" ? "Lié à" : "Linked to",
+        enableSorting: false, meta: { align: "left" },
+        cell: function (info) {
+          var row = info.row.original;
+          if (row._linkedIngredient && row._linkedPage) {
+            var pageLabel = row._linkedPage === "production" ? "Production" : row._linkedPage;
+            return (
+              <button type="button" onClick={function () { if (setTab) setTab(row._linkedPage); }}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  fontSize: 11, color: "var(--brand)", fontStyle: "italic",
+                  border: "none", background: "none", cursor: "pointer",
+                  fontFamily: "inherit", padding: "2px 6px", borderRadius: "var(--r-sm)",
+                  transition: "background 0.12s",
+                }}
+                onMouseEnter={function (e) { e.currentTarget.style.background = "var(--brand-bg)"; }}
+                onMouseLeave={function (e) { e.currentTarget.style.background = "none"; }}
+              >
+                <ArrowRight size={10} weight="bold" />
+                {pageLabel}
+              </button>
+            );
+          }
+          return <span style={{ color: "var(--text-faint)" }}>{"\u2014"}</span>;
         },
       },
       {
