@@ -1396,7 +1396,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
 
   /* ── Wizard (when not enabled) ── */
   var [wizHourly, setWizHourly] = useState(config.hourlyRate);
-  var [wizEnergy, setWizEnergy] = useState(config.energyCostPerHour);
   var [wizMargin, setWizMargin] = useState(config.targetMargin);
   var [wizActivity, setWizActivity] = useState(config.activityType);
 
@@ -1453,11 +1452,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
                 <div style={hintStyle}>{lk === "fr" ? "Coût brut chargé moyen par heure de travail" : "Average loaded gross cost per work hour"}</div>
               </div>
               <div>
-                <label style={labelStyle}>{lk === "fr" ? "Coût énergie moyen" : "Average energy cost"}</label>
-                <CurrencyInput value={wizEnergy} onChange={function (v) { setWizEnergy(Math.max(0, v || 0)); }} suffix="€/h" width="100%" />
-                <div style={hintStyle}>{lk === "fr" ? "Coût moyen par heure d'utilisation d'un équipement" : "Average cost per hour of equipment usage"}</div>
-              </div>
-              <div>
                 <label style={labelStyle}>{lk === "fr" ? "Objectif de marge" : "Target margin"}</label>
                 <NumberField value={wizMargin} onChange={setWizMargin} min={0} max={1} step={0.01} width="100%" pct />
                 <div style={hintStyle}>{lk === "fr" ? "La marge visée sur le prix de vente (ex. 70% = coût matière cible 30%)" : "Target margin on selling price (e.g. 70% = 30% material cost target)"}</div>
@@ -1503,7 +1497,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
       cfgSet("recipes", []);
       cfgSet("config", {
         hourlyRate: wizHourly,
-        energyCostPerHour: wizEnergy,
         targetMargin: wizMargin,
         activityType: wizActivity,
       });
