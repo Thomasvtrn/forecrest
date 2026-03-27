@@ -738,7 +738,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
   var [pendingDelete, setPendingDelete] = useState(null);
   var [skipDeleteConfirm, setSkipDeleteConfirm] = useState(false);
   var [search, setSearch] = useState("");
-  var [ingRecipeFilter, setIngRecipeFilter] = useState("");
+  var [ingRecipeFilter, setIngRecipeFilter] = useState("all");
   var [filter, setFilter] = useState("all");
 
   var recipes = cfg.recipes || [];
@@ -1643,7 +1643,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
         <DataTable
           data={(function () {
             var items = ingredientConsumption;
-            if (ingRecipeFilter) {
+            if (ingRecipeFilter && ingRecipeFilter !== "all") {
               items = items.filter(function (ic) { return (ic.recipeNames || []).indexOf(ingRecipeFilter) >= 0; });
             }
             return items;
@@ -1652,7 +1652,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
             <>
               <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center", flexWrap: "wrap" }}>
                 <SearchInput value={search} onChange={setSearch} placeholder={lk === "fr" ? "Rechercher..." : "Search..."} />
-                <FilterDropdown value={ingRecipeFilter} onChange={setIngRecipeFilter} options={[{ value: "", label: lk === "fr" ? "Toutes les productions" : "All productions" }].concat(
+                <FilterDropdown value={ingRecipeFilter} onChange={setIngRecipeFilter} options={[{ value: "all", label: lk === "fr" ? "Toutes les productions" : "All productions" }].concat(
                   recipes.filter(function (r) { return r.name; }).map(function (r) { return { value: r.name, label: r.name }; })
                 )} />
               </div>
@@ -1701,11 +1701,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
               enableSorting: true, meta: { align: "right" },
               accessorFn: function (row) { return row.totalQty; },
               cell: function (info) { return info.getValue().toFixed(1); },
-              footer: function () {
-                var tot = 0;
-                ingredientConsumption.forEach(function (ic) { tot += ic.totalQty; });
-                return <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{tot.toFixed(1)}</span>;
-              },
             },
             {
               id: "totalCost",
@@ -1718,7 +1713,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
                 var isHigh = ingredientTotalCost > 0 && (v / ingredientTotalCost) > 0.30;
                 return <span style={{ fontWeight: 600, color: isHigh ? "var(--color-warning)" : "var(--text-primary)", fontVariantNumeric: "tabular-nums" }}>{eur(v)}</span>;
               },
-              footer: function () { return <span style={{ fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{eur(ingredientTotalCost)}</span>; },
             },
             {
               id: "pctOfTotal",
@@ -1761,7 +1755,6 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
           emptyMinHeight={150}
           pageSize={20}
           getRowId={function (row, idx) { return String(idx); }}
-          scrollable
           showFooter
         />
       ) : null}
