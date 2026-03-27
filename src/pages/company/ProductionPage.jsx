@@ -1218,7 +1218,7 @@ export default function ProductionPage({ appCfg, production, setProduction, stre
             lk === "fr" ? "Ajoutez au moins un membre (employé, indépendant...)" : "Add at least one member (employee, freelancer...)",
             lk === "fr" ? "Revenez ici pour créer vos recettes" : "Come back here to create your recipes",
           ]}
-          ctaLabel={lk === "fr" ? "Aller à l'équipe" : "Go to team"}
+          ctaLabel={lk === "fr" ? "Créer mon équipe" : "Build my team"}
           onAction={function () { setTab("salaries"); }}
         />
       </PageLayout>

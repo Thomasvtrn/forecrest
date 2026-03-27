@@ -479,7 +479,7 @@ export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chart
         ) : null}
         <ExportButtons cfg={cfg} data={filteredItems} columns={columns} filename="stocks" title={t.title || (lk === "fr" ? "Stocks & Inventaire" : "Stocks & Inventory")} subtitle={t.subtitle || (lk === "fr" ? "Gérez vos produits, matières premières et marchandises." : "Manage your products, raw materials and merchandise.")} getPcmn={function (row) { var m = STOCK_CATEGORY_META[row.category]; return m && m.pcmn ? m.pcmn : "3400"; }} />
         <Button color="primary" size="lg" onClick={function () { setShowCreate(true); }} iconLeading={<Plus size={14} weight="bold" />}>
-          {t.add || (lk === "fr" ? "Ajouter un produit" : "Add product")}
+          {t.add || (lk === "fr" ? "Ajouter" : "Add")}
         </Button>
       </div>
     </>
@@ -627,6 +627,7 @@ export default function StocksPage({ stocks, setStocks, cfg, chartPalette, chart
         getRowId={function (row) { return String(row.id); }}
         selectable
         onDeleteSelected={bulkDeleteItems}
+        scrollable
         showFooter
       />
     </PageLayout>

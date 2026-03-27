@@ -663,7 +663,7 @@ export default function PactPage({ cfg, setCfg, shareholders, setTab, chartPalet
             lk === "fr" ? "Ajoutez les fondateurs et/ou investisseurs" : "Add the founders and/or investors",
             lk === "fr" ? "Revenez ici pour configurer le pacte" : "Come back here to configure the agreement",
           ]}
-          ctaLabel={lk === "fr" ? "Aller aux actionnaires" : "Go to cap table"}
+          ctaLabel={lk === "fr" ? "Ajouter mes actionnaires" : "Add my shareholders"}
           onAction={function () { setTab("captable"); }}
         />
       </PageLayout>
