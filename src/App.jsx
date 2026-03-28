@@ -21,6 +21,7 @@ import { setAdapter, SupabaseAdapter } from "./utils/storageAdapter";
 import { isConfigured as isSupabaseConfigured, isAdminEnabled } from "./lib/supabase";
 
 var AuthPage = lazy(function () { return import("./components/AuthPage"); });
+var OnboardingPage = lazy(function () { return import("./components/OnboardingPage"); });
 var AdminLayout = lazy(function () { return import("./components/AdminLayout"); });
 var AdminPage = lazy(function () { return import("./pages/meta/AdminPage"); });
 var OnboardingWizard = lazy(function () { return import("./components/OnboardingWizard"); });
@@ -864,6 +865,17 @@ export default function App() {
     return (
       <Suspense fallback={<AppLoader label={t.loading} />}>
         <AuthPage />
+      </Suspense>
+    );
+  }
+
+  /* ── Onboarding wall: force profile setup if companyName empty ── */
+  if (ready && auth.user && cfg && !cfg.companyName) {
+    return (
+      <Suspense fallback={<AppLoader label={t.loading} />}>
+        <OnboardingPage onComplete={function (updates) {
+          setCfg(function (prev) { return Object.assign({}, prev, updates); });
+        }} />
       </Suspense>
     );
   }
