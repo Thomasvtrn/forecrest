@@ -964,8 +964,7 @@ export default function App() {
             <PageTransition tabKey={tab} animate={!cfg || cfg.animationsEnabled !== false}>
             {tab === "overview" ? (
               (function () {
-                var isNewUser = !streams || streams.every(function (cat) { return !cat.items || cat.items.length === 0; });
-                if (isNewUser && !onboardingTasksSkipped) {
+                if (!onboardingTasksSkipped) {
                   return <OverviewOnboarding cfg={cfg} streams={streams} costs={costs} sals={sals} setTab={setTab} onQuickAdd={handleQuickAdd} onSkip={function () { try { localStorage.setItem("forecrest_onboarding_skip", "true"); } catch (e) {} setOnboardingTasksSkipped(true); }} />;
                 }
                 return <OverviewPage
@@ -1294,7 +1293,7 @@ export default function App() {
         <FloatingToolbar
           tab={tab}
           setTab={setTab}
-          visible={showToolbar && !(!onboardingTasksSkipped && tab === "overview" && (!streams || streams.every(function (cat) { return !cat.items || cat.items.length === 0; })))}
+          visible={showToolbar && !(tab === "overview" && !onboardingTasksSkipped)}
           activeModule={activeModule}
           setActiveModule={setActiveModule}
           unlockedModules={unlockedModules}
