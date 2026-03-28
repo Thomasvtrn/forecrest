@@ -966,7 +966,7 @@ export default function App() {
               (function () {
                 var isNewUser = !streams || streams.every(function (cat) { return !cat.items || cat.items.length === 0; });
                 if (isNewUser && !onboardingTasksSkipped) {
-                  return <OverviewOnboarding cfg={cfg} streams={streams} costs={costs} sals={sals} setTab={setTab} onSkip={function () { try { localStorage.setItem("forecrest_onboarding_skip", "true"); } catch (e) {} setOnboardingTasksSkipped(true); }} />;
+                  return <OverviewOnboarding cfg={cfg} streams={streams} costs={costs} sals={sals} setTab={setTab} onQuickAdd={handleQuickAdd} onSkip={function () { try { localStorage.setItem("forecrest_onboarding_skip", "true"); } catch (e) {} setOnboardingTasksSkipped(true); }} />;
                 }
                 return <OverviewPage
                   totalRevenue={totalRevenue}

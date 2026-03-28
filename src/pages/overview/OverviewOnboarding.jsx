@@ -88,7 +88,7 @@ function TaskRow({ done, skipped, icon, title, desc, cta, onAction, onSkip, skip
   );
 }
 
-export default function OverviewOnboarding({ cfg, streams, costs, sals, setTab, onSkip }) {
+export default function OverviewOnboarding({ cfg, streams, costs, sals, setTab, onQuickAdd, onSkip }) {
   var tAll = useT();
   var ot = tAll.onboarding_checklist || {};
   var { lang } = useLang();
@@ -118,11 +118,11 @@ export default function OverviewOnboarding({ cfg, streams, costs, sals, setTab, 
   var hasFiscal = cfg && cfg.vat > 0;
 
   var tasks = [
-    { id: "revenue", done: hasRevenue, icon: CurrencyCircleDollar, title: ot.task_revenue || "Ajoutez votre premier revenu", desc: ot.task_revenue_desc || "D'o\u00f9 vient l'argent ? Abonnements, ventes, prestations...", cta: ot.cta_add || "Ajouter", tab: "streams", skippable: false },
-    { id: "costs", done: hasCosts, icon: Receipt, title: ot.task_costs || "Ajoutez une premi\u00e8re charge", desc: ot.task_costs_desc || "Loyer, logiciels, marketing, assurances...", cta: ot.cta_add || "Ajouter", tab: "opex", skippable: false },
-    { id: "cash", done: hasCash, icon: Wallet, title: ot.task_cash || "D\u00e9finissez votre tr\u00e9sorerie", desc: ot.task_cash_desc || "Combien avez-vous en banque au d\u00e9marrage ?", cta: ot.cta_configure || "Configurer", tab: "profile", skippable: false },
-    { id: "team", done: hasTeam, icon: UserPlus, title: ot.task_team || "Ajoutez un premier employ\u00e9", desc: ot.task_team_desc || "Votre premier salari\u00e9, un stagiaire ou vous-m\u00eame si vous \u00eates r\u00e9mun\u00e9r\u00e9.", cta: ot.cta_add || "Ajouter", tab: "salaries", skippable: true },
-    { id: "fiscal", done: hasFiscal, icon: Scales, title: ot.task_fiscal || "Configurez votre fiscalit\u00e9", desc: ot.task_fiscal_desc || "Taux de TVA, r\u00e9gime fiscal et cotisations sociales.", cta: ot.cta_configure || "Configurer", tab: "set", skippable: true },
+    { id: "revenue", done: hasRevenue, icon: CurrencyCircleDollar, title: ot.task_revenue || "Ajoutez votre premier revenu", desc: ot.task_revenue_desc || "D'o\u00f9 vient l'argent ? Abonnements, ventes, prestations...", cta: ot.cta_add || "Ajouter", action: "quickadd", target: "streams", skippable: false },
+    { id: "costs", done: hasCosts, icon: Receipt, title: ot.task_costs || "Ajoutez une premi\u00e8re charge", desc: ot.task_costs_desc || "Loyer, logiciels, marketing, assurances...", cta: ot.cta_add || "Ajouter", action: "quickadd", target: "opex", skippable: false },
+    { id: "cash", done: hasCash, icon: Wallet, title: ot.task_cash || "D\u00e9finissez votre tr\u00e9sorerie", desc: ot.task_cash_desc || "Combien avez-vous en banque au d\u00e9marrage ?", cta: ot.cta_configure || "Configurer", action: "nav", target: "cashflow", skippable: false },
+    { id: "team", done: hasTeam, icon: UserPlus, title: ot.task_team || "Ajoutez un premier employ\u00e9", desc: ot.task_team_desc || "Votre premier salari\u00e9, un stagiaire ou vous-m\u00eame si vous \u00eates r\u00e9mun\u00e9r\u00e9.", cta: ot.cta_add || "Ajouter", action: "quickadd", target: "salaries", skippable: true },
+    { id: "fiscal", done: hasFiscal, icon: Scales, title: ot.task_fiscal || "Configurez votre fiscalit\u00e9", desc: ot.task_fiscal_desc || "Taux de TVA, r\u00e9gime fiscal et cotisations sociales.", cta: ot.cta_configure || "Configurer", action: "settings", target: "fiscal", skippable: true },
   ];
 
   /* ── Progress (done + skipped = resolved) ── */
@@ -143,10 +143,12 @@ export default function OverviewOnboarding({ cfg, streams, costs, sals, setTab, 
   ];
 
   function handleTaskClick(task) {
-    if (task.tab === "set") {
-      setTab("set", { section: "fiscal" });
+    if (task.action === "quickadd" && onQuickAdd) {
+      onQuickAdd(task.target, "");
+    } else if (task.action === "settings") {
+      setTab("set", { section: task.target });
     } else {
-      setTab(task.tab);
+      setTab(task.target);
     }
   }
 
