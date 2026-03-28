@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Users, HardDrives, ShieldCheck, Trash, ArrowsClockwise, Clock, UserCircle, Database, PencilSimple, Copy } from "@phosphor-icons/react";
+import { Users, HardDrives, ShieldCheck, Trash, ArrowsClockwise, Clock, UserCircle, Database, PencilSimple, Copy, Check } from "@phosphor-icons/react";
 import { KpiCard, Badge, DataTable, Button, PageLayout, SearchInput, FilterDropdown, ButtonUtility, Modal, ModalBody, ModalFooter, DonutChart, PaletteToggle } from "../../components";
 import Sparkline from "../../components/Sparkline";
 import { getChartPalette } from "../../constants/colors";
@@ -77,6 +77,31 @@ function TabList({ tabs, active, onChange }) {
         );
       })}
     </div>
+  );
+}
+
+function CopyBtn({ text, size }) {
+  var s = size || 28;
+  var [copied, setCopied] = useState(false);
+  function handleCopy() {
+    navigator.clipboard.writeText(text).then(function () {
+      setCopied(true);
+      setTimeout(function () { setCopied(false); }, 1500);
+    });
+  }
+  return (
+    <button onClick={handleCopy} title={copied ? "Copié !" : "Copier"} style={{
+      flexShrink: 0, width: s, height: s,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      border: copied ? "1px solid var(--color-success-border)" : "1px solid var(--border)",
+      borderRadius: "var(--r-sm)",
+      background: copied ? "var(--color-success-bg)" : "transparent",
+      cursor: "pointer",
+      color: copied ? "var(--color-success)" : "var(--text-faint)",
+      transition: "all 0.2s",
+    }}>
+      {copied ? <Check size={s === 32 ? 14 : 13} weight="bold" /> : <Copy size={s === 32 ? 14 : 13} />}
+    </button>
   );
 }
 
@@ -780,9 +805,7 @@ export default function AdminPage({ section }) {
                 <div key={row.label} style={{ background: "var(--bg-card)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", padding: "var(--sp-3) var(--sp-4)", display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", width: 80, flexShrink: 0 }}>{row.label}</span>
                   <code style={{ flex: 1, fontSize: 12, color: "var(--text-primary)", fontFamily: "ui-monospace, SFMono-Regular, monospace", background: "var(--bg-accordion)", padding: "6px 10px", borderRadius: "var(--r-sm)", border: "1px solid var(--border-light)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{row.cmd}</code>
-                  <button onClick={function () { navigator.clipboard.writeText(row.cmd); }} title="Copier" style={{ flexShrink: 0, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border)", borderRadius: "var(--r-sm)", background: "transparent", cursor: "pointer", color: "var(--text-faint)" }}>
-                    <Copy size={14} />
-                  </button>
+                  <CopyBtn text={row.cmd} size={32} />
                 </div>
               );
             })}
@@ -803,9 +826,7 @@ export default function AdminPage({ section }) {
                     <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 2 }}>{row.label}</div>
                     <code style={{ fontSize: 11, color: "var(--text-faint)", fontFamily: "ui-monospace, monospace" }}>{row.cmd}</code>
                   </div>
-                  <button onClick={function () { navigator.clipboard.writeText(row.cmd); }} title="Copier" style={{ flexShrink: 0, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border)", borderRadius: "var(--r-sm)", background: "transparent", cursor: "pointer", color: "var(--text-faint)" }}>
-                    <Copy size={13} />
-                  </button>
+                  <CopyBtn text={row.cmd} />
                 </div>
               );
             })}
@@ -828,9 +849,7 @@ export default function AdminPage({ section }) {
                     <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 2 }}>{row.label}</div>
                     <code style={{ fontSize: 11, color: "var(--text-faint)", fontFamily: "ui-monospace, monospace" }}>{row.cmd}</code>
                   </div>
-                  <button onClick={function () { navigator.clipboard.writeText(row.cmd); }} title="Copier" style={{ flexShrink: 0, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border)", borderRadius: "var(--r-sm)", background: "transparent", cursor: "pointer", color: "var(--text-faint)" }}>
-                    <Copy size={13} />
-                  </button>
+                  <CopyBtn text={row.cmd} />
                 </div>
               );
             })}
