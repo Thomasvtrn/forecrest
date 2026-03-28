@@ -52,10 +52,10 @@ var WELCOME_SLIDES = [
 ];
 
 var SLIDE_DEFAULTS = {
-  revenue: { title: "Mod\u00e9lisez vos revenus", desc: "Sources de revenus, abonnements, projets, commissions \u2014 tout se calcule automatiquement." },
-  treasury: { title: "Suivez votre tr\u00e9sorerie", desc: "Cash, burn rate, runway \u2014 visualisez votre sant\u00e9 financi\u00e8re en temps r\u00e9el." },
-  taxes: { title: "Fiscalit\u00e9 belge int\u00e9gr\u00e9e", desc: "TVA, ISOC, ONSS, IPP \u2014 calcul\u00e9s selon les barèmes officiels. Codes PCMN inclus." },
-  insights: { title: "D\u00e9cisions \u00e9clair\u00e9es", desc: "Ratios, sensibilit\u00e9, projections \u2014 comprenez l'impact de chaque d\u00e9cision sur votre rentabilit\u00e9." },
+  revenue: { title: "Vos revenus, en clair", desc: "Estimez combien votre projet peut rapporter. Forecrest calcule tout pour vous." },
+  treasury: { title: "Votre argent, sous contr\u00f4le", desc: "Combien il reste en banque, combien vous d\u00e9pensez par mois, et combien de temps vous pouvez tenir." },
+  taxes: { title: "Imp\u00f4ts et cotisations", desc: "Les taxes belges sont calcul\u00e9es automatiquement. Vous n'avez rien \u00e0 chercher." },
+  insights: { title: "Prenez les bonnes d\u00e9cisions", desc: "Voyez ce qui compte vraiment et ce que chaque choix change dans votre plan." },
 };
 
 /* ── Sub-components ── */
@@ -153,7 +153,7 @@ function WelcomeCarousel({ onFinish, onSkip, t }) {
         if (s >= WELCOME_SLIDES.length - 1) { clearInterval(timerRef.current); return s; }
         return s + 1;
       });
-    }, 4000);
+    }, 6000);
   }
 
   useEffect(function () { startTimer(); return function () { clearInterval(timerRef.current); }; }, []);
@@ -205,7 +205,7 @@ function WelcomeCarousel({ onFinish, onSkip, t }) {
           {t.ob_skip || "Passer"}
         </Button>
         <Button color="primary" size="lg" onClick={goNext} iconTrailing={<ArrowRight size={16} />}>
-          {idx >= WELCOME_SLIDES.length - 1 ? (t.ob_continue || "Continuer") : (t.ob_next_slide || "Suivant")}
+          {idx >= WELCOME_SLIDES.length - 1 ? (t.ob_lets_go || "On continue ?") : (t.ob_next_slide || "Suivant")}
         </Button>
       </div>
     </div>
