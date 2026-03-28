@@ -123,6 +123,25 @@ export default {
     cl_sidebar_sticky: "Correction : la sidebar reste fixe lors du scroll (fix sticky + flex).",
     cl_glossary_scroll_lock: "Correction : l'arrière-plan ne scroll plus quand le glossaire est ouvert.",
 
+    // v0.1.38.0
+    cl_auth_page_redesign: "Nouveau : page d'authentification full-page inspir\u00e9e de 1Password — flux step-by-step, layout centr\u00e9 avec panel d'aide.",
+    cl_password_criteria: "Nouveau : validation mot de passe en temps r\u00e9el — 14 caract\u00e8res, majuscules, minuscules, chiffres, symboles avec indicateur de force.",
+    cl_role_selection: "Nouveau : s\u00e9lection du r\u00f4le \u00e0 l'inscription — Porteur, Comptable ou Accompagnateur.",
+    cl_auth_step_flow: "Am\u00e9lioration : flux d'inscription en 5 \u00e9tapes (email \u2192 r\u00f4le \u2192 mot de passe \u2192 v\u00e9rification \u2192 bienvenue).",
+
+    // v0.1.37.0
+    cl_auth_wall: "Nouveau : Auth wall — connexion obligatoire pour acc\u00e9der au dashboard en mode Cloud.",
+    cl_admin_dashboard: "Nouveau : Dashboard admin — gestion des utilisateurs, workspaces et statistiques.",
+    cl_saas_modes: "Nouveau : 3 modes de d\u00e9ploiement — Cloud Forecrest, Self-hosted, Local.",
+    cl_settings_cloud_cleanup: "Am\u00e9lioration : interface Compte simplifi\u00e9e — Cloud affiche directement le login, Self-hosted guide en 3 \u00e9tapes.",
+
+    // v0.1.36.0
+    cl_supabase_integration: "Nouveau : Int\u00e9gration Supabase — persistance cloud avec comptes utilisateur et synchronisation en arri\u00e8re-plan.",
+    cl_auth_modal: "Nouveau : Modal d'authentification — connexion, inscription et lien magique.",
+    cl_cloud_sync: "Nouveau : Synchronisation cloud — sauvegarde automatique, d\u00e9tection offline, indicateur de statut.",
+    cl_storage_adapter: "Nouveau : Architecture adaptateur de stockage — bascule transparente entre localStorage et Supabase.",
+    cl_settings_account_section: "Am\u00e9lioration : nouvelle section Compte & Sync dans les param\u00e8tres avec gestion du profil et configuration self-hosted.",
+
     // v0.1.35.0
     cl_sensitivity_redesign: "Nouveau : Analyse de sensibilité — refonte complète avec KPI cards, design moderne et explications contextuelles.",
     cl_sensitivity_kpis: "Nouveau : 3 KPI cards (variable la plus sensible, impact maximal, variables analysées) en haut de la page Sensibilité.",

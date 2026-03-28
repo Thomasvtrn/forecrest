@@ -57,16 +57,21 @@ export default function Modal({
     }
   }, [onClose]);
 
+  /* Keydown listener — re-registers when handler changes */
   useEffect(function () {
     if (!open) return;
     window.addEventListener("keydown", handleKeyDown);
-    /* focus first focusable element on open */
+    return function () { window.removeEventListener("keydown", handleKeyDown); };
+  }, [open, handleKeyDown]);
+
+  /* Auto-focus first element — only on open, not on every re-render */
+  useEffect(function () {
+    if (!open) return;
     if (cardRef.current) {
       var first = cardRef.current.querySelector(FOCUSABLE);
       if (first) first.focus();
     }
-    return function () { window.removeEventListener("keydown", handleKeyDown); };
-  }, [open, handleKeyDown]);
+  }, [open]);
 
   if (!open) return null;
 

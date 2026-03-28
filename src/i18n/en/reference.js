@@ -120,6 +120,25 @@ export default {
     cl_sidebar_sticky: "Fix: sidebar stays fixed when scrolling (sticky + flex fix).",
     cl_glossary_scroll_lock: "Fix: background no longer scrolls when the glossary is open.",
 
+    // v0.1.38.0
+    cl_auth_page_redesign: "New: full-page auth page inspired by 1Password \u2014 step-by-step flow, centered layout with help panel.",
+    cl_password_criteria: "New: real-time password validation \u2014 14 characters, uppercase, lowercase, digits, symbols with strength indicator.",
+    cl_role_selection: "New: role selection at signup \u2014 Founder, Accountant or Advisor.",
+    cl_auth_step_flow: "Improvement: 5-step signup flow (email \u2192 role \u2192 password \u2192 verify \u2192 welcome).",
+
+    // v0.1.37.0
+    cl_auth_wall: "New: Auth wall \u2014 login required to access the dashboard in Cloud mode.",
+    cl_admin_dashboard: "New: Admin dashboard \u2014 user management, workspaces and statistics.",
+    cl_saas_modes: "New: 3 deployment modes \u2014 Cloud Forecrest, Self-hosted, Local.",
+    cl_settings_cloud_cleanup: "Improvement: simplified Account settings \u2014 Cloud shows direct login, Self-hosted has a 3-step guide.",
+
+    // v0.1.36.0
+    cl_supabase_integration: "New: Supabase integration \u2014 cloud persistence with user accounts and background sync.",
+    cl_auth_modal: "New: Authentication modal \u2014 login, sign up and magic link.",
+    cl_cloud_sync: "New: Cloud sync \u2014 automatic save, offline detection, status indicator.",
+    cl_storage_adapter: "New: Storage adapter architecture \u2014 transparent switch between localStorage and Supabase.",
+    cl_settings_account_section: "Improvement: new Account & Sync section in settings with profile management and self-hosted configuration.",
+
     // v0.1.35.0
     cl_sensitivity_redesign: "New: Sensitivity Analysis — complete redesign with KPI cards, modern layout and contextual explanations.",
     cl_sensitivity_kpis: "New: 3 KPI cards (most sensitive variable, maximum impact, variables analyzed) at the top of the Sensitivity page.",

@@ -40,3 +40,4 @@ export { default as DevOptionsButton } from "./DevOptionsButton";
 export { default as DonutChart } from "./DonutChart";
 export { default as ModalSideNav } from "./ModalSideNav";
 export { default as PnlCascade } from "./PnlCascade";
+export { default as SyncStatusBadge } from "./SyncStatusBadge";

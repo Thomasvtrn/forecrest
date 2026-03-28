@@ -4,6 +4,37 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.38.0",
+    date: "2026-03-28",
+    entries: [
+      { type: "feature", key: "cl_auth_page_redesign" },
+      { type: "feature", key: "cl_password_criteria" },
+      { type: "feature", key: "cl_role_selection" },
+      { type: "improvement", key: "cl_auth_step_flow" },
+    ],
+  },
+  {
+    version: "0.1.37.0",
+    date: "2026-03-28",
+    entries: [
+      { type: "feature", key: "cl_auth_wall" },
+      { type: "feature", key: "cl_admin_dashboard" },
+      { type: "feature", key: "cl_saas_modes" },
+      { type: "improvement", key: "cl_settings_cloud_cleanup" },
+    ],
+  },
+  {
+    version: "0.1.36.0",
+    date: "2026-03-28",
+    entries: [
+      { type: "feature", key: "cl_supabase_integration" },
+      { type: "feature", key: "cl_auth_modal" },
+      { type: "feature", key: "cl_cloud_sync" },
+      { type: "feature", key: "cl_storage_adapter" },
+      { type: "improvement", key: "cl_settings_account_section" },
+    ],
+  },
+  {
     version: "0.1.35.0",
     date: "2026-03-28",
     entries: [
