@@ -1,17 +1,40 @@
 export default {
   sensitivity: {
     title: "Sensitivity Analysis",
-    subtitle: "Identify the variables that most impact your profitability.",
-    explainer_title: "Why does this matter?",
-    explainer_body: "Sensitivity analysis helps you understand which levers most impact your EBITDA. By varying each parameter by ±20%, you immediately see where to focus efforts. It's an essential tool for investor discussions and strategic decision-making.",
-    chart_title: "Sensitivity Analysis",
-    chart_sub: function (v) { return "Impact of ±" + v + "% variation on EBITDA"; },
+    subtitle: "Understand which parameters most influence your result.",
+    explainer_title: "What does this analysis mean?",
+    explainer_body: "Sensitivity analysis shows how your result changes if a variable increases or decreases. The longest bars indicate the parameters with the most influence on your profitability. Focus your efforts on these levers.",
+    chart_title: "Impact on your result",
+    chart_sub: function (v) { return "±" + v + "% variation of each parameter on operating result"; },
     help_toggle: "How to read this chart?",
-    help_body: function (v) { return "Each bar shows the EBITDA impact if that parameter varied by ±" + v + "%. Green bars (right) show positive impact, red bars (left) show negative impact. Longer bars mean higher sensitivity. Focus efforts on parameters with the largest impact."; },
-    ebitda_current: "EBITDA current",
+    help_body: function (v) { return "Each bar shows how your operating result would change if that parameter varied by ±" + v + "%. Green bars (right) show a positive effect, red bars (left) a negative effect. The longer the bar, the more that parameter matters."; },
+    ebitda_current: "Current result",
     legend_negative: "Negative impact",
     legend_positive: "Positive impact",
     legend_variation: "variation",
+
+    /* KPI cards */
+    kpi_most_sensitive: "Most sensitive variable",
+    kpi_max_impact: "Maximum impact",
+    kpi_vars_analyzed: "Variables analyzed",
+    kpi_no_data: "No data",
+    kpi_none: "None",
+
+    /* Badge */
+    badge_most_sensitive: "Most sensitive",
+
+    /* Skeleton / empty state */
+    empty_title: "No data yet",
+    empty_body: "Enter your revenue and costs to see which variables most impact your result.",
+
+    /* Print */
+    print_title: "SENSITIVITY ANALYSIS",
+    print_subtitle: "Impact of parameter variations on operating result",
+    print_table_variable: "Variable",
+    print_table_neg: "Negative impact",
+    print_table_pos: "Positive impact",
+    print_table_pct: "% of result",
+    print_disclaimer: "This document is automatically generated via Forecrest.app. The data are unaudited financial projections and do not constitute accounting or legal advice.",
   },
 
   ratios: {

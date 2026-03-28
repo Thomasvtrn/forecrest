@@ -1,23 +1,33 @@
 import { useMemo, useState } from "react";
-import { Card } from "../components";
+import { Card, FinanceLink } from "../components";
 import { eur, pct } from "../utils";
 import { Info, CaretDown, Sliders } from "@phosphor-icons/react";
 
 var DEFAULT_VARIATION = 0.20;
 
-// Sensitivity variables per business type
+/* ── Glossary mapping: variable id → glossary term ── */
+var GLOSSARY_MAP = {
+  revenue: "annual_revenue",
+  costs: "total_costs",
+  salaries: "salary_cost",
+  vat: "tva",
+  cac: "cac",
+  onss: "onss",
+};
+
+/* ── Sensitivity variables per business type ── */
 var VARIABLES = {
   _universal: [
     { id: "revenue", label_fr: "Chiffre d'affaires", label_en: "Revenue" },
-    { id: "costs", label_fr: "Charges opérationnelles", label_en: "Operating costs" },
-    { id: "salaries", label_fr: "Masse salariale", label_en: "Payroll" },
+    { id: "costs", label_fr: "Charges d'exploitation", label_en: "Operating costs" },
+    { id: "salaries", label_fr: "Salaires", label_en: "Payroll" },
     { id: "vat", label_fr: "Taux TVA", label_en: "VAT rate" },
     { id: "initialCash", label_fr: "Trésorerie initiale", label_en: "Initial cash" },
   ],
   saas: [
     { id: "churn", label_fr: "Churn mensuel", label_en: "Monthly churn" },
     { id: "growth", label_fr: "Croissance CA", label_en: "Revenue growth" },
-    { id: "cac", label_fr: "Coût acquisition client", label_en: "CAC" },
+    { id: "cac", label_fr: "Coût acquisition client", label_en: "Customer acquisition cost" },
   ],
   ecommerce: [
     { id: "orders", label_fr: "Commandes / mois", label_en: "Orders / month" },
@@ -92,8 +102,10 @@ function computeImpact(id, variation, baseEbitda, totalRevenue, monthlyCosts, sa
   }
 }
 
-export default function SensitivityChart({ totalRevenue, monthlyCosts, salCosts, ebit, cfg, t }) {
-  var [variation, setVariation] = useState(DEFAULT_VARIATION);
+/* ── Exported for SensitivityPage (report + KPI) ── */
+export { VARIABLES, computeImpact, DEFAULT_VARIATION };
+
+export default function SensitivityChart({ totalRevenue, monthlyCosts, salCosts, ebit, cfg, t, variation, setVariation }) {
   var [helpOpen, setHelpOpen] = useState(false);
   var lang = t.legend_variation === "de variation" ? "fr" : "en";
 
@@ -155,7 +167,7 @@ export default function SensitivityChart({ totalRevenue, monthlyCosts, salCosts,
                 padding: "3px 8px", borderRadius: "var(--r-full)",
                 border: "1px solid " + (active ? "var(--brand)" : "var(--border)"),
                 background: active ? "var(--brand)" : "transparent",
-                color: active ? "#fff" : "var(--text-muted)",
+                color: active ? "var(--color-on-brand)" : "var(--text-muted)",
                 fontSize: 11, fontWeight: 600, cursor: "pointer",
               }}>
                 {v}%
@@ -208,29 +220,57 @@ export default function SensitivityChart({ totalRevenue, monthlyCosts, salCosts,
           var posImpact = Math.max(d.low, d.high);
           var negW = Math.abs(negImpact) / maxAbsImpact * 100;
           var posW = Math.abs(posImpact) / maxAbsImpact * 100;
+          var glossaryTerm = GLOSSARY_MAP[d.id];
+          var isFirst = idx === 0;
+
+          /* % of EBITDA for each impact */
+          var negPct = ebit !== 0 ? Math.abs(negImpact) / Math.abs(ebit) : 0;
+          var posPct = ebit !== 0 ? Math.abs(posImpact) / Math.abs(ebit) : 0;
 
           return (
             <div key={d.id} style={{
               display: "grid",
-              gridTemplateColumns: "140px 90px 1fr 1fr 90px",
+              gridTemplateColumns: "160px 110px 1fr 1fr 110px",
               alignItems: "center",
-              minHeight: 36,
-              padding: "2px 0",
+              minHeight: 38,
+              padding: "var(--sp-1) 0",
               borderRadius: "var(--r-md)",
               background: idx % 2 === 0 ? "transparent" : "var(--bg-accordion)",
             }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", textAlign: "right", paddingRight: 10, lineHeight: 1.3 }}>
-                {d.label}
+              <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", textAlign: "right", paddingRight: 10, lineHeight: 1.3, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "var(--sp-2)" }}>
+                {isFirst ? (
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em",
+                    color: "var(--brand)", background: "var(--brand-bg)",
+                    border: "1px solid var(--brand-border)",
+                    padding: "1px 6px", borderRadius: "var(--r-sm)", whiteSpace: "nowrap", flexShrink: 0,
+                  }}>
+                    {t.badge_most_sensitive}
+                  </span>
+                ) : null}
+                {glossaryTerm ? (
+                  <FinanceLink term={glossaryTerm} label={d.label} subtle />
+                ) : (
+                  <span>{d.label}</span>
+                )}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: negImpact < 0 ? "var(--color-error)" : "var(--text-faint)", textAlign: "right", paddingRight: 6, fontVariantNumeric: "tabular-nums" }}>
-                {negImpact < 0 ? eur(Math.round(negImpact)) : ""}
+              <div style={{ fontSize: 11, fontWeight: 600, color: negImpact < 0 ? "var(--color-error)" : "var(--text-faint)", textAlign: "right", paddingRight: 6, fontVariantNumeric: "tabular-nums", lineHeight: 1.3 }}>
+                {negImpact < 0 ? (
+                  <>
+                    <span>{eur(Math.round(negImpact))}</span>
+                    {negPct > 0.005 ? (
+                      <span style={{ fontSize: 10, color: "var(--text-faint)", marginLeft: 3 }}>({pct(negPct)})</span>
+                    ) : null}
+                  </>
+                ) : ""}
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: 22, position: "relative" }}>
                 {negImpact < 0 ? (
                   <div style={{
                     width: Math.max(negW, 1) + "%", height: "100%",
                     background: "var(--color-error)", opacity: 0.6,
-                    borderRadius: "4px 0 0 4px",
+                    borderRadius: "var(--r-sm) 0 0 var(--r-sm)",
+                    transition: "width 0.3s ease",
                   }} />
                 ) : null}
                 <div style={{ position: "absolute", right: 0, top: -4, bottom: -4, width: 2, background: "var(--border-strong)" }} />
@@ -240,13 +280,21 @@ export default function SensitivityChart({ totalRevenue, monthlyCosts, salCosts,
                   <div style={{
                     width: Math.max(posW, 1) + "%", height: "100%",
                     background: "var(--color-success)", opacity: 0.6,
-                    borderRadius: "0 4px 4px 0",
+                    borderRadius: "0 var(--r-sm) var(--r-sm) 0",
+                    transition: "width 0.3s ease",
                   }} />
                 ) : null}
                 <div style={{ position: "absolute", left: 0, top: -4, bottom: -4, width: 2, background: "var(--border-strong)" }} />
               </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: posImpact > 0 ? "var(--color-success)" : "var(--text-faint)", textAlign: "left", paddingLeft: 6, fontVariantNumeric: "tabular-nums" }}>
-                {posImpact > 0 ? "+" + eur(Math.round(posImpact)) : ""}
+              <div style={{ fontSize: 11, fontWeight: 600, color: posImpact > 0 ? "var(--color-success)" : "var(--text-faint)", textAlign: "left", paddingLeft: 6, fontVariantNumeric: "tabular-nums", lineHeight: 1.3 }}>
+                {posImpact > 0 ? (
+                  <>
+                    <span>+{eur(Math.round(posImpact))}</span>
+                    {posPct > 0.005 ? (
+                      <span style={{ fontSize: 10, color: "var(--text-faint)", marginLeft: 3 }}>({pct(posPct)})</span>
+                    ) : null}
+                  </>
+                ) : ""}
               </div>
             </div>
           );
@@ -256,11 +304,11 @@ export default function SensitivityChart({ totalRevenue, monthlyCosts, salCosts,
       {/* Legend */}
       <div style={{ display: "flex", justifyContent: "center", gap: "var(--sp-6)", marginTop: "var(--sp-5)", fontSize: 11, color: "var(--text-faint)" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 12, height: 8, borderRadius: 2, background: "var(--color-error)", opacity: 0.6 }} />
+          <span style={{ width: 12, height: 8, borderRadius: "var(--r-sm)", background: "var(--color-error)", opacity: 0.6 }} />
           {t.legend_negative}
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 12, height: 8, borderRadius: 2, background: "var(--color-success)", opacity: 0.6 }} />
+          <span style={{ width: 12, height: 8, borderRadius: "var(--r-sm)", background: "var(--color-success)", opacity: 0.6 }} />
           {t.legend_positive}
         </span>
         <span>±{vPct}% {t.legend_variation}</span>

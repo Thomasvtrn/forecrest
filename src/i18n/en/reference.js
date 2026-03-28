@@ -120,6 +120,12 @@ export default {
     cl_sidebar_sticky: "Fix: sidebar stays fixed when scrolling (sticky + flex fix).",
     cl_glossary_scroll_lock: "Fix: background no longer scrolls when the glossary is open.",
 
+    // v0.1.35.0
+    cl_sensitivity_redesign: "New: Sensitivity Analysis — complete redesign with KPI cards, modern layout and contextual explanations.",
+    cl_sensitivity_kpis: "New: 3 KPI cards (most sensitive variable, maximum impact, variables analyzed) at the top of the Sensitivity page.",
+    cl_sensitivity_print: "New: export / print sensitivity report with impact table and disclaimer.",
+    cl_sensitivity_finance_links: "Improvement: glossary links on sensitivity variables (revenue, costs, VAT, payroll, etc.).",
+
     // v0.1.34.0
     cl_pact_redesign: "New: Shareholders' agreement — complete redesign with 5 clause categories, toggle on/off, inline configuration and legal export.",
     cl_pact_18_clauses: "New: 18 clauses with Belgian law context (CCA), plain language explanations and practical examples.",

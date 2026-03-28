@@ -4,17 +4,40 @@
 export default {
   sensitivity: {
     title: "Analyse de sensibilité",
-    subtitle: "Identifiez les variables qui impactent le plus votre rentabilité.",
-    explainer_title: "Pourquoi c'est important ?",
-    explainer_body: "L'analyse de sensibilité vous aide à comprendre quels leviers ont le plus d'impact sur votre EBITDA. En faisant varier chaque paramètre de ±20%, vous voyez immédiatement où concentrer vos efforts. C'est un outil essentiel pour les discussions avec les investisseurs et pour la prise de décision stratégique.",
-    chart_title: "Analyse de sensibilité",
-    chart_sub: function (v) { return "Impact d'une variation de ±" + v + "% de chaque paramètre sur l'EBITDA"; },
+    subtitle: "Comprenez quels paramètres influencent le plus votre résultat.",
+    explainer_title: "Que signifie cette analyse ?",
+    explainer_body: "L'analyse de sensibilité montre comment votre résultat change si une variable augmente ou diminue. Les barres les plus longues indiquent les paramètres qui ont le plus d'influence sur votre rentabilité. Concentrez vos efforts sur ces leviers.",
+    chart_title: "Impact sur votre résultat",
+    chart_sub: function (v) { return "Variation de ±" + v + "% de chaque paramètre sur le résultat d'exploitation"; },
     help_toggle: "Comment lire ce graphique ?",
-    help_body: function (v) { return "Chaque barre montre l'impact sur votre EBITDA si ce paramètre variait de ±" + v + "%. Les barres vertes (à droite) montrent un impact positif, les rouges (à gauche) un impact négatif. Plus la barre est longue, plus le paramètre est sensible. Concentrez vos efforts sur les paramètres avec le plus grand impact."; },
-    ebitda_current: "EBITDA actuel",
+    help_body: function (v) { return "Chaque barre montre comment votre résultat d'exploitation changerait si ce paramètre variait de ±" + v + "%. Les barres vertes (à droite) montrent un effet positif, les rouges (à gauche) un effet négatif. Plus la barre est longue, plus le paramètre compte."; },
+    ebitda_current: "Résultat actuel",
     legend_negative: "Impact négatif",
     legend_positive: "Impact positif",
     legend_variation: "de variation",
+
+    /* KPI cards */
+    kpi_most_sensitive: "Variable la plus sensible",
+    kpi_max_impact: "Impact maximal",
+    kpi_vars_analyzed: "Variables analysées",
+    kpi_no_data: "Aucune donnée",
+    kpi_none: "Aucune",
+
+    /* Badge */
+    badge_most_sensitive: "Plus sensible",
+
+    /* Skeleton / empty state */
+    empty_title: "Pas encore de données",
+    empty_body: "Renseignez vos revenus et charges pour voir quelles variables impactent le plus votre résultat.",
+
+    /* Print */
+    print_title: "ANALYSE DE SENSIBILITÉ",
+    print_subtitle: "Impact des variations de paramètres sur le résultat d'exploitation",
+    print_table_variable: "Variable",
+    print_table_neg: "Impact négatif",
+    print_table_pos: "Impact positif",
+    print_table_pct: "% du résultat",
+    print_disclaimer: "Ce document est généré automatiquement via Forecrest.app. Les données sont des projections prévisionnelles non auditées et ne constituent pas un avis comptable ou juridique.",
   },
 
   ratios: {

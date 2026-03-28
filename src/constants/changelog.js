@@ -4,6 +4,16 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.35.0",
+    date: "2026-03-28",
+    entries: [
+      { type: "feature", key: "cl_sensitivity_redesign" },
+      { type: "feature", key: "cl_sensitivity_kpis" },
+      { type: "feature", key: "cl_sensitivity_print" },
+      { type: "improvement", key: "cl_sensitivity_finance_links" },
+    ],
+  },
+  {
     version: "0.1.34.0",
     date: "2026-03-28",
     entries: [
