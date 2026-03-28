@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { TrendUp, Heartbeat, CurrencyCircleDollar, Scales, ChartLineUp, Hourglass, Users, ArrowsClockwise } from "@phosphor-icons/react";
-import { Card, PageLayout, KpiCard, Badge, FinanceLink, ExplainerBox } from "../../components";
+import { TrendUp, Heartbeat, CurrencyCircleDollar, Scales, ChartLineUp, Hourglass, Users, ArrowsClockwise, Lightbulb, Bank, Target, Compass } from "@phosphor-icons/react";
+import { Card, PageLayout, KpiCard, Badge, ExplainerBox } from "../../components";
 import { eur, eurShort, pct } from "../../utils";
 import { useT, useLang } from "../../context";
 
@@ -71,13 +71,7 @@ function RatioRow({ label, techLabel, techTerm, value, format, explanation, thre
       {/* Label + technical badge */}
       <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", flexWrap: "wrap" }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>{label}</span>
-        {techTerm ? (
-          <FinanceLink
-            term={techTerm}
-            label={techLabel}
-            desc={lk === "fr" ? "Voir la définition dans le glossaire." : "View definition in glossary."}
-          />
-        ) : techLabel ? (
+        {techLabel ? (
           <Badge color="gray" size="sm">{techLabel}</Badge>
         ) : null}
       </div>
@@ -358,7 +352,7 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
               t={t} lk={lk}
             />
           </div>
-          <ExplainerBox variant="tip" title={lk === "fr" ? "Le saviez-vous ?" : "Did you know?"}>
+          <ExplainerBox variant="tip" title={lk === "fr" ? "Le saviez-vous ?" : "Did you know?"} icon={Lightbulb}>
             {t.hint_profitable}
           </ExplainerBox>
         </Card>
@@ -396,7 +390,7 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
               />
             </div>
           </div>
-          <ExplainerBox variant="tip" title={lk === "fr" ? "Le saviez-vous ?" : "Did you know?"}>
+          <ExplainerBox variant="tip" title={lk === "fr" ? "Le saviez-vous ?" : "Did you know?"} icon={Lightbulb}>
             {t.hint_bills}
           </ExplainerBox>
         </Card>
@@ -429,7 +423,7 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
               t={t} lk={lk}
             />
           </div>
-          <ExplainerBox variant="info">
+          <ExplainerBox variant="info" title={lk === "fr" ? "Pour votre banquier" : "For your banker"} icon={Bank}>
             {t.hint_debt}
           </ExplainerBox>
         </Card>
@@ -453,7 +447,7 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
               t={t} lk={lk}
             />
           </div>
-          <ExplainerBox variant="tip" title={lk === "fr" ? "Repère" : "Benchmark"}>
+          <ExplainerBox variant="tip" title={lk === "fr" ? "Repère" : "Benchmark"} icon={Target}>
             {t.hint_roi}
           </ExplainerBox>
         </Card>
@@ -485,7 +479,7 @@ export default function RatiosPage({ cfg, totalRevenue, monthlyCosts, ebit, netP
             />
           </div>
           <RunwayBar months={computed.burnRate > 0 ? computed.runway : 24} t={t} />
-          <ExplainerBox variant="tip" title={lk === "fr" ? "Conseil" : "Tip"}>
+          <ExplainerBox variant="tip" title={lk === "fr" ? "Conseil" : "Tip"} icon={Compass}>
             {t.hint_runway}
           </ExplainerBox>
         </Card>
