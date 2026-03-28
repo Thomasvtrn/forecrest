@@ -160,13 +160,12 @@ export default function SensitivityChart({ totalRevenue, monthlyCosts, salCosts,
           value={variation}
           onChange={setVariation}
           options={[
-            { value: 0.10, label: "± 10%" },
-            { value: 0.20, label: "± 20%" },
-            { value: 0.30, label: "± 30%" },
-            { value: 0.50, label: "± 50%" },
+            { value: 0.10, label: lang === "fr" ? "Variation de ± 10%" : "± 10% variation" },
+            { value: 0.20, label: lang === "fr" ? "Variation de ± 20%" : "± 20% variation" },
+            { value: 0.30, label: lang === "fr" ? "Variation de ± 30%" : "± 30% variation" },
+            { value: 0.50, label: lang === "fr" ? "Variation de ± 50%" : "± 50% variation" },
           ]}
-          width="100px"
-          height={32}
+          width="200px"
         />
       </div>
 
