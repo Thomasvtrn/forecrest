@@ -40,6 +40,7 @@ function lazyRetry(importFn) {
 }
 
 var AuthPage = lazyRetry(function () { return import("./components/AuthPage"); });
+var AccountSetupPage = lazyRetry(function () { return import("./components/AccountSetupPage"); });
 var RemovedPage = lazyRetry(function () { return import("./components/RemovedPage"); });
 var OnboardingPage = lazyRetry(function () { return import("./components/OnboardingPage"); });
 var AdminLayout = lazyRetry(function () { return import("./components/AdminLayout"); });
@@ -1019,6 +1020,27 @@ export default function App() {
     );
   }
 
+  /* ── Account setup wall: first login — collect name, DOB, gender, terms ── */
+  var accountSetupDone = false;
+  try { accountSetupDone = localStorage.getItem("forecrest_account_setup_done") === "true"; } catch (e) {}
+  if (ready && auth.user && !accountSetupDone) {
+    return (
+      <Suspense fallback={<AppLoader label={t.loading} />}>
+        <AccountSetupPage onComplete={function (data) {
+          /* Pre-fill cfg with first/last name if owner */
+          if (auth.isOwner !== false && data) {
+            setCfg(function (prev) {
+              var n = Object.assign({}, prev);
+              if (data.firstName && !n.firstName) n.firstName = data.firstName;
+              if (data.lastName && !n.lastName) n.lastName = data.lastName;
+              return n;
+            });
+          }
+        }} />
+      </Suspense>
+    );
+  }
+
   /* ── Onboarding wall: force profile setup if companyName empty ── */
   /* Skip for non-owners — they join an existing workspace, no need to onboard */
   if (ready && auth.user && auth.isOwner !== false && cfg && !cfg.companyName) {
@@ -1479,6 +1501,8 @@ export default function App() {
             onClose={function () { setShowShareModal(false); }}
             workspaceId={auth.workspaceId}
             workspaceName={cfg ? cfg.companyName : ""}
+            isPro={false}
+            isSolo={cfg && cfg.legalForm === "EI"}
           />
         </Suspense>
       ) : null}
