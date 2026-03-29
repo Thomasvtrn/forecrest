@@ -999,6 +999,7 @@ export default {
     members_plural: "membres",
     member_singular: "membre",
     view_all: "Voir tout",
+    idle: "inactif",
 
     /* Roles */
     role_owner: "Propri\u00e9taire",

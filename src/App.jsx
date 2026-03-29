@@ -309,9 +309,7 @@ export default function App() {
     window.addEventListener("fc-open-share", onOpenShare);
     return function () { window.removeEventListener("fc-open-share", onOpenShare); };
   }, []);
-  var [onboardingTasksSkipped, setOnboardingTasksSkipped] = useState(function () {
-    try { return localStorage.getItem("forecrest_onboarding_skip") === "true"; } catch (e) { return false; }
-  });
+  var [onboardingTasksSkipped, setOnboardingTasksSkipped] = useState(false);
   var [showToolbar, setShowToolbar] = useState(true);
   var [activeModule, setActiveModule] = useState("core");
   var marketingPaid = useMemo(function () {
@@ -499,6 +497,15 @@ export default function App() {
     var blob = { cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, crowdfunding, stocks, marketing, affiliation, production };
     scheduleSave(auth.workspaceId, blob);
   }, [cfg, costs, sals, grants, poolSize, shareholders, roundSim, streams, esopEnabled, debts, assets, planSections, crowdfunding, stocks, marketing, affiliation, production, ready, auth.user, auth.storageMode, auth.workspaceId]);
+
+  /* ── Per-user onboarding skip flag ── */
+  useEffect(function () {
+    if (!auth.user) { setOnboardingTasksSkipped(false); return; }
+    try {
+      var key = "forecrest_onboarding_skip_" + auth.user.id;
+      setOnboardingTasksSkipped(localStorage.getItem(key) === "true");
+    } catch (e) { setOnboardingTasksSkipped(false); }
+  }, [auth.user && auth.user.id]);
 
   /* ── Re-check sessionStorage join token when user authenticates ── */
   useEffect(function () {
@@ -1113,7 +1120,7 @@ export default function App() {
             {tab === "overview" ? (
               (function () {
                 if (!onboardingTasksSkipped && auth.isOwner !== false) {
-                  return <OverviewOnboarding cfg={cfg} streams={streams} costs={costs} sals={sals} setTab={setTab} onQuickAdd={handleQuickAdd} onSkip={function () { try { localStorage.setItem("forecrest_onboarding_skip", "true"); } catch (e) {} setOnboardingTasksSkipped(true); }} />;
+                  return <OverviewOnboarding cfg={cfg} streams={streams} costs={costs} sals={sals} setTab={setTab} onQuickAdd={handleQuickAdd} onSkip={function () { try { var k = "forecrest_onboarding_skip_" + (auth.user ? auth.user.id : ""); localStorage.setItem(k, "true"); } catch (e) {} setOnboardingTasksSkipped(true); }} />;
                 }
                 return <OverviewPage
                   totalRevenue={totalRevenue}
