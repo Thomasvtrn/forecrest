@@ -5,7 +5,7 @@ import Avatar from "./Avatar";
 import { Badge } from "../components";
 import { useT } from "../context";
 
-export default function AvatarGroup({ members, max, onViewAll, tabLabels, currentTab }) {
+export default function AvatarGroup({ members, max, onViewAll, tabLabels, currentTab, currentUserId }) {
   var t = useT();
   var ct = t.collab || {};
   var limit = max || 3;
@@ -132,7 +132,9 @@ export default function AvatarGroup({ members, max, onViewAll, tabLabels, curren
 
           {/* Member list */}
           {members.map(function (m) {
-            var samePage = currentTab && m.currentPage === currentTab;
+            /* For current user, use local currentTab (instant) instead of Realtime (delayed) */
+            var memberPage = (currentUserId && m.userId === currentUserId) ? currentTab : m.currentPage;
+            var samePage = currentTab && memberPage === currentTab;
             return (
               <div key={m.userId} style={{
                 display: "flex",
@@ -166,8 +168,8 @@ export default function AvatarGroup({ members, max, onViewAll, tabLabels, curren
                     {m.idle ? <span style={{ fontSize: 10, color: "var(--text-ghost)", fontWeight: 400 }}>{"\u00b7"} {ct.idle || "inactif"}</span> : null}
                   </div>
                 </div>
-                {m.currentPage ? (
-                  <Badge color={samePage ? "brand" : "gray"} size="sm">{getPageLabel(m.currentPage)}</Badge>
+                {memberPage ? (
+                  <Badge color={samePage ? "brand" : "gray"} size="sm">{getPageLabel(memberPage)}</Badge>
                 ) : null}
               </div>
             );
