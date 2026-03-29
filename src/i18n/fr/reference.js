@@ -123,6 +123,23 @@ export default {
     cl_sidebar_sticky: "Correction : la sidebar reste fixe lors du scroll (fix sticky + flex).",
     cl_glossary_scroll_lock: "Correction : l'arrière-plan ne scroll plus quand le glossaire est ouvert.",
 
+    // v0.1.44.0
+    cl_multi_user_collab: "Nouveau : collaboration multi-utilisateurs — invitez des membres, comptables et accompagnateurs sur votre espace de travail.",
+    cl_presence_tracking: "Nouveau : pr\u00e9sence en temps r\u00e9el — voyez qui est en ligne et sur quelle page.",
+    cl_share_invite: "Nouveau : modal de partage — invitez par email ou lien copiable, g\u00e9rez les r\u00f4les.",
+    cl_join_flow: "Nouveau : page d'acceptation d'invitation — 3 \u00e9crans selon le r\u00f4le (membre, comptable, accompagnateur).",
+    cl_team_settings: "Nouveau : section \u00c9quipe dans les param\u00e8tres — liste des membres avec filtres et recherche.",
+    cl_element_locking: "Nouveau : verrouillage d'\u00e9l\u00e9ments — \u00e9vite les conflits d'\u00e9dition simultan\u00e9e.",
+    cl_collab_bar: "Nouveau : barre de collaboration en haut du contenu — avatars, notifications, partage.",
+    cl_notifications_basic: "Nouveau : notifications basiques — arriv\u00e9e/d\u00e9part de membres, mises \u00e0 jour de donn\u00e9es.",
+
+    // v0.1.44.1
+    cl_notif_online_offline: "Correction : les notifications affichent 'en ligne/hors ligne' au lieu de 'a rejoint/quitt\u00e9 l'espace'.",
+    cl_leave_workspace: "Nouveau : les membres invit\u00e9s peuvent quitter un espace de travail (avec confirmation).",
+    cl_display_name_edit: "Correction : le nom d'affichage est modifiable dans les param\u00e8tres du compte.",
+    cl_profile_readonly: "Am\u00e9lioration : le profil entreprise est en lecture seule pour les invit\u00e9s.",
+    cl_element_locking_pages: "Am\u00e9lioration : verrouillage d'\u00e9l\u00e9ments actif sur les pages Revenus, Charges et Salaires.",
+
     // v0.1.38.0
     cl_auth_page_redesign: "Nouveau : page d'authentification full-page inspir\u00e9e de 1Password — flux step-by-step, layout centr\u00e9 avec panel d'aide.",
     cl_password_criteria: "Nouveau : validation mot de passe en temps r\u00e9el — 14 caract\u00e8res, majuscules, minuscules, chiffres, symboles avec indicateur de force.",
