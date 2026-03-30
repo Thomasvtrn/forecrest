@@ -6,7 +6,7 @@ import {
   ChartBar, CurrencyCircleDollar, Wallet, Bank, Receipt,
   Users, ChartPie, UsersThree, ShieldCheck, Scales, BookOpen,
   HourglassSimple, Package, TreeStructure, TrendUp, ChartLine,
-  ArrowCounterClockwise, ArrowClockwise, UploadSimple, MonitorPlay, Keyboard,
+  ArrowCounterClockwise, ArrowClockwise, UploadSimple, ShareNetwork, MonitorPlay, Keyboard,
   Code, ClockCounterClockwise, Tag,
   PencilSimple, CopySimple, Compass, GearSix,
 } from "@phosphor-icons/react";
@@ -153,7 +153,7 @@ function ensureCmdkStyles() {
    CommandPalette \u2014 cmdk-powered with Discord-style structured commands
    ════════════════════════════════════════════════════════════════ */
 
-export default function CommandPalette({ open, onClose, setTab, tab, currentTabItems, allTabItems, onUndo, onRedo, onExport, onPresentation, onToggleAccounting, accountingMode, onToggleToolbar, toolbarVisible, onAdd, onEdit, onDuplicate }) {
+export default function CommandPalette({ open, onClose, setTab, tab, currentTabItems, allTabItems, onUndo, onRedo, onExport, onShare, onPresentation, onToggleAccounting, accountingMode, onToggleToolbar, toolbarVisible, onAdd, onEdit, onDuplicate }) {
   var t = useT();
   var { lang } = useLang();
   var devCtx = useDevMode();
@@ -294,6 +294,7 @@ export default function CommandPalette({ open, onClose, setTab, tab, currentTabI
     { id: "modify",    icon: PencilSimple, label: lang === "fr" ? "Modifier" : "Edit",                           desc: lang === "fr" ? "Rechercher et \u00e9diter" : "Search and edit",                mode: "modify" },
     { id: "duplicate", icon: CopySimple,   label: lang === "fr" ? "Dupliquer" : "Duplicate",                     desc: lang === "fr" ? "Copier un \u00e9l\u00e9ment" : "Copy an item",                 mode: "duplicate" },
     { id: "goto",      icon: Compass,      label: lang === "fr" ? "Aller \u00e0" : "Go to",                      desc: lang === "fr" ? "Section sp\u00e9cifique" : "Specific section",                 mode: "goto" },
+    { id: "share",     icon: ShareNetwork,  label: lang === "fr" ? "Partager" : "Share",                             desc: lang === "fr" ? "Inviter et gérer l'équipe" : "Invite and manage team" },
     { id: "export",    icon: UploadSimple,  label: s.export || "Export / Import",                                 desc: lang === "fr" ? "Sauvegarder ou charger" : "Save or load" },
   ];
 
@@ -423,6 +424,7 @@ export default function CommandPalette({ open, onClose, setTab, tab, currentTabI
     else if (cmd.mode === "modify") { enterItemMode("modify"); }
     else if (cmd.mode === "duplicate") { enterItemMode("duplicate"); }
     else if (cmd.mode === "goto") { enterGotoMode(); }
+    else if (cmd.id === "share") { if (onShare) onShare(); onClose(); }
     else if (cmd.id === "export") { if (onExport) onExport(); onClose(); }
   }
 
@@ -846,10 +848,14 @@ export default function CommandPalette({ open, onClose, setTab, tab, currentTabI
                     <span style={{ flex: 1 }}>{lang === "fr" ? "Aller \u00e0 une section..." : "Go to a section..."}</span>
                     <Kbd>Tab</Kbd>
                   </Command.Item>
+                  <Command.Item value="share partager inviter team" keywords={["share", "partager", "inviter", "équipe", "team", "invite"]} onSelect={function () { if (onShare) onShare(); onClose(); }}>
+                    <span data-cmd-icon style={{ flexShrink: 0, display: "flex", alignItems: "center", width: 20, justifyContent: "center" }}><ShareNetwork size={15} /></span>
+                    <span style={{ flex: 1 }}>{lang === "fr" ? "Partager" : "Share"}</span>
+                    <Kbd>Ctrl+S</Kbd>
+                  </Command.Item>
                   <Command.Item value="exportimport" keywords={EXPORT_KW} onSelect={function () { if (onExport) onExport(); onClose(); }}>
                     <span data-cmd-icon style={{ flexShrink: 0, display: "flex", alignItems: "center", width: 20, justifyContent: "center" }}><UploadSimple size={15} /></span>
                     <span style={{ flex: 1 }}>Export / Import</span>
-                    <Kbd>Tab</Kbd>
                   </Command.Item>
                   <Command.Item value="present" keywords={PRESENT_KW} onSelect={function () { if (onPresentation) onPresentation(); onClose(); }}>
                     <span data-cmd-icon style={{ flexShrink: 0, display: "flex", alignItems: "center", width: 20, justifyContent: "center" }}><MonitorPlay size={15} /></span>

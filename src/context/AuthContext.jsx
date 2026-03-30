@@ -126,6 +126,7 @@ export function AuthProvider({ children }) {
       .then(function (res) {
         if (res.data) {
           setWorkspaceId(res.data.id);
+          setWorkspaceRole("owner");
           return res.data.id;
         }
         return null;

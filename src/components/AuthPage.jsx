@@ -114,6 +114,7 @@ function InputField({ type, value, onChange, placeholder, icon, error, autoFocus
 export default function AuthPage() {
   var t = useT().auth;
   var auth = useAuth();
+  var lang = (localStorage.getItem("forecrest_lang") || "fr");
 
   var [mode, setMode] = useState("signup");
   var [step, setStep] = useState(0);
@@ -127,22 +128,38 @@ export default function AuthPage() {
   var [resendCooldown, setResendCooldown] = useState(0);
   var cooldownRef = useRef(null);
   var [emailConfirmed, setEmailConfirmed] = useState(false);
+  var [linkError, setLinkError] = useState(null);
 
-  /* ── Detect email confirmation from Supabase redirect ── */
+  /* ── Detect email confirmation OR error from Supabase redirect ── */
   useEffect(function () {
     var hash = window.location.hash;
-    if (hash && hash.indexOf("type=signup") >= 0) {
+    var rawParams = hash ? hash.replace(/^#/, "") : "";
+
+    /* Check for error in hash (invalid/expired link) */
+    if (rawParams.indexOf("error=") >= 0 || rawParams.indexOf("error_description=") >= 0) {
+      var hashParams = new URLSearchParams(rawParams);
+      var errDesc = hashParams.get("error_description") || hashParams.get("error") || "";
+      var decoded = decodeURIComponent(errDesc.replace(/\+/g, " "));
+      setLinkError(decoded || (lang === "fr" ? "Le lien est invalide ou a expiré." : "The link is invalid or has expired."));
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
+    /* Check for error in query params */
+    var qParams = new URLSearchParams(window.location.search);
+    if (qParams.get("error") || qParams.get("error_description")) {
+      var qDesc = qParams.get("error_description") || qParams.get("error") || "";
+      setLinkError(decodeURIComponent(qDesc) || (lang === "fr" ? "Le lien est invalide ou a expiré." : "The link is invalid or has expired."));
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
+    /* Success: email confirmed */
+    if (hash && (hash.indexOf("type=signup") >= 0 || hash.indexOf("type=email") >= 0)) {
       setEmailConfirmed(true);
-      /* Clean up the URL hash */
       window.history.replaceState(null, "", window.location.pathname);
     }
-    if (hash && hash.indexOf("type=email") >= 0) {
-      setEmailConfirmed(true);
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-    /* Also check URL params (some Supabase versions use query params) */
-    var params = new URLSearchParams(window.location.search);
-    if (params.get("type") === "signup" || params.get("type") === "email") {
+    if (qParams.get("type") === "signup" || qParams.get("type") === "email") {
       setEmailConfirmed(true);
       window.history.replaceState(null, "", window.location.pathname);
     }
@@ -300,6 +317,59 @@ export default function AuthPage() {
   );
 
   /* ══════════════════════════════════════════ */
+
+  /* ── Invalid/expired link screen ── */
+  if (linkError) {
+    return createPortal(
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 900,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "var(--bg-page)", padding: "var(--sp-4)",
+      }}>
+        <div style={{
+          width: 440, maxWidth: "100%",
+          background: "var(--bg-card)", border: "1px solid var(--border)",
+          borderRadius: "var(--r-xl)", boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+          padding: "var(--sp-8) var(--sp-6)", textAlign: "center",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: "var(--sp-5)" }}>
+            <div style={{ width: 36, height: 36, borderRadius: "var(--r-md)", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#fff", fontSize: 18, fontWeight: 800, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", lineHeight: 1 }}>F</span>
+            </div>
+            <span style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>Forecrest</span>
+          </div>
+          <div style={{
+            width: 56, height: 56, borderRadius: "var(--r-full)",
+            background: "var(--color-error-bg)", border: "2px solid var(--color-error-border)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto var(--sp-4)",
+          }}>
+            <span style={{ fontSize: 24 }}>!</span>
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: "var(--sp-2)", fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+            {lang === "fr" ? "Lien invalide ou expiré" : "Invalid or expired link"}
+          </div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: "var(--sp-5)" }}>
+            {lang === "fr"
+              ? "Ce lien de connexion n'est plus valide. Il a peut-être expiré ou a déjà été utilisé. Veuillez vous reconnecter."
+              : "This login link is no longer valid. It may have expired or already been used. Please sign in again."}
+          </div>
+          <button
+            type="button"
+            onClick={function () { setLinkError(null); }}
+            style={{
+              width: "100%", height: 44, borderRadius: "var(--r-md)",
+              background: "var(--brand)", color: "#fff", border: "none",
+              fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+            }}
+          >
+            {lang === "fr" ? "Se connecter" : "Sign in"}
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  }
 
   /* ── Email confirmed screen ── */
   if (emailConfirmed) {

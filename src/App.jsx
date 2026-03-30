@@ -246,6 +246,7 @@ export default function App() {
     return function () { window.removeEventListener("nav-tab", onNav); window.removeEventListener("popstate", onPopState); };
   }, []);
   var [ready, setReady] = useState(false);
+  var [cloudDataLoaded, setCloudDataLoaded] = useState(false);
   var [cfg, setCfg] = useState({ ...DEFAULT_CONFIG });
   var dtApp = (cfg && cfg.devTiming) || {};
   var deinitTotal = (dtApp.deinitMs != null ? dtApp.deinitMs : 1800) + (dtApp.exitMs != null ? dtApp.exitMs : 300);
@@ -552,6 +553,7 @@ export default function App() {
             if (res.data && res.data.app_state && Object.keys(res.data.app_state).length > 0) {
               applySnapshot(res.data.app_state);
             }
+            setCloudDataLoaded(true);
           });
       }
       return;
@@ -559,10 +561,11 @@ export default function App() {
 
     /* Owner: compare timestamps (may have local-first data) */
     loadWithConflictCheck(auth.workspaceId).then(function (result) {
-      if (!result) return;
+      if (!result) { setCloudDataLoaded(true); return; }
       if (result.source === "cloud" && result.data && Object.keys(result.data).length > 0) {
         applySnapshot(result.data);
       }
+      setCloudDataLoaded(true);
     });
   }, [auth.user, auth.workspaceId, auth.isOwner, applySnapshot]);
 
@@ -1045,7 +1048,9 @@ export default function App() {
 
   /* ── Onboarding wall: force profile setup if companyName empty ── */
   /* Skip for non-owners — they join an existing workspace, no need to onboard */
-  if (ready && auth.user && auth.isOwner !== false && cfg && !cfg.companyName) {
+  /* In local mode (no auth) or when cloud data hasn't loaded yet, skip onboarding check */
+  var waitingForCloud = auth.user && auth.workspaceId && !cloudDataLoaded;
+  if (ready && !waitingForCloud && auth.isOwner !== false && cfg && !cfg.companyName) {
     return (
       <Suspense fallback={<AppLoader label={t.loading} />}>
         <OnboardingPage onComplete={function (updates) {
@@ -1411,6 +1416,7 @@ export default function App() {
           onUndo={function () { history.undo(); }}
           onRedo={function () { history.redo(); }}
           onExport={function () { setShowExport(true); }}
+          onShare={function () { setShowShareModal(true); }}
           onPresentation={function () { setPresMode(function (v) { return !v; }); }}
           onToggleAccounting={function () { setCfg(function (prev) { return Object.assign({}, prev, { showPcmn: !prev.showPcmn }); }); }}
           accountingMode={cfg && cfg.showPcmn}
