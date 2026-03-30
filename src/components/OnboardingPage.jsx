@@ -77,9 +77,9 @@ function Field({ label, hint, error, required, children }) {
   );
 }
 
-function TextInput({ value, onChange, placeholder, readOnly, error, type }) {
+function TextInput({ value, onChange, placeholder, readOnly, error, type, maxLength }) {
   return (
-    <input type={type || "text"} value={value} onChange={readOnly ? undefined : onChange} placeholder={placeholder} readOnly={readOnly}
+    <input type={type || "text"} value={value} onChange={readOnly ? undefined : onChange} placeholder={placeholder} readOnly={readOnly} maxLength={maxLength || 100}
       style={{
         width: "100%", height: 44, padding: "0 14px", fontSize: 14,
         color: readOnly ? "var(--text-faint)" : "var(--text-primary)",
@@ -353,7 +353,20 @@ export default function OnboardingPage({ onComplete }) {
   var { dark, toggle: toggleTheme } = useTheme();
 
   var [phase, setPhase] = useState("welcome"); /* welcome | entity | form | finish */
-  var [entityType, setEntityType] = useState(""); /* solo | company */
+  var [entityType, setEntityTypeRaw] = useState(""); /* solo | company */
+  function setEntityType(val) {
+    setEntityTypeRaw(val);
+    /* Pre-fill name from display_name when solo/independent */
+    if (val === "solo" && auth.user && auth.user.displayName && !firstName && !lastName) {
+      var parts = (auth.user.displayName || "").trim().split(" ");
+      if (parts.length >= 2) {
+        setFirstName(parts[0]);
+        setLastName(parts.slice(1).join(" "));
+      } else if (parts.length === 1) {
+        setFirstName(parts[0]);
+      }
+    }
+  }
   var [step, setStep] = useState(0);
   var [companyName, setCompanyName] = useState("");
   var [legalForm, setLegalForm] = useState("");
@@ -517,12 +530,9 @@ export default function OnboardingPage({ onComplete }) {
                     <Field label={t.ob_address || "Adresse du si\u00e8ge social"} hint={t.ob_hint_address || "L'adresse officielle de votre entreprise."}>
                       <TextInput value={address} onChange={function (e) { setAddress(e.target.value); }} placeholder="Rue de l'Industrie 26, 6000 Charleroi" />
                     </Field>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-3)" }}>
+                    <div>
                       <Field label={t.ob_capital || "Capital social"} hint={t.ob_hint_capital || "Le montant inscrit aux statuts. Pas de minimum l\u00e9gal pour les SRL depuis 2019."}>
                         <CurrencyInput value={capitalSocial} onChange={setCapitalSocial} suffix={"€"} width="100%" />
-                      </Field>
-                      <Field label={t.ob_currency || "Devise"}>
-                        <SelectDropdown value={currency} onChange={setCurrency} options={CURRENCIES} width="100%" />
                       </Field>
                     </div>
                   </>

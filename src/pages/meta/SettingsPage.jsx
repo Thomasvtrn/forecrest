@@ -228,7 +228,7 @@ function DangerAccountSection({ lang, auth }) {
     <>
       <PageTitle title={isFr ? "Zone danger \u2014 Compte" : "Danger zone \u2014 Account"} />
 
-      {/* Leave workspace (non-owners) / Delete workspace (owners) */}
+      {/* Leave workspace (non-owners) */}
       {isNonOwner ? (
         <div style={{
           border: "1px solid var(--color-error-border, rgba(220,38,38,0.25))",
@@ -810,9 +810,8 @@ export default function SettingsPage({
             <>
               <PageTitle title={lang === "fr" ? "Apparence" : "Appearance"} />
 
-              <SectionBlock title={lang === "fr" ? "Général" : "General"} sub={lang === "fr" ? "Langue, devise et format d'affichage." : "Language, currency and display format."}>
+              <SectionBlock title={lang === "fr" ? "Général" : "General"} sub={lang === "fr" ? "Langue et format d'affichage." : "Language and display format."}>
                 <SettingRow label={lang === "fr" ? "Langue" : "Language"}><Select value={lang} onChange={function () { toggleLang(); }} options={[{ value: "fr", label: "Français" }, { value: "en", label: "English" }]} width={130} /></SettingRow>
-                <SettingRow label={lang === "fr" ? "Devise" : "Currency"}><Select value={cfg.currency || "EUR"} onChange={function (v) { cfgSet(setCfg, "currency", v || "EUR"); }} options={[{ value: "EUR", label: "EUR (€)" }, { value: "USD", label: "USD ($)" }, { value: "CHF", label: "CHF" }]} width={120} /></SettingRow>
                 <SettingRow label={lang === "fr" ? "Format montants" : "Amount format"} last><Select value={cfg.kpiShort !== false ? "short" : "long"} onChange={function (v) { cfgSet(setCfg, "kpiShort", v === "short"); }} options={[{ value: "short", label: "12k" }, { value: "long", label: "12 000" }]} width={100} /></SettingRow>
               </SectionBlock>
 

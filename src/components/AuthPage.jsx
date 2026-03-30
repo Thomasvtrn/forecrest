@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import {
   EnvelopeSimple, Lock, Eye, EyeSlash, ArrowRight, ArrowLeft,
   Check, Circle, PaperPlaneTilt, ShieldCheck, ArrowCounterClockwise,
+  UserPlus, SignIn, Buildings,
 } from "@phosphor-icons/react";
 import Button from "./Button";
 import { useAuth } from "../context/useAuth";
@@ -114,7 +115,9 @@ function InputField({ type, value, onChange, placeholder, icon, error, autoFocus
 export default function AuthPage() {
   var t = useT().auth;
   var auth = useAuth();
+  var lang = (localStorage.getItem("forecrest_lang") || "fr");
 
+  var [showLanding, setShowLanding] = useState(true);
   var [mode, setMode] = useState("signup");
   var [step, setStep] = useState(0);
   var [email, setEmail] = useState("");
@@ -127,24 +130,53 @@ export default function AuthPage() {
   var [resendCooldown, setResendCooldown] = useState(0);
   var cooldownRef = useRef(null);
   var [emailConfirmed, setEmailConfirmed] = useState(false);
+  var [linkError, setLinkError] = useState(null);
 
-  /* ── Detect email confirmation from Supabase redirect ── */
+  /* ── Detect email confirmation OR error from Supabase redirect ── */
   useEffect(function () {
     var hash = window.location.hash;
-    if (hash && hash.indexOf("type=signup") >= 0) {
+    var rawParams = hash ? hash.replace(/^#/, "") : "";
+
+    /* Check for error in hash (invalid/expired link) */
+    if (rawParams.indexOf("error=") >= 0 || rawParams.indexOf("error_description=") >= 0) {
+      var hashParams = new URLSearchParams(rawParams);
+      var errDesc = hashParams.get("error_description") || hashParams.get("error") || "";
+      var decoded = decodeURIComponent(errDesc.replace(/\+/g, " "));
+      setLinkError(decoded || (lang === "fr" ? "Le lien est invalide ou a expiré." : "The link is invalid or has expired."));
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
+    /* Check for error in query params */
+    var qParams = new URLSearchParams(window.location.search);
+    if (qParams.get("error") || qParams.get("error_description")) {
+      var qDesc = qParams.get("error_description") || qParams.get("error") || "";
+      setLinkError(decodeURIComponent(qDesc) || (lang === "fr" ? "Le lien est invalide ou a expiré." : "The link is invalid or has expired."));
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
+    /* Success: email confirmed */
+    if (hash && (hash.indexOf("type=signup") >= 0 || hash.indexOf("type=email") >= 0)) {
       setEmailConfirmed(true);
-      /* Clean up the URL hash */
       window.history.replaceState(null, "", window.location.pathname);
     }
-    if (hash && hash.indexOf("type=email") >= 0) {
+    if (qParams.get("type") === "signup" || qParams.get("type") === "email") {
       setEmailConfirmed(true);
       window.history.replaceState(null, "", window.location.pathname);
     }
-    /* Also check URL params (some Supabase versions use query params) */
-    var params = new URLSearchParams(window.location.search);
-    if (params.get("type") === "signup" || params.get("type") === "email") {
-      setEmailConfirmed(true);
-      window.history.replaceState(null, "", window.location.pathname);
+  }, []);
+
+  /* ── Clean URL to prevent workspace/path injection ── */
+  useEffect(function () {
+    /* Remove any hash that isn't a Supabase auth redirect */
+    var hash = window.location.hash;
+    if (hash && hash.indexOf("#/") === 0 && hash.indexOf("type=") < 0 && hash.indexOf("error=") < 0) {
+      window.history.replaceState(null, "", "/");
+    }
+    /* Remove any pathname that isn't root (prevents workspace slug injection) */
+    if (window.location.pathname !== "/") {
+      window.history.replaceState(null, "", "/");
     }
   }, []);
 
@@ -163,6 +195,7 @@ export default function AuthPage() {
   function switchToMagic() { setMode("magic"); setStep(0); setError(null); setInfoMsg(null); setFieldErrors({}); }
 
   function goBack() {
+    if (step === 0) { setShowLanding(true); setError(null); setInfoMsg(null); return; }
     setStep(function (s) { return Math.max(0, s - 1); });
     setError(null);
     setFieldErrors({});
@@ -204,6 +237,10 @@ export default function AuthPage() {
           setFieldErrors({ password: t.auth_error_password_criteria });
           return;
         }
+        if (password.trim().toLowerCase() === email.trim().toLowerCase()) {
+          setFieldErrors({ password: lang === "fr" ? "Le mot de passe ne peut pas être identique à l'adresse email." : "Password cannot be the same as your email address." });
+          return;
+        }
         setLoading(true);
         auth.signUp(email, password, { role: "founder" })
           .then(function (data) {
@@ -216,7 +253,9 @@ export default function AuthPage() {
               setMode("login");
               setStep(1);
               setPassword("");
-              setInfoMsg(t.auth_error_email_exists);
+              setInfoMsg(lang === "fr"
+                ? "Un compte avec cette adresse existe déjà. Connectez-vous ou réinitialisez votre mot de passe."
+                : "An account with this email already exists. Please sign in or reset your password.");
               return;
             }
 
@@ -301,6 +340,59 @@ export default function AuthPage() {
 
   /* ══════════════════════════════════════════ */
 
+  /* ── Invalid/expired link screen ── */
+  if (linkError) {
+    return createPortal(
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 900,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "var(--bg-page)", padding: "var(--sp-4)",
+      }}>
+        <div style={{
+          width: 440, maxWidth: "100%",
+          background: "var(--bg-card)", border: "1px solid var(--border)",
+          borderRadius: "var(--r-xl)", boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+          padding: "var(--sp-8) var(--sp-6)", textAlign: "center",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: "var(--sp-5)" }}>
+            <div style={{ width: 36, height: 36, borderRadius: "var(--r-md)", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#fff", fontSize: 18, fontWeight: 800, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", lineHeight: 1 }}>F</span>
+            </div>
+            <span style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>Forecrest</span>
+          </div>
+          <div style={{
+            width: 56, height: 56, borderRadius: "var(--r-full)",
+            background: "var(--color-error-bg)", border: "2px solid var(--color-error-border)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto var(--sp-4)",
+          }}>
+            <span style={{ fontSize: 24 }}>!</span>
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: "var(--sp-2)", fontFamily: "'Bricolage Grotesque', sans-serif" }}>
+            {lang === "fr" ? "Lien invalide ou expiré" : "Invalid or expired link"}
+          </div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: "var(--sp-5)" }}>
+            {lang === "fr"
+              ? "Ce lien de connexion n'est plus valide. Il a peut-être expiré ou a déjà été utilisé. Veuillez vous reconnecter."
+              : "This login link is no longer valid. It may have expired or already been used. Please sign in again."}
+          </div>
+          <button
+            type="button"
+            onClick={function () { setLinkError(null); }}
+            style={{
+              width: "100%", height: 44, borderRadius: "var(--r-md)",
+              background: "var(--brand)", color: "#fff", border: "none",
+              fontSize: 14, fontWeight: 600, fontFamily: "inherit", cursor: "pointer",
+            }}
+          >
+            {lang === "fr" ? "Se connecter" : "Sign in"}
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
   /* ── Email confirmed screen ── */
   if (emailConfirmed) {
     return createPortal(
@@ -357,6 +449,95 @@ export default function AuthPage() {
           >
             {t.auth_confirmed_btn || "Se connecter"}
           </Button>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  /* ── Landing screen with 3 option cards ── */
+  if (showLanding && !emailConfirmed && !linkError) {
+    return createPortal(
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 900,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "var(--bg-page)", padding: "var(--sp-4)", overflowY: "auto",
+      }}>
+        <div style={{ width: 720, maxWidth: "100%", textAlign: "center" }}>
+          {/* Logo */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: "var(--sp-4)" }}>
+            <div style={{ width: 40, height: 40, borderRadius: "var(--r-md)", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#fff", fontSize: 20, fontWeight: 800, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", lineHeight: 1 }}>F</span>
+            </div>
+            <span style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>Forecrest</span>
+          </div>
+
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 var(--sp-2)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>
+            {lang === "fr" ? "Bienvenue sur Forecrest" : "Welcome to Forecrest"}
+          </h1>
+          <p style={{ fontSize: 15, color: "var(--text-muted)", margin: "0 0 var(--sp-6)", lineHeight: 1.6 }}>
+            {lang === "fr"
+              ? "Construisez votre plan financier simplement.\nSuivez notre assistant pas à pas pour lancer votre projet en toute sérénité."
+              : "Build your financial plan simply.\nFollow our step-by-step assistant to launch your project with confidence."}
+          </p>
+
+          {/* 3 option cards — left-aligned, bigger, real buttons */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--sp-4)" }}>
+            {[
+              {
+                id: "login", icon: SignIn, iconBg: "var(--bg-accordion)", iconBorder: "var(--border)", iconColor: "var(--text-muted)",
+                title: lang === "fr" ? "J'ai déjà un compte" : "I have an account",
+                desc: lang === "fr" ? "Connectez-vous pour continuer votre projet." : "Sign in to continue your project.",
+                btn: lang === "fr" ? "Se connecter" : "Sign in", btnColor: "tertiary",
+                border: "1px solid var(--border)", disabled: false,
+                onClick: function () { setMode("login"); setStep(0); setShowLanding(false); },
+              },
+              {
+                id: "signup", icon: UserPlus, iconBg: "var(--brand-bg)", iconBorder: "var(--brand-border)", iconColor: "var(--brand)",
+                title: lang === "fr" ? "Créer un compte" : "Create an account",
+                desc: lang === "fr" ? "Enregistrez votre progression et accédez à toutes les fonctionnalités." : "Save your progress and access all features.",
+                btn: lang === "fr" ? "S'inscrire" : "Sign up", btnColor: "primary",
+                border: "2px solid var(--brand)", disabled: false,
+                onClick: function () { setMode("signup"); setStep(0); setShowLanding(false); },
+              },
+              {
+                id: "accountant", icon: Buildings, iconBg: "var(--bg-card)", iconBorder: "var(--border)", iconColor: "var(--text-faint)",
+                title: lang === "fr" ? "Cabinet comptable" : "Accounting firm",
+                desc: lang === "fr" ? "Gérez les plans financiers de vos clients." : "Manage your clients' financial plans.",
+                btn: "Coming soon", btnColor: "disabled",
+                border: "1px solid var(--border)", disabled: true,
+              },
+            ].map(function (card) {
+              var Icon = card.icon;
+              return (
+                <div key={card.id} style={{
+                  padding: "var(--sp-6) var(--sp-5)", background: card.disabled ? "var(--bg-accordion)" : "var(--bg-card)",
+                  border: card.border, borderRadius: "var(--r-xl)", opacity: card.disabled ? 0.55 : 1,
+                  display: "flex", flexDirection: "column", gap: "var(--sp-3)",
+                  textAlign: "left", cursor: card.disabled ? "not-allowed" : "default",
+                }}>
+                  <div style={{ width: 48, height: 48, borderRadius: "var(--r-lg)", background: card.iconBg, border: "1px solid " + card.iconBorder, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon size={22} weight="duotone" color={card.iconColor} />
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>
+                    {card.title}
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, flex: 1 }}>
+                    {card.desc}
+                  </div>
+                  {card.disabled ? (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-faint)", padding: "4px 12px", background: "var(--bg-card)", borderRadius: 99, border: "1px solid var(--border)", alignSelf: "flex-start" }}>
+                      Coming soon
+                    </span>
+                  ) : (
+                    <Button color={card.btnColor} size="lg" onClick={card.onClick} iconTrailing={<ArrowRight size={16} />} sx={{ alignSelf: "flex-start" }}>
+                      {card.btn}
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>,
       document.body

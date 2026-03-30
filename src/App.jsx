@@ -96,6 +96,7 @@ var DebugCalculationsPage = lazyRetry(function () { return import("./pages/meta/
 var DesignTokensPage = lazyRetry(function () { return import("./pages/meta/DesignTokensPage"); });
 var RoadmapPage = lazyRetry(function () { return import("./pages/meta/RoadmapPage"); });
 var SitemapPage = lazyRetry(function () { return import("./pages/meta/SitemapPage"); });
+var ProfileSetupPage = lazyRetry(function () { return import("./components/ProfileSetupPage"); });
 var PerformanceMonitorPage = lazyRetry(function () { return import("./pages/meta/PerformanceMonitorPage"); });
 
 function migrateStreams(streams) {
@@ -246,6 +247,7 @@ export default function App() {
     return function () { window.removeEventListener("nav-tab", onNav); window.removeEventListener("popstate", onPopState); };
   }, []);
   var [ready, setReady] = useState(false);
+  var [cloudDataLoaded, setCloudDataLoaded] = useState(false);
   var [cfg, setCfg] = useState({ ...DEFAULT_CONFIG });
   var dtApp = (cfg && cfg.devTiming) || {};
   var deinitTotal = (dtApp.deinitMs != null ? dtApp.deinitMs : 1800) + (dtApp.exitMs != null ? dtApp.exitMs : 300);
@@ -310,7 +312,9 @@ export default function App() {
     window.addEventListener("fc-open-share", onOpenShare);
     return function () { window.removeEventListener("fc-open-share", onOpenShare); };
   }, []);
-  var [onboardingTasksSkipped, setOnboardingTasksSkipped] = useState(false);
+  var [onboardingTasksSkipped, setOnboardingTasksSkipped] = useState(function () {
+    try { var k = "forecrest_onboarding_skip_" + ((typeof auth !== "undefined" && auth.user) ? auth.user.id : ""); return localStorage.getItem(k) === "true"; } catch (e) { return false; }
+  });
   var [accountSetupDone, setAccountSetupDone] = useState(function () {
     try { return localStorage.getItem("forecrest_account_setup_done") === "true"; } catch (e) { return false; }
   });
@@ -552,6 +556,7 @@ export default function App() {
             if (res.data && res.data.app_state && Object.keys(res.data.app_state).length > 0) {
               applySnapshot(res.data.app_state);
             }
+            setCloudDataLoaded(true);
           });
       }
       return;
@@ -559,10 +564,11 @@ export default function App() {
 
     /* Owner: compare timestamps (may have local-first data) */
     loadWithConflictCheck(auth.workspaceId).then(function (result) {
-      if (!result) return;
+      if (!result) { setCloudDataLoaded(true); return; }
       if (result.source === "cloud" && result.data && Object.keys(result.data).length > 0) {
         applySnapshot(result.data);
       }
+      setCloudDataLoaded(true);
     });
   }, [auth.user, auth.workspaceId, auth.isOwner, applySnapshot]);
 
@@ -1024,7 +1030,9 @@ export default function App() {
   }
 
   /* ── Account setup wall: first login — collect name, DOB, gender, terms ── */
-  if (ready && auth.user && !accountSetupDone) {
+  /* Check both localStorage (legacy) and Supabase profileComplete flag */
+  var profileDone = accountSetupDone || (auth.user && auth.user.profileComplete === true);
+  if (ready && auth.user && !auth.loading && !profileDone) {
     return (
       <Suspense fallback={<AppLoader label={t.loading} />}>
         <AccountSetupPage onComplete={function (data) {
@@ -1045,11 +1053,26 @@ export default function App() {
 
   /* ── Onboarding wall: force profile setup if companyName empty ── */
   /* Skip for non-owners — they join an existing workspace, no need to onboard */
-  if (ready && auth.user && auth.isOwner !== false && cfg && !cfg.companyName) {
+  /* In local mode (no auth) or when cloud data hasn't loaded yet, skip onboarding check */
+  var waitingForCloud = auth.user && auth.workspaceId && !cloudDataLoaded;
+  var needsOnboarding = ready && !waitingForCloud && auth.isOwner !== false && cfg && !cfg.companyName;
+  /* Also trigger if authenticated user has no workspace yet (new signup) */
+  if (!needsOnboarding && ready && auth.user && !auth.workspaceId && !auth.loading) {
+    needsOnboarding = true;
+  }
+  if (needsOnboarding) {
     return (
       <Suspense fallback={<AppLoader label={t.loading} />}>
         <OnboardingPage onComplete={function (updates) {
-          setCfg(function (prev) { return Object.assign({}, prev, updates); });
+          var finalize = function () {
+            setCfg(function (prev) { return Object.assign({}, prev, updates); });
+          };
+          /* If no workspace yet, create one first */
+          if (auth.user && !auth.workspaceId && auth.createWorkspace) {
+            auth.createWorkspace(auth.user.id, updates.companyName || "Mon entreprise").then(finalize);
+          } else {
+            finalize();
+          }
         }} />
       </Suspense>
     );
@@ -1411,6 +1434,7 @@ export default function App() {
           onUndo={function () { history.undo(); }}
           onRedo={function () { history.redo(); }}
           onExport={function () { setShowExport(true); }}
+          onShare={function () { setShowShareModal(true); }}
           onPresentation={function () { setPresMode(function (v) { return !v; }); }}
           onToggleAccounting={function () { setCfg(function (prev) { return Object.assign({}, prev, { showPcmn: !prev.showPcmn }); }); }}
           accountingMode={cfg && cfg.showPcmn}
@@ -1472,7 +1496,7 @@ export default function App() {
         <FloatingToolbar
           tab={tab}
           setTab={setTab}
-          visible={showToolbar && onboardingTasksSkipped}
+          visible={showToolbar}
           activeModule={activeModule}
           setActiveModule={setActiveModule}
           unlockedModules={unlockedModules}

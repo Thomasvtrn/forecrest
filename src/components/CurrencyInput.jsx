@@ -3,10 +3,12 @@ import { NumericFormat } from "react-number-format";
 export default function CurrencyInput({ value, onChange, suffix, prefix, min, max, width, height, placeholder, decimals }) {
   var dec = decimals != null ? decimals : 0;
 
+  var safeMax = max != null ? max : 1000000000;
+
   function handleChange(values) {
     var v = values.floatValue != null ? values.floatValue : 0;
     if (min != null && v < min) v = min;
-    if (max != null && v > max) v = max;
+    if (v > safeMax) v = safeMax;
     if (onChange) onChange(v);
   }
 
@@ -14,6 +16,7 @@ export default function CurrencyInput({ value, onChange, suffix, prefix, min, ma
     <NumericFormat
       value={value}
       onValueChange={handleChange}
+      isAllowed={function (values) { return !values.floatValue || values.floatValue <= safeMax; }}
       thousandSeparator="."
       decimalSeparator=","
       decimalScale={dec}

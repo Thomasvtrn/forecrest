@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
     var sb = getSupabase();
     if (!sb) return Promise.resolve();
     return sb.from("profiles")
-      .select("role, display_name")
+      .select("role, display_name, first_name, last_name, birth_date")
       .eq("id", userId)
       .single()
       .then(function (res) {
@@ -52,6 +52,10 @@ export function AuthProvider({ children }) {
             return Object.assign({}, prev, {
               role: res.data.role || "user",
               displayName: res.data.display_name || prev.displayName,
+              firstName: res.data.first_name || "",
+              lastName: res.data.last_name || "",
+              birthDate: res.data.birth_date || "",
+              profileComplete: !!(res.data.first_name && res.data.last_name),
             });
           });
         }
@@ -126,6 +130,7 @@ export function AuthProvider({ children }) {
       .then(function (res) {
         if (res.data) {
           setWorkspaceId(res.data.id);
+          setWorkspaceRole("owner");
           return res.data.id;
         }
         return null;
@@ -190,7 +195,8 @@ export function AuthProvider({ children }) {
           setSession(sess);
           setUser(userFromSession(sess));
           persistMode("cloud");
-          return createWorkspace(sess.user.id).then(function () { return res.data; });
+          /* Workspace creation deferred to onboarding — not on signup */
+          return loadWorkspace(sess.user.id).then(function () { return res.data; });
         }
         return res.data;
       });
@@ -234,6 +240,32 @@ export function AuthProvider({ children }) {
       persistMode("local");
     });
   }, []);
+
+  /* ── Update user profile (first_name, last_name, birth_date) ── */
+  var updateProfile = useCallback(function (data) {
+    if (!isConfigured() || !session) return Promise.resolve();
+    var sb = getSupabase();
+    var updates = { updated_at: new Date().toISOString() };
+    if (data.firstName != null) updates.first_name = data.firstName;
+    if (data.lastName != null) updates.last_name = data.lastName;
+    if (data.birthDate != null) updates.birth_date = data.birthDate || null;
+    if (data.displayName != null) updates.display_name = data.displayName;
+    return sb.from("profiles")
+      .update(updates)
+      .eq("id", session.user.id)
+      .then(function () {
+        setUser(function (prev) {
+          if (!prev) return prev;
+          return Object.assign({}, prev, {
+            firstName: data.firstName != null ? data.firstName : prev.firstName,
+            lastName: data.lastName != null ? data.lastName : prev.lastName,
+            birthDate: data.birthDate != null ? data.birthDate : prev.birthDate,
+            displayName: data.displayName != null ? data.displayName : prev.displayName,
+            profileComplete: !!(data.firstName || prev.firstName) && !!(data.lastName || prev.lastName),
+          });
+        });
+      });
+  }, [session]);
 
   /* ── Update display name ── */
   var updateDisplayName = useCallback(function (name) {
@@ -280,6 +312,7 @@ export function AuthProvider({ children }) {
     signIn: signIn,
     signInMagicLink: signInMagicLink,
     signOut: signOut,
+    updateProfile: updateProfile,
     updateDisplayName: updateDisplayName,
     deleteAccount: deleteAccount,
     setStorageMode: persistMode,

@@ -17,7 +17,7 @@ function SectionTitle({ icon, title, sub }) {
   );
 }
 
-function Field({ label, value, onChange, placeholder, type, width, disabled }) {
+function Field({ label, value, onChange, placeholder, type, width, disabled, maxLength }) {
   return (
     <div style={{ marginBottom: "var(--sp-4)" }}>
       <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-muted)", marginBottom: "var(--sp-1)" }}>
@@ -29,6 +29,7 @@ function Field({ label, value, onChange, placeholder, type, width, disabled }) {
         onChange={disabled ? undefined : function (e) { onChange(e.target.value); }}
         placeholder={placeholder || ""}
         disabled={disabled}
+        maxLength={maxLength || 50}
         style={{
           width: width || "100%", height: 38,
           padding: "0 var(--sp-3)",
@@ -123,8 +124,8 @@ export default function ProfilePage({ cfg, setCfg }) {
           }}>
             {initials}
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {cfg.companyName || (t.unnamed || "Mon entreprise")}
             </div>
             <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
