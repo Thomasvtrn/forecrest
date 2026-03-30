@@ -221,6 +221,10 @@ export default function AuthPage() {
           setFieldErrors({ password: t.auth_error_password_criteria });
           return;
         }
+        if (password.trim().toLowerCase() === email.trim().toLowerCase()) {
+          setFieldErrors({ password: lang === "fr" ? "Le mot de passe ne peut pas être identique à l'adresse email." : "Password cannot be the same as your email address." });
+          return;
+        }
         setLoading(true);
         auth.signUp(email, password, { role: "founder" })
           .then(function (data) {

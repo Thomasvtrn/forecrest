@@ -311,7 +311,9 @@ export default function App() {
     window.addEventListener("fc-open-share", onOpenShare);
     return function () { window.removeEventListener("fc-open-share", onOpenShare); };
   }, []);
-  var [onboardingTasksSkipped, setOnboardingTasksSkipped] = useState(false);
+  var [onboardingTasksSkipped, setOnboardingTasksSkipped] = useState(function () {
+    try { var k = "forecrest_onboarding_skip_" + ((typeof auth !== "undefined" && auth.user) ? auth.user.id : ""); return localStorage.getItem(k) === "true"; } catch (e) { return false; }
+  });
   var [accountSetupDone, setAccountSetupDone] = useState(function () {
     try { return localStorage.getItem("forecrest_account_setup_done") === "true"; } catch (e) { return false; }
   });
@@ -1478,7 +1480,7 @@ export default function App() {
         <FloatingToolbar
           tab={tab}
           setTab={setTab}
-          visible={showToolbar && onboardingTasksSkipped}
+          visible={showToolbar}
           activeModule={activeModule}
           setActiveModule={setActiveModule}
           unlockedModules={unlockedModules}
