@@ -167,11 +167,16 @@ export default function AuthPage() {
     }
   }, []);
 
-  /* ── Clean workspace hash from URL to prevent workspace injection ── */
+  /* ── Clean URL to prevent workspace/path injection ── */
   useEffect(function () {
+    /* Remove any hash that isn't a Supabase auth redirect */
     var hash = window.location.hash;
     if (hash && hash.indexOf("#/") === 0 && hash.indexOf("type=") < 0 && hash.indexOf("error=") < 0) {
-      window.history.replaceState(null, "", window.location.pathname);
+      window.history.replaceState(null, "", "/");
+    }
+    /* Remove any pathname that isn't root (prevents workspace slug injection) */
+    if (window.location.pathname !== "/") {
+      window.history.replaceState(null, "", "/");
     }
   }, []);
 

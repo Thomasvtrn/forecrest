@@ -1030,7 +1030,9 @@ export default function App() {
   }
 
   /* ── Account setup wall: first login — collect name, DOB, gender, terms ── */
-  if (ready && auth.user && !accountSetupDone) {
+  /* Check both localStorage (legacy) and Supabase profileComplete flag */
+  var profileDone = accountSetupDone || (auth.user && auth.user.profileComplete === true);
+  if (ready && auth.user && !auth.loading && !profileDone) {
     return (
       <Suspense fallback={<AppLoader label={t.loading} />}>
         <AccountSetupPage onComplete={function (data) {
@@ -1045,16 +1047,6 @@ export default function App() {
             });
           }
         }} />
-      </Suspense>
-    );
-  }
-
-  /* ── Profile setup wall: collect first name, last name, birth date ── */
-  /* Show if user is authenticated but profile is not complete (no first_name in DB) */
-  if (ready && auth.user && !auth.loading && auth.user.profileComplete === false) {
-    return (
-      <Suspense fallback={<AppLoader label={t.loading} />}>
-        <ProfileSetupPage onComplete={function () { /* user state updated by updateProfile callback */ }} />
       </Suspense>
     );
   }

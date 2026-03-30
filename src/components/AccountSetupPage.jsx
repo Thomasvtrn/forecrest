@@ -37,19 +37,25 @@ export default function AccountSetupPage({ onComplete }) {
 
     var displayName = firstName.trim() + (lastName.trim() ? " " + lastName.trim() : "");
 
-    /* Save to Supabase auth metadata + profiles */
-    auth.updateDisplayName(displayName).then(function () {
+    /* Save to Supabase profiles table (first_name, last_name, birth_date, display_name) */
+    var profileData = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      displayName: displayName,
+      birthDate: birthDate || null,
+    };
+    var savePromise = auth.updateProfile ? auth.updateProfile(profileData) : auth.updateDisplayName(displayName);
+    savePromise.then(function () {
       setSaving(false);
       setStep(1); /* Go to Pro promo */
     }).catch(function () {
       setSaving(false);
+      setStep(1); /* Continue anyway */
     });
   }
 
   function handleFinish() {
-    /* Store birth date and gender in localStorage for now (will be in profile table later) */
     try {
-      if (birthDate) localStorage.setItem("forecrest_birth_date", birthDate);
       if (gender) localStorage.setItem("forecrest_gender", gender);
       localStorage.setItem("forecrest_account_setup_done", "true");
     } catch (e) {}

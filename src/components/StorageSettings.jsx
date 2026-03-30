@@ -95,6 +95,10 @@ export default function StorageSettings({ getSnapshot }) {
   var [configSaved, setConfigSaved] = useState(false);
   var [editName, setEditName] = useState("");
   var [editingName, setEditingName] = useState(false);
+  var [editFirstName, setEditFirstName] = useState("");
+  var [editingFirstName, setEditingFirstName] = useState(false);
+  var [editLastName, setEditLastName] = useState("");
+  var [editingLastName, setEditingLastName] = useState(false);
   var [savingName, setSavingName] = useState(false);
 
   var cloudAvailable = hasCloudConfig();
@@ -142,6 +146,21 @@ export default function StorageSettings({ getSnapshot }) {
       setSbUrl("");
       setSbKey("");
     } catch (e) { /* noop */ }
+  }
+
+  var lang = (localStorage.getItem("forecrest_lang") || "fr");
+
+  function handleSaveProfile() {
+    var fn = editingFirstName ? editFirstName.trim() : (auth.user.firstName || "");
+    var ln = editingLastName ? editLastName.trim() : (auth.user.lastName || "");
+    var newDisplay = (fn + " " + ln).trim();
+    auth.updateProfile({
+      firstName: fn, lastName: ln,
+      displayName: newDisplay || auth.user.displayName,
+    }).then(function () {
+      setEditingFirstName(false);
+      setEditingLastName(false);
+    });
   }
 
   function handleSaveName() {
@@ -210,6 +229,53 @@ export default function StorageSettings({ getSnapshot }) {
                 <PencilSimple size={12} color="var(--text-faint)" />
               </button>
             )}
+          </SettingRow>
+          <SettingRow label={lang === "fr" ? "Prénom" : "First name"}>
+            {editingFirstName ? (
+              <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center" }}>
+                <input type="text" value={editFirstName} maxLength={50} autoFocus
+                  onChange={function (e) { setEditFirstName(e.target.value); }}
+                  onKeyDown={function (e) { if (e.key === "Enter") handleSaveProfile(); if (e.key === "Escape") setEditingFirstName(false); }}
+                  style={{ width: 160, height: 32, padding: "0 var(--sp-2)", border: "1px solid var(--brand)", borderRadius: "var(--r-md)", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: 13, fontFamily: "inherit", outline: "none" }}
+                />
+                <Button color="primary" size="sm" onClick={handleSaveProfile}>{t.settings_save || "OK"}</Button>
+                <Button color="tertiary" size="sm" onClick={function () { setEditingFirstName(false); }}>{t.settings_cancel || "Annuler"}</Button>
+              </div>
+            ) : (
+              <button onClick={function () { setEditFirstName(auth.user.firstName || ""); setEditingFirstName(true); }}
+                style={{ border: "none", background: "transparent", cursor: "pointer", padding: 0, fontSize: 13, color: "var(--text-secondary)", fontWeight: 500, display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                {auth.user.firstName || <span style={{ color: "var(--text-faint)" }}>—</span>}
+                <PencilSimple size={12} color="var(--text-faint)" />
+              </button>
+            )}
+          </SettingRow>
+          <SettingRow label={lang === "fr" ? "Nom" : "Last name"}>
+            {editingLastName ? (
+              <div style={{ display: "flex", gap: "var(--sp-2)", alignItems: "center" }}>
+                <input type="text" value={editLastName} maxLength={50} autoFocus
+                  onChange={function (e) { setEditLastName(e.target.value); }}
+                  onKeyDown={function (e) { if (e.key === "Enter") handleSaveProfile(); if (e.key === "Escape") setEditingLastName(false); }}
+                  style={{ width: 160, height: 32, padding: "0 var(--sp-2)", border: "1px solid var(--brand)", borderRadius: "var(--r-md)", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: 13, fontFamily: "inherit", outline: "none" }}
+                />
+                <Button color="primary" size="sm" onClick={handleSaveProfile}>{t.settings_save || "OK"}</Button>
+                <Button color="tertiary" size="sm" onClick={function () { setEditingLastName(false); }}>{t.settings_cancel || "Annuler"}</Button>
+              </div>
+            ) : (
+              <button onClick={function () { setEditLastName(auth.user.lastName || ""); setEditingLastName(true); }}
+                style={{ border: "none", background: "transparent", cursor: "pointer", padding: 0, fontSize: 13, color: "var(--text-secondary)", fontWeight: 500, display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                {auth.user.lastName || <span style={{ color: "var(--text-faint)" }}>—</span>}
+                <PencilSimple size={12} color="var(--text-faint)" />
+              </button>
+            )}
+          </SettingRow>
+          <SettingRow label={lang === "fr" ? "Date de naissance" : "Date of birth"}>
+            <input type="date" value={auth.user.birthDate || ""}
+              min="1926-01-01" max={new Date(new Date().setFullYear(new Date().getFullYear() - 16)).toISOString().slice(0, 10)}
+              onChange={function (e) {
+                auth.updateProfile({ birthDate: e.target.value || null });
+              }}
+              style={{ height: 32, padding: "0 var(--sp-2)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", background: "var(--bg-card)", color: "var(--text-primary)", fontSize: 13, fontFamily: "inherit", outline: "none" }}
+            />
           </SettingRow>
           <SettingRow label="Mode" last>
             <span style={{
