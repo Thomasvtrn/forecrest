@@ -77,9 +77,9 @@ function Field({ label, hint, error, required, children }) {
   );
 }
 
-function TextInput({ value, onChange, placeholder, readOnly, error, type }) {
+function TextInput({ value, onChange, placeholder, readOnly, error, type, maxLength }) {
   return (
-    <input type={type || "text"} value={value} onChange={readOnly ? undefined : onChange} placeholder={placeholder} readOnly={readOnly}
+    <input type={type || "text"} value={value} onChange={readOnly ? undefined : onChange} placeholder={placeholder} readOnly={readOnly} maxLength={maxLength || 100}
       style={{
         width: "100%", height: 44, padding: "0 14px", fontSize: 14,
         color: readOnly ? "var(--text-faint)" : "var(--text-primary)",
@@ -517,12 +517,9 @@ export default function OnboardingPage({ onComplete }) {
                     <Field label={t.ob_address || "Adresse du si\u00e8ge social"} hint={t.ob_hint_address || "L'adresse officielle de votre entreprise."}>
                       <TextInput value={address} onChange={function (e) { setAddress(e.target.value); }} placeholder="Rue de l'Industrie 26, 6000 Charleroi" />
                     </Field>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-3)" }}>
+                    <div>
                       <Field label={t.ob_capital || "Capital social"} hint={t.ob_hint_capital || "Le montant inscrit aux statuts. Pas de minimum l\u00e9gal pour les SRL depuis 2019."}>
                         <CurrencyInput value={capitalSocial} onChange={setCapitalSocial} suffix={"€"} width="100%" />
-                      </Field>
-                      <Field label={t.ob_currency || "Devise"}>
-                        <SelectDropdown value={currency} onChange={setCurrency} options={CURRENCIES} width="100%" />
                       </Field>
                     </div>
                   </>

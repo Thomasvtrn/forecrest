@@ -25,8 +25,9 @@ export default function PageTransition({ children, tabKey, animate }) {
     return function () {
       t1.kill();
       t2.kill();
-      gsap.set(el, { clearProps: "all" });
-      gsap.set(targets, { clearProps: "all" });
+      /* Only clear transform/opacity — not all props (preserves background, etc.) */
+      gsap.set(el, { clearProps: "opacity,transform" });
+      gsap.set(targets, { clearProps: "opacity,transform" });
     };
   }, [tabKey, animate]);
 
