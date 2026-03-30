@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import {
   EnvelopeSimple, Lock, Eye, EyeSlash, ArrowRight, ArrowLeft,
   Check, Circle, PaperPlaneTilt, ShieldCheck, ArrowCounterClockwise,
+  UserPlus, SignIn, Buildings,
 } from "@phosphor-icons/react";
 import Button from "./Button";
 import { useAuth } from "../context/useAuth";
@@ -116,6 +117,7 @@ export default function AuthPage() {
   var auth = useAuth();
   var lang = (localStorage.getItem("forecrest_lang") || "fr");
 
+  var [showLanding, setShowLanding] = useState(true);
   var [mode, setMode] = useState("signup");
   var [step, setStep] = useState(0);
   var [email, setEmail] = useState("");
@@ -180,6 +182,7 @@ export default function AuthPage() {
   function switchToMagic() { setMode("magic"); setStep(0); setError(null); setInfoMsg(null); setFieldErrors({}); }
 
   function goBack() {
+    if (step === 0) { setShowLanding(true); setError(null); setInfoMsg(null); return; }
     setStep(function (s) { return Math.max(0, s - 1); });
     setError(null);
     setFieldErrors({});
@@ -433,6 +436,111 @@ export default function AuthPage() {
           >
             {t.auth_confirmed_btn || "Se connecter"}
           </Button>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  /* ── Landing screen with 3 option cards ── */
+  if (showLanding && !emailConfirmed && !linkError) {
+    return createPortal(
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 900,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "var(--bg-page)", padding: "var(--sp-4)", overflowY: "auto",
+      }}>
+        <div style={{ width: 720, maxWidth: "100%", textAlign: "center" }}>
+          {/* Logo */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: "var(--sp-4)" }}>
+            <div style={{ width: 40, height: 40, borderRadius: "var(--r-md)", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#fff", fontSize: 20, fontWeight: 800, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", lineHeight: 1 }}>F</span>
+            </div>
+            <span style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>Forecrest</span>
+          </div>
+
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", margin: "0 0 var(--sp-2)", fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif" }}>
+            {lang === "fr" ? "Bienvenue sur Forecrest" : "Welcome to Forecrest"}
+          </h1>
+          <p style={{ fontSize: 15, color: "var(--text-muted)", margin: "0 0 var(--sp-6)", lineHeight: 1.6 }}>
+            {lang === "fr"
+              ? "Construisez votre plan financier simplement.\nSuivez notre assistant pas à pas pour lancer votre projet en toute sérénité."
+              : "Build your financial plan simply.\nFollow our step-by-step assistant to launch your project with confidence."}
+          </p>
+
+          {/* 3 option cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--sp-4)" }}>
+            {/* Already have an account */}
+            <button type="button" onClick={function () { setMode("login"); setStep(0); setShowLanding(false); }}
+              style={{
+                padding: "var(--sp-5) var(--sp-4)", background: "var(--bg-card)", border: "1px solid var(--border)",
+                borderRadius: "var(--r-xl)", cursor: "pointer", textAlign: "center",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--sp-3)",
+                fontFamily: "inherit", transition: "border-color 0.15s, box-shadow 0.15s",
+              }}
+              onMouseEnter={function (e) { e.currentTarget.style.borderColor = "var(--brand)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)"; }}
+              onMouseLeave={function (e) { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.boxShadow = "none"; }}
+            >
+              <div style={{ width: 48, height: 48, borderRadius: "var(--r-lg)", background: "var(--bg-accordion)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <SignIn size={22} weight="duotone" color="var(--text-muted)" />
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+                {lang === "fr" ? "J'ai déjà un compte" : "I have an account"}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
+                {lang === "fr" ? "Connectez-vous pour continuer votre projet." : "Sign in to continue your project."}
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--brand)", display: "flex", alignItems: "center", gap: 4, marginTop: "auto" }}>
+                {lang === "fr" ? "Se connecter" : "Sign in"} <ArrowRight size={14} />
+              </span>
+            </button>
+
+            {/* Create account */}
+            <button type="button" onClick={function () { setMode("signup"); setStep(0); setShowLanding(false); }}
+              style={{
+                padding: "var(--sp-5) var(--sp-4)", background: "var(--bg-card)", border: "2px solid var(--brand)",
+                borderRadius: "var(--r-xl)", cursor: "pointer", textAlign: "center",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--sp-3)",
+                fontFamily: "inherit", boxShadow: "0 4px 16px rgba(232,67,26,0.08)",
+              }}
+            >
+              <div style={{ width: 48, height: 48, borderRadius: "var(--r-lg)", background: "var(--brand-bg)", border: "1px solid var(--brand-border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <UserPlus size={22} weight="duotone" color="var(--brand)" />
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+                {lang === "fr" ? "Créer un compte" : "Create an account"}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
+                {lang === "fr" ? "Enregistrez votre progression et accédez à toutes les fonctionnalités." : "Save your progress and access all features."}
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--brand)", display: "flex", alignItems: "center", gap: 4, marginTop: "auto" }}>
+                {lang === "fr" ? "S'inscrire" : "Sign up"} <ArrowRight size={14} />
+              </span>
+            </button>
+
+            {/* Accountant — coming soon */}
+            <div
+              style={{
+                padding: "var(--sp-5) var(--sp-4)", background: "var(--bg-accordion)", border: "1px solid var(--border)",
+                borderRadius: "var(--r-xl)", textAlign: "center", opacity: 0.6,
+                display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--sp-3)",
+                cursor: "not-allowed",
+              }}
+            >
+              <div style={{ width: 48, height: 48, borderRadius: "var(--r-lg)", background: "var(--bg-card)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Buildings size={22} weight="duotone" color="var(--text-faint)" />
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
+                {lang === "fr" ? "Cabinet comptable" : "Accounting firm"}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>
+                {lang === "fr" ? "Gérez les plans financiers de vos clients." : "Manage your clients' financial plans."}
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-faint)", padding: "2px 8px", background: "var(--bg-card)", borderRadius: 99, border: "1px solid var(--border)", marginTop: "auto" }}>
+                Coming soon
+              </span>
+            </div>
+          </div>
         </div>
       </div>,
       document.body
