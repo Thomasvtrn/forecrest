@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X } from "@phosphor-icons/react";
+import { XClose } from "@untitledui/icons";
 
 var SIZE_MAP = {
   sm: 400,
@@ -142,7 +142,7 @@ export default function Modal({
                   background: "transparent", cursor: "pointer", flexShrink: 0,
                 }}
               >
-                <X size={14} color="var(--text-muted)" weight="bold" />
+                <XClose style={{ width: 16, height: 16, color: "var(--text-muted)" }} />
               </button>
             ) : null}
           </div>

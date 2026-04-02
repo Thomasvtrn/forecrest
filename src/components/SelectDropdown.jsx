@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { CaretDown, Check, X } from "@phosphor-icons/react";
+import { Check, ChevronDown, XClose } from "@untitledui/icons";
 
 /**
  * Custom styled dropdown (replaces native <select>).
@@ -88,8 +88,9 @@ export default function SelectDropdown({ value, onChange, options, placeholder, 
             ×
           </span>
         ) : null}
-        <CaretDown size={12} weight="bold" style={{
+        <ChevronDown style={{
           position: "absolute", right: 12,
+          width: 14, height: 14,
           color: "var(--text-muted)", opacity: 0.6,
           transform: open ? "rotate(180deg)" : "rotate(0)",
           transition: "transform 0.15s",
@@ -142,7 +143,7 @@ export default function SelectDropdown({ value, onChange, options, placeholder, 
                 <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {opt.label}
                 </span>
-                {isActive ? <Check size={12} weight="bold" color="var(--brand)" style={{ flexShrink: 0, marginLeft: 8 }} /> : null}
+                {isActive ? <Check style={{ width: 12, height: 12, color: "var(--brand)", flexShrink: 0, marginLeft: 8 }} /> : null}
               </button>
             );
           })}

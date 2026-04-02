@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { SpinnerGap } from "@phosphor-icons/react";
+import { Loading01 } from "@untitledui/icons";
+import { cx } from "../utils";
 
 var COLOR_MAP = {
   primary: {
@@ -54,36 +55,27 @@ export default function Button({
   var isLink = color === "link-color" || color === "link-gray";
 
   var baseStyle = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
     gap: s.gap,
     height: isLink ? "auto" : s.height,
     padding: isLink ? 0 : ("0 " + s.px),
     fontSize: s.fontSize,
-    fontWeight: 600,
-    fontFamily: "inherit",
-    lineHeight: 1,
     border: isLink ? "none" : ("1px solid " + c.border),
-    borderRadius: isLink ? 0 : "var(--r-md)",
     background: hovered && !disabled ? c.hoverBg : c.bg,
     color: c.color,
-    cursor: disabled ? "not-allowed" : "pointer",
     opacity: disabled ? 0.5 : 1,
-    transition: "background 0.15s, border-color 0.15s, opacity 0.15s",
     textDecoration: isLink && hovered ? "underline" : "none",
-    whiteSpace: "nowrap",
-    userSelect: "none",
   };
 
   var style = sx ? Object.assign({}, baseStyle, sx) : baseStyle;
+  var className = cx(
+    "inline-flex items-center justify-center whitespace-nowrap font-semibold leading-none transition-all duration-150",
+    "select-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--brand-bg)]",
+    isLink ? "rounded-none" : "rounded-[var(--r-md)] shadow-xs",
+    disabled ? "cursor-not-allowed" : "cursor-pointer"
+  );
 
   var spinner = isLoading ? (
-    <SpinnerGap
-      size={s.iconSize}
-      weight="bold"
-      style={{ animation: "spin 0.8s linear infinite", flexShrink: 0 }}
-    />
+    <Loading01 className="shrink-0 animate-spin" style={{ width: s.iconSize, height: s.iconSize }} />
   ) : null;
 
   var content = (
@@ -103,6 +95,7 @@ export default function Button({
     return (
       <a
         href={href}
+        className={className}
         style={style}
         title={title}
         aria-label={ariaLabel}
@@ -116,6 +109,7 @@ export default function Button({
   return (
     <button
       type={type || "button"}
+      className={className}
       disabled={disabled}
       onClick={disabled ? undefined : onClick}
       style={style}
