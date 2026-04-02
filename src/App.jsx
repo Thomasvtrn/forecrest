@@ -14,6 +14,7 @@ import { Banner, PageTransition, DevBanner, NavigationToast } from "./components
 import { PagePerfProvider, PagePerfProfiler } from "./context";
 import GlossaryDrawer, { GlossaryFab } from "./components/GlossaryDrawer";
 import AccountantBar from "./components/AccountantBar";
+import AppHeader from "./components/AppHeader";
 import Sidebar from "./components/Sidebar";
 import useHistory from "./hooks/useHistory";
 
@@ -50,10 +51,8 @@ var ExportImportModal = lazyRetry(function () { return import("./components/Expo
 var PresentationMode = lazyRetry(function () { return import("./components/PresentationMode"); });
 var CommandPalette = lazyRetry(function () { return import("./components/KeyboardShortcuts"); });
 var DevCommandPalette = lazyRetry(function () { return import("./components/DevCommandPalette"); });
-var FloatingToolbar = lazyRetry(function () { return import("./components/FloatingToolbar"); });
 var ChordPalette = lazyRetry(function () { return import("./components/ChordPalette"); });
 var SpacingInspector = lazyRetry(function () { return import("./components/SpacingInspector"); });
-var CollabBar = lazyRetry(function () { return import("./components/CollabBar"); });
 var ShareModal = lazyRetry(function () { return import("./components/ShareModal"); });
 var JoinPage = lazyRetry(function () { return import("./components/JoinPage"); });
 
@@ -169,14 +168,17 @@ export default function App() {
   function slugify(str) {
     return (str || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "dashboard";
   }
+  function normalizeTabId(id) {
+    return id === "dev-tokens" ? "design-system" : id;
+  }
 
   function getTabFromPath() {
     var parts = window.location.pathname.split("/").filter(Boolean);
     /* Last segment = tab, or check hash fallback for old URLs */
-    var candidate = parts.length >= 2 ? parts[parts.length - 1] : parts.length === 1 ? parts[0] : "";
+    var candidate = normalizeTabId(parts.length >= 2 ? parts[parts.length - 1] : parts.length === 1 ? parts[0] : "");
     if (VALID_TABS.indexOf(candidate) >= 0) return candidate;
     /* Legacy hash fallback: /#/overview → /dashboard/overview */
-    var h = window.location.hash.replace(/^#\/?/, "").toLowerCase();
+    var h = normalizeTabId(window.location.hash.replace(/^#\/?/, "").toLowerCase());
     if (VALID_TABS.indexOf(h) >= 0) return h;
     return "overview";
   }
@@ -186,7 +188,7 @@ export default function App() {
   var [adminSection, setAdminSection] = useState("overview");
   var [navToast, setNavToast] = useState(null);
   function setTab(id, opts) {
-    var nextId = id;
+    var nextId = normalizeTabId(id);
     if (MARKETING_TABS.indexOf(id) >= 0) {
       if (!marketingPaid) nextId = "marketing";
       else if (!marketingEnabled && id !== "marketing") nextId = "marketing";
@@ -318,7 +320,6 @@ export default function App() {
   var [accountSetupDone, setAccountSetupDone] = useState(function () {
     try { return localStorage.getItem("forecrest_account_setup_done") === "true"; } catch (e) { return false; }
   });
-  var [showToolbar, setShowToolbar] = useState(true);
   var [activeModule, setActiveModule] = useState("core");
   var marketingPaid = useMemo(function () {
     return devMode || !!(marketing && (marketing.paid || (marketing.paid === undefined && marketing.enabled)));
@@ -435,7 +436,7 @@ export default function App() {
       var raw = window.location.hash.slice(1);
       /* Legacy #/tab URL → redirect to path-based */
       if (raw.charAt(0) === "/" && raw.length < 60) {
-        var legacyTab = raw.slice(1).toLowerCase();
+        var legacyTab = normalizeTabId(raw.slice(1).toLowerCase());
         if (VALID_TABS.indexOf(legacyTab) >= 0) {
           window.history.replaceState(null, "", "/" + legacyTab);
         }
@@ -1156,16 +1157,14 @@ export default function App() {
         />
 
         <main ref={mainRef} style={{ flex: 1, padding: "var(--page-py) var(--page-px)", maxWidth: "var(--page-max)", margin: "0 auto", minWidth: 0, display: "flex", flexDirection: "column" }}>
-          {auth.user && auth.storageMode === "cloud" ? (
-            <Suspense fallback={null}>
-              <CollabBar
-                onOpenShare={function () { setShowShareModal(true); }}
-                onViewAll={function () { setTab("set", { section: "team" }); }}
-                currentTab={tab}
-                tabLabels={t.tabs}
-              />
-            </Suspense>
-          ) : null}
+          <AppHeader
+            tab={tab}
+            setTab={setTab}
+            activeModule={activeModule}
+            onOpenSearch={function () { setShowCmdPalette(true); }}
+            onOpenShare={function () { setShowShareModal(true); }}
+            onViewAll={function () { setTab("set", { section: "team" }); }}
+          />
           <PagePerfProvider devMode={devMode}>
           <Suspense fallback={null}>
             <PagePerfProfiler tabKey={tab}>
@@ -1381,7 +1380,7 @@ export default function App() {
               />
             ) : null}
 
-            {tab === "dev-tokens" && devMode ? (
+            {tab === "design-system" && devMode ? (
               <DesignTokensPage />
             ) : null}
 
@@ -1444,8 +1443,6 @@ export default function App() {
           onPresentation={function () { setPresMode(function (v) { return !v; }); }}
           onToggleAccounting={function () { setCfg(function (prev) { return Object.assign({}, prev, { showPcmn: !prev.showPcmn }); }); }}
           accountingMode={cfg && cfg.showPcmn}
-          onToggleToolbar={function () { setShowToolbar(function (v) { return !v; }); }}
-          toolbarVisible={showToolbar}
           onAdd={handleQuickAdd}
           onEdit={handleQuickEdit}
           onDuplicate={handleQuickDuplicate}
@@ -1497,17 +1494,6 @@ export default function App() {
 
       <GlossaryDrawer />
       <GlossaryFab />
-
-      <Suspense fallback={null}>
-        <FloatingToolbar
-          tab={tab}
-          setTab={setTab}
-          visible={showToolbar}
-          activeModule={activeModule}
-          setActiveModule={setActiveModule}
-          unlockedModules={unlockedModules}
-        />
-      </Suspense>
 
       <Suspense fallback={null}>
         <ExportImportModal

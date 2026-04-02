@@ -56,7 +56,7 @@ var PAGES = [
     { tab: "dev-roadmap", label: "Roadmap", file: "meta/RoadmapPage.jsx", desc: { fr: "Fonctionnalités planifiées par phase.", en: "Planned features by phase." }, props: "" },
     { tab: "dev-sitemap", label: "Sitemap", file: "meta/SitemapPage.jsx", desc: { fr: "Cette page. Architecture des pages et flux de données.", en: "This page. Page architecture and data flows." }, props: "" },
     { tab: "dev-calc", label: "Debug Calculs", file: "meta/DebugCalculationsPage.jsx", desc: { fr: "Toutes les formules financières avec inputs et résultats.", en: "All financial formulas with inputs and results." }, props: "cfg, totalRevenue, monthlyCosts, ebitda, netP" },
-    { tab: "dev-tokens", label: "Design System", file: "meta/DesignSystemPage.jsx", desc: { fr: "Catalogue composants, variants, et mapping des tokens Untitled UI.", en: "Component catalogue, variants, and Untitled UI token mapping." }, props: "" },
+    { tab: "design-system", label: "Design System", file: "meta/DesignSystemPage.jsx", desc: { fr: "Navigation par catégories de composants, pages dédiées et mapping des tokens.", en: "Component-category navigation, dedicated component pages, and token mapping." }, props: "" },
     { tab: "dev-tooltips", label: "Tooltip Registry", file: "meta/TooltipRegistryPage.jsx", desc: { fr: "Tous les InfoTip de l'application.", en: "All InfoTip tooltips in the application." }, props: "" },
   ]},
 ];

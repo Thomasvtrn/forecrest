@@ -1,7 +1,7 @@
 var SIZE_MAP = {
-  sm: { height: 30, padding: "0 12px", fontSize: 12, gap: 6 },
-  md: { height: 36, padding: "0 14px", fontSize: 13, gap: 8 },
-  lg: { height: 40, padding: "0 16px", fontSize: 14, gap: 8 },
+  sm: { height: "var(--control-height-sm)", padding: "0 12px", fontSize: 12, gap: 6 },
+  md: { height: "var(--control-height-md)", padding: "0 14px", fontSize: 13, gap: 8 },
+  lg: { height: "var(--control-height-lg)", padding: "0 16px", fontSize: 14, gap: 8 },
 };
 
 function isSelected(mode, value, itemId) {
@@ -52,18 +52,16 @@ export default function ButtonGroup({
         display: stretch ? "flex" : "inline-flex",
         width: stretch ? "100%" : "auto",
         alignItems: "stretch",
+        gap: 4,
+        padding: 4,
+        borderRadius: radius,
+        border: "1px solid var(--border-light)",
+        background: "var(--bg-accordion)",
       }}
     >
       {items.map(function (item, index) {
         var selected = isSelected(resolvedMode, value, item.id);
         var itemDisabled = disabled || item.disabled;
-        var isFirst = index === 0;
-        var isLast = index === items.length - 1;
-        var borderRadius = isFirst
-          ? radius + " 0 0 " + radius
-          : isLast
-            ? "0 " + radius + " " + radius + " 0"
-            : "0";
 
         return (
           <button
@@ -82,20 +80,20 @@ export default function ButtonGroup({
               flex: stretch ? 1 : "0 0 auto",
               height: resolvedSize.height,
               padding: resolvedSize.padding,
-              marginLeft: isFirst ? 0 : -1,
-              border: selected ? "1px solid var(--brand)" : "1px solid var(--border)",
-              borderRadius: borderRadius,
-              background: selected ? "var(--brand-bg)" : "var(--bg-card)",
-              color: selected ? "var(--brand)" : "var(--text-secondary)",
+              border: "1px solid " + (selected ? "var(--brand-border)" : "transparent"),
+              borderRadius: radius,
+              background: selected ? "var(--bg-card)" : "transparent",
+              color: selected ? "var(--text-primary)" : "var(--text-secondary)",
               fontSize: resolvedSize.fontSize,
               fontWeight: selected ? 600 : 500,
               fontFamily: "inherit",
               whiteSpace: "nowrap",
               cursor: itemDisabled ? "not-allowed" : "pointer",
               opacity: itemDisabled ? 0.45 : 1,
-              transition: "background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s",
+              transition: "background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s, box-shadow 0.15s",
               position: "relative",
               zIndex: selected ? 1 : 0,
+              boxShadow: selected ? "var(--shadow-xs)" : "none",
             }}
           >
             {item.icon ? <span style={{ display: "inline-flex", flexShrink: 0 }}>{item.icon}</span> : null}
