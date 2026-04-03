@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { XClose } from "@untitledui/icons";
+import useBreakpoint from "../hooks/useBreakpoint";
 
 var SIZE_MAP = {
   sm: 400,
@@ -15,6 +16,8 @@ export default function Modal({
 }) {
   var prevState = useRef({});
   var cardRef = useRef(null);
+  var bp = useBreakpoint();
+  var isMobile = bp.isMobile;
 
   useEffect(function () {
     if (open) {
@@ -83,8 +86,10 @@ export default function Modal({
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
         background: "var(--overlay-bg)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "var(--sp-4)",
+        display: "flex",
+        alignItems: isMobile ? "flex-end" : "center",
+        justifyContent: "center",
+        padding: isMobile ? 0 : "var(--sp-4)",
         backdropFilter: "blur(6px)",
       }}
     >
@@ -96,22 +101,24 @@ export default function Modal({
         onClick={function (e) { e.stopPropagation(); }}
         style={{
           background: "var(--bg-card)",
-          borderRadius: "var(--r-xl)",
-          border: "1px solid var(--border)",
+          borderRadius: isMobile ? "var(--r-xl) var(--r-xl) 0 0" : "var(--r-xl)",
+          border: isMobile ? "none" : "1px solid var(--border)",
+          borderTop: isMobile ? "1px solid var(--border)" : undefined,
           boxShadow: "var(--shadow-modal)",
-          width: width, maxWidth: "95vw",
-          height: height || undefined,
-          maxHeight: "90vh",
+          width: isMobile ? "100%" : width,
+          maxWidth: isMobile ? "100%" : "95vw",
+          height: isMobile ? (height || "auto") : (height || undefined),
+          maxHeight: isMobile ? "92vh" : "90vh",
           display: "flex", flexDirection: "column",
           overflow: "hidden",
-          animation: "tooltipIn 0.12s ease",
+          animation: isMobile ? "none" : "tooltipIn 0.12s ease",
         }}
       >
         {/* Header — only if title provided */}
         {title ? (
           <div style={{
             display: "flex", alignItems: "flex-start", gap: "var(--sp-3)",
-            padding: "var(--sp-5) var(--sp-5) var(--sp-4)",
+            padding: isMobile ? "var(--sp-4) var(--sp-4) var(--sp-3)" : "var(--sp-5) var(--sp-5) var(--sp-4)",
             flexShrink: 0,
             borderBottom: "1px solid var(--border-light)",
             background: "var(--bg-card)",
@@ -121,7 +128,7 @@ export default function Modal({
             ) : null}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                fontSize: 16, fontWeight: 700,
+                fontSize: isMobile ? 15 : 16, fontWeight: 700,
                 color: "var(--text-primary)",
                 fontFamily: "'Bricolage Grotesque', 'DM Sans', sans-serif",
                 lineHeight: 1.3,
@@ -170,6 +177,7 @@ export function ModalBody({ children, noPadding }) {
         padding: noPadding ? 0 : "var(--sp-5)",
         scrollbarWidth: "thin",
         scrollbarColor: "var(--border-strong) transparent",
+        WebkitOverflowScrolling: "touch",
       }}
     >
       {children}
@@ -178,12 +186,13 @@ export function ModalBody({ children, noPadding }) {
 }
 
 export function ModalFooter({ children, compact }) {
+  var padY = compact ? 16 : 20;
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "flex-end",
       gap: "var(--sp-2)",
-      paddingTop: compact ? 16 : 20, paddingBottom: compact ? 16 : 20,
-      paddingLeft: 20, paddingRight: 20,
+      paddingTop: padY, paddingLeft: 20, paddingRight: 20,
+      paddingBottom: "calc(" + padY + "px + env(safe-area-inset-bottom, 0px))",
       borderTop: "1px solid var(--border-light)",
       flexShrink: 0,
       background: "var(--bg-card)",
