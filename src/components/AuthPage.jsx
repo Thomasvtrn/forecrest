@@ -605,7 +605,8 @@ export default function AuthPage() {
   return createPortal(
     <div style={{
       position: "fixed", inset: 0, zIndex: 900,
-      display: "flex", alignItems: isMobile ? "flex-start" : "center", justifyContent: "center",
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: isMobile ? "flex-start" : "center",
       background: "var(--bg-page)", padding: isMobile ? "var(--sp-3)" : "var(--sp-4)",
       overflowY: "auto", WebkitOverflowScrolling: "touch",
     }} onKeyDown={handleKeyDown} tabIndex={-1}>
@@ -790,12 +791,13 @@ export default function AuthPage() {
 
       {/* Page footer — self-hosted hint (outside card) */}
       <div style={{
-        position: isMobile ? "relative" : "fixed",
+        position: isMobile ? "static" : "fixed",
         bottom: isMobile ? "auto" : 24,
         left: 0, right: 0,
         textAlign: "center", fontSize: 11, color: "var(--text-faint)", lineHeight: 1.4,
-        marginTop: isMobile ? "var(--sp-5)" : 0,
-        paddingBottom: isMobile ? "var(--sp-4)" : 0,
+        marginTop: isMobile ? "var(--sp-4)" : 0,
+        paddingBottom: isMobile ? "var(--sp-5)" : 0,
+        width: isMobile ? "100%" : "auto",
       }}>
         {t.auth_page_selfhosted_hint}{" "}
         <a href="https://github.com/thomasvoituron/forecrest" target="_blank" rel="noopener noreferrer" style={{ color: "var(--brand)", textDecoration: "none", fontWeight: 500 }}>
