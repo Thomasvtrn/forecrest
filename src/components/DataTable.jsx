@@ -37,8 +37,7 @@ var mobileQuery = typeof window !== "undefined" ? window.matchMedia(BREAKPOINT_Q
 /* ── Scroll wrapper: always SimpleBar for consistent styled scrollbar ── */
 function ScrollWrap({ scrollable, children }) {
   var isMobile = mobileQuery && mobileQuery.matches;
-  /* On mobile or when explicitly scrollable: use SimpleBar with visible scrollbar */
-  if (scrollable || isMobile) {
+  if (scrollable) {
     injectSbCSS();
     return (
       <SimpleBar className="fc-sb" style={{ overflowX: "auto", paddingBottom: isMobile ? 8 : 16 }} autoHide={!isMobile}>
@@ -46,7 +45,7 @@ function ScrollWrap({ scrollable, children }) {
       </SimpleBar>
     );
   }
-  return <div style={{ overflowX: "auto" }}>{children}</div>;
+  return <div style={{ width: "100%", maxWidth: "100%", overflowX: isMobile ? "hidden" : "auto" }}>{children}</div>;
 }
 
 /* ── base styles ── */
@@ -111,17 +110,19 @@ function RowCheckbox({ checked, mixed, onChange }) {
 
 /* ── Selection action bar ── */
 
-function SelectionBar({ count, onDeselectAll, onDelete, lang, deleteLabel, extraActions }) {
+function SelectionBar({ count, onDeselectAll, onDelete, lang, deleteLabel, extraActions, isMobile }) {
   var isFr = lang !== "en";
   return (
     <div style={{
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      paddingLeft: 24, paddingRight: 24,
-      height: 68,
+      display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", justifyContent: "space-between",
+      paddingLeft: isMobile ? 12 : 24, paddingRight: isMobile ? 12 : 24,
+      paddingTop: isMobile ? 12 : 0, paddingBottom: isMobile ? 12 : 0,
+      minHeight: 68,
       background: "var(--brand)",
       borderTop: "1px solid var(--brand)",
+      gap: isMobile ? "var(--sp-3)" : 0,
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: isMobile ? "flex-start" : "center", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 6 : 16 }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: "white" }}>
           {count} {isFr ? (count > 1 ? "sélectionnés" : "sélectionné") : "selected"}
         </span>
@@ -138,7 +139,7 @@ function SelectionBar({ count, onDeselectAll, onDelete, lang, deleteLabel, extra
           {isFr ? "Tout désélectionner" : "Deselect all"}
         </button>
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", width: isMobile ? "100%" : "auto" }}>
         {onDelete ? (
           <button
             type="button"
@@ -152,6 +153,8 @@ function SelectionBar({ count, onDeselectAll, onDelete, lang, deleteLabel, extra
               color: "white", fontSize: 13, fontWeight: 600,
               cursor: "pointer", fontFamily: "inherit",
               transition: "background 0.12s, border-color 0.12s",
+              width: isMobile ? "100%" : "auto",
+              justifyContent: isMobile ? "center" : "flex-start",
             }}
             onMouseEnter={function (e) { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; e.currentTarget.style.borderColor = "white"; }}
             onMouseLeave={function (e) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.6)"; }}
@@ -243,6 +246,7 @@ function PageSizeDropdown({ value, options, onChange }) {
 function PaginationBar({
   totalRows, pageIndex, pageCount, pageSize,
   pageSizeOptions, canPrev, canNext, onPrev, onNext, onPageSizeChange, onPageJump,
+  isMobile,
 }) {
   var { lang } = useLang();
   var isFr = lang !== "en";
@@ -257,19 +261,19 @@ function PaginationBar({
 
   return (
     <div style={{
-      paddingTop: 8, paddingBottom: 8, paddingLeft: 24, paddingRight: 24,
+      paddingTop: 8, paddingBottom: 8, paddingLeft: isMobile ? 12 : 24, paddingRight: isMobile ? 12 : 24,
       borderTop: "1px solid var(--border-light)",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
+      display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", justifyContent: "space-between",
       fontSize: 14, color: "var(--text-muted)", fontWeight: 600,
       minHeight: 68,
       gap: "var(--sp-3)",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: isMobile ? "space-between" : "flex-start", flexWrap: "wrap", gap: "var(--sp-2)", width: isMobile ? "100%" : "auto" }}>
         <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 600, whiteSpace: "nowrap" }}>{rowsLabel}</span>
         <PageSizeDropdown value={pageSize} options={pageSizeOptions} onChange={onPageSizeChange} />
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: isMobile ? "space-between" : "flex-start", flexWrap: "wrap", gap: "var(--sp-2)", width: isMobile ? "100%" : "auto" }}>
         <button
           type="button"
           onClick={onPrev}
@@ -460,9 +464,9 @@ export default function DataTable({
       {/* ── Toolbar ── */}
       {toolbar ? (
         <div style={{
-          paddingTop: 12, paddingBottom: 12, paddingLeft: 24, paddingRight: 24,
+          paddingTop: 12, paddingBottom: 12, paddingLeft: padX, paddingRight: padX,
           borderBottom: "1px solid var(--border-light)",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
+          display: "flex", alignItems: isMob ? "stretch" : "center", justifyContent: isMob ? "flex-start" : "space-between",
           gap: "var(--sp-3)", flexWrap: "wrap",
         }}>
           {toolbar}
@@ -471,7 +475,7 @@ export default function DataTable({
 
       {/* ── Table ── */}
       <ScrollWrap scrollable={scrollable}>
-        <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0 }}>
+        <table style={{ width: "100%", maxWidth: "100%", borderCollapse: "separate", borderSpacing: 0, tableLayout: isMob ? "fixed" : "auto" }}>
           <thead>
             {table.getHeaderGroups().map(function (hg) {
               return (
@@ -502,7 +506,7 @@ export default function DataTable({
                         onMouseEnter={canSort ? function () { setHoveredColId(header.id); } : undefined}
                         onMouseLeave={canSort ? function () { setHoveredColId(null); } : undefined}
                         style={Object.assign({}, thS,
-                          { height: thH, color: headerColor, cursor: canSort ? "pointer" : "default", whiteSpace: "nowrap", transition: "color 0.12s" },
+                          { height: thH, color: headerColor, cursor: canSort ? "pointer" : "default", whiteSpace: isMob ? "normal" : "nowrap", overflowWrap: isMob ? "anywhere" : "normal", wordBreak: isMob ? "break-word" : "normal", transition: "color 0.12s" },
                           isFirstCol ? { paddingLeft: 12 } : null,
                           meta.width ? { width: meta.width } : null,
                           meta.minWidth ? { minWidth: meta.minWidth } : null,
@@ -511,7 +515,7 @@ export default function DataTable({
                       >
                         <div style={{
                           display: "flex", alignItems: "center", justifyContent: justify,
-                          gap: 4, height: "100%",
+                          gap: 4, height: "100%", minWidth: 0,
                         }}>
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {canSort ? (
@@ -558,7 +562,7 @@ export default function DataTable({
                         <td
                           key={cell.id}
                           style={Object.assign({}, tdS,
-                            { textAlign: align, height: rowH, fontWeight: highlight ? 700 : (meta.bold ? 700 : 400), color: meta.color ? meta.color(cell.row.original) : "var(--text-primary)", whiteSpace: meta.grow ? "normal" : "nowrap" },
+                            { textAlign: align, height: rowH, fontWeight: highlight ? 700 : (meta.bold ? 700 : 400), color: meta.color ? meta.color(cell.row.original) : "var(--text-primary)", whiteSpace: meta.grow || isMob ? "normal" : "nowrap", overflowWrap: isMob ? "anywhere" : "normal", wordBreak: isMob ? "break-word" : "normal" },
                             isFirstCol ? { paddingLeft: 12 } : null,
                             meta.compactPadding ? { paddingLeft: 16, paddingRight: 16 } : null,
                           )}
@@ -586,7 +590,7 @@ export default function DataTable({
                       var isFirstCol = selectable && fIdx === 0;
                       return (
                         <td key={header.id} style={Object.assign({}, tfS,
-                          { textAlign: align, whiteSpace: meta.grow ? "normal" : "nowrap" },
+                          { textAlign: align, whiteSpace: meta.grow || isMob ? "normal" : "nowrap", overflowWrap: isMob ? "anywhere" : "normal", wordBreak: isMob ? "break-word" : "normal" },
                           isFirstCol ? { paddingLeft: 12 } : null,
                           meta.compactPadding ? { paddingLeft: 16, paddingRight: 16 } : null,
                         )}>
@@ -604,7 +608,7 @@ export default function DataTable({
             <tfoot>
               <tr>
                 <td colSpan={columns.length + (selectable ? 1 : 0)} style={{
-                  padding: "var(--sp-3) 24px",
+                  padding: "var(--sp-3) " + padX + "px",
                   borderTop: "1px solid var(--border)",
                   background: "var(--bg-accordion)",
                 }}>
@@ -637,6 +641,7 @@ export default function DataTable({
           lang={lang}
           deleteLabel={deleteSelectedLabel}
           extraActions={typeof selectionExtraActions === "function" ? selectionExtraActions(selectedIds) : selectionExtraActions}
+          isMobile={isMob}
         />
       ) : null}
 
@@ -674,6 +679,7 @@ export default function DataTable({
           onPageJump={function (idx) {
             setPagination(function (prev) { return { pageIndex: idx, pageSize: prev.pageSize }; });
           }}
+          isMobile={isMob}
         />
       ) : null}
 

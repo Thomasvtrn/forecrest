@@ -8,7 +8,7 @@ export default function FilterDropdown({ value, onChange, options }) {
   var isFiltered = value !== "all";
 
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
+    <div style={{ position: "relative", display: "inline-flex", minWidth: 0, maxWidth: "100%", flexShrink: 1 }}>
       <button
         type="button"
         aria-expanded={open}
@@ -28,13 +28,16 @@ export default function FilterDropdown({ value, onChange, options }) {
           display: "inline-flex", alignItems: "center", gap: "var(--sp-2)",
           transition: "border-color 0.12s, background 0.12s",
           whiteSpace: "nowrap",
+          minWidth: 0,
+          maxWidth: "100%",
+          boxSizing: "border-box",
         }}
       >
-        <FunnelSimple size={16} weight="bold" />
-        <span style={{ position: "relative" }}>
+        <FunnelSimple size={16} weight="bold" style={{ flexShrink: 0 }} />
+        <span style={{ display: "block", minWidth: 0, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left" }}>
           {/* Invisible sizer — renders longest label to set stable width */}
           {options.map(function (o) {
-            return <span key={o.value} style={{ display: "block", height: 0, overflow: "hidden", visibility: "hidden" }} aria-hidden="true">{o.label}</span>;
+            return <span key={o.value} style={{ display: "none" }} aria-hidden="true">{o.label}</span>;
           })}
           {/* Visible active label */}
           <span style={{ display: "block", textAlign: "left" }}>{activeLabel}</span>
@@ -48,6 +51,7 @@ export default function FilterDropdown({ value, onChange, options }) {
           <div style={{
             position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 51,
             minWidth: "100%",
+            maxWidth: "min(320px, calc(100vw - 24px))",
             background: "var(--bg-card)",
             border: "1px solid var(--border)",
             borderRadius: "var(--r-md)",
