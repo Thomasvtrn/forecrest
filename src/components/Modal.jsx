@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { Children, cloneElement, isValidElement, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { XClose } from "@untitledui/icons";
 import useBreakpoint from "../hooks/useBreakpoint";
@@ -12,12 +12,13 @@ var SIZE_MAP = {
 var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export default function Modal({
-  open, onClose, size, height, children, title, subtitle, icon, hideClose,
+  open, onClose, size, height, children, title, subtitle, icon, hideClose, mobileMode,
 }) {
   var prevState = useRef({});
   var cardRef = useRef(null);
   var bp = useBreakpoint();
   var isMobile = bp.isMobile;
+  var isDialogMobile = isMobile && (mobileMode || "sheet") === "dialog";
 
   useEffect(function () {
     if (open) {
@@ -87,7 +88,7 @@ export default function Modal({
         position: "fixed", inset: 0, zIndex: 1000,
         background: "var(--overlay-bg)",
         display: "flex",
-        alignItems: isMobile ? "flex-end" : "center",
+        alignItems: isDialogMobile ? "stretch" : (isMobile ? "flex-end" : "center"),
         justifyContent: "center",
         padding: isMobile ? 0 : "var(--sp-4)",
         backdropFilter: "blur(6px)",
@@ -101,14 +102,14 @@ export default function Modal({
         onClick={function (e) { e.stopPropagation(); }}
         style={{
           background: "var(--bg-card)",
-          borderRadius: isMobile ? "var(--r-xl) var(--r-xl) 0 0" : "var(--r-xl)",
-          border: isMobile ? "none" : "1px solid var(--border)",
-          borderTop: isMobile ? "1px solid var(--border)" : undefined,
-          boxShadow: "var(--shadow-modal)",
-          width: isMobile ? "100%" : width,
-          maxWidth: isMobile ? "100%" : "95vw",
-          height: isMobile ? (height || "auto") : (height || undefined),
-          maxHeight: isMobile ? "92vh" : "90vh",
+          borderRadius: isDialogMobile ? 0 : (isMobile ? "var(--r-xl) var(--r-xl) 0 0" : "var(--r-xl)"),
+          border: isDialogMobile ? "none" : (isMobile ? "none" : "1px solid var(--border)"),
+          borderTop: isDialogMobile ? "none" : (isMobile ? "1px solid var(--border)" : undefined),
+          boxShadow: isDialogMobile ? "none" : "var(--shadow-modal)",
+          width: isDialogMobile ? "100vw" : (isMobile ? "100%" : width),
+          maxWidth: isDialogMobile ? "100vw" : (isMobile ? "100%" : "95vw"),
+          height: isDialogMobile ? "100dvh" : (isMobile ? (height || "auto") : (height || undefined)),
+          maxHeight: isDialogMobile ? "100dvh" : (isMobile ? "92vh" : "90vh"),
           display: "flex", flexDirection: "column",
           overflow: "hidden",
           animation: isMobile ? "none" : "tooltipIn 0.12s ease",
@@ -186,18 +187,41 @@ export function ModalBody({ children, noPadding }) {
 }
 
 export function ModalFooter({ children, compact }) {
+  var bp = useBreakpoint();
+  var isMobile = bp.isMobile;
   var padY = compact ? 16 : 20;
+  var content = isMobile
+    ? Children.toArray(children).map(function (child, index) {
+      if (!isValidElement(child)) return child;
+      if (typeof child.type === "string") {
+        return cloneElement(child, {
+          key: child.key || index,
+          style: Object.assign({}, child.props.style || {}, { width: "100%" }),
+        });
+      }
+      return cloneElement(child, {
+        key: child.key || index,
+        sx: Object.assign({}, child.props.sx || {}, { width: "100%" }),
+      });
+    })
+    : children;
+
   return (
     <div style={{
-      display: "flex", alignItems: "center", justifyContent: "flex-end",
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row",
+      alignItems: isMobile ? "stretch" : "center",
+      justifyContent: "flex-end",
       gap: "var(--sp-2)",
-      paddingTop: padY, paddingLeft: 20, paddingRight: 20,
+      paddingTop: isMobile ? "var(--sp-4)" : padY,
+      paddingLeft: isMobile ? "var(--sp-4)" : 20,
+      paddingRight: isMobile ? "var(--sp-4)" : 20,
       paddingBottom: "calc(" + padY + "px + env(safe-area-inset-bottom, 0px))",
       borderTop: "1px solid var(--border-light)",
       flexShrink: 0,
       background: "var(--bg-card)",
     }}>
-      {children}
+      {content}
     </div>
   );
 }

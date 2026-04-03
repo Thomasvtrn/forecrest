@@ -12,6 +12,7 @@ import { calcStreamMonthly, calcStreamAnnual, calcTotalMonthlyBreakdown, getDriv
 import { useT, useLang, useDevMode } from "../../context";
 import { useLock } from "../../context/LockContext";
 import useEditLock from "../../hooks/useEditLock";
+import useBreakpoint from "../../hooks/useBreakpoint";
 import { REVENUE_BEHAVIOR_TEMPLATES, SEASONALITY_PROFILES, SEASONALITY_DEFAULT } from "../../constants/defaults";
 
 /* Badge colors follow revenue nature:
@@ -148,6 +149,8 @@ function RequiredLabel({ text, htmlFor }) {
 /* ── Split-panel Creation / Edit Modal ── */
 function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, defaultBehavior, showTva, initialLabel, cfg }) {
   var rt = useT().revenue || {};
+  var bp = useBreakpoint();
+  var isMobile = bp.isMobile;
   var lk = lang === "en" ? "en" : "fr";
   var isEdit = !!initialData;
   var primary = PRIMARY_BEHAVIOR[businessType] || "recurring";
@@ -205,8 +208,8 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
   var canSubmit = name.trim().length > 0 && price > 0 && qty > 0;
 
   return (
-    <Modal open onClose={onClose} size="lg" height={540} hideClose>
-      <div style={{ display: "flex", flex: 1, overflow: "hidden", minHeight: 0 }}>
+    <Modal open onClose={onClose} size="lg" height={540} hideClose mobileMode="dialog">
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", flex: 1, overflow: "hidden", minHeight: 0 }}>
         {/* LEFT - Behavior list */}
         <ModalSideNav
           title={rt.modal_type_title || "Revenue type"}
@@ -226,13 +229,14 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
           })}
           selected={selected}
           onSelect={handleSelect}
+          mobileLayout="top"
           width={220}
         />
 
         {/* RIGHT - Config panel */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
           {/* Header */}
-          <div style={{ padding: "var(--sp-4) var(--sp-5)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "var(--sp-3)", flexShrink: 0 }}>
+          <div style={{ padding: isMobile ? "var(--sp-4)" : "var(--sp-4) var(--sp-5)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "var(--sp-3)", flexShrink: 0 }}>
             <div style={{ width: 32, height: 32, borderRadius: "var(--r-md)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-accordion)", border: "1px solid var(--border-light)" }}>
               <Icon size={16} weight="duotone" color="var(--text-secondary)" />
             </div>
@@ -247,7 +251,7 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
           </div>
 
           {/* Body — scrollable */}
-          <div className="custom-scroll" style={{ flex: 1, paddingTop: 20, paddingBottom: 20, paddingLeft: 20, paddingRight: 20, overflowY: "auto", display: "flex", flexDirection: "column", gap: "var(--sp-4)", scrollbarWidth: "thin", scrollbarColor: "var(--border-strong) transparent" }}>
+          <div className="custom-scroll" style={{ flex: 1, padding: isMobile ? "var(--sp-4)" : 20, overflowY: "auto", display: "flex", flexDirection: "column", gap: "var(--sp-4)", scrollbarWidth: "thin", scrollbarColor: "var(--border-strong) transparent" }}>
             <div>
               <RequiredLabel text={rt.modal_source_name || "Source name"} htmlFor="stream-name" />
               <input id="stream-name" value={name} onChange={function (e) { setName(e.target.value); }}
@@ -279,7 +283,7 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
               </div>
             ) : null}
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-3)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "var(--sp-3)" }}>
               <div>
                 <RequiredLabel text={rt.modal_unit_price || "Unit price"} htmlFor="stream-price" />
                 <CurrencyInput value={price} onChange={function (v) { setPrice(v); }} suffix={getPriceLabel(selected, lang)} width="100%" />
@@ -299,7 +303,7 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
               <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-muted)", marginBottom: "var(--sp-1)" }}>
                 {rt.season_label || "Seasonality"}
               </label>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
+              <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", gap: "var(--sp-3)" }}>
                 <div style={{ flex: 1 }}>
                   <SelectDropdown
                     value={seasonProfile}
@@ -307,7 +311,9 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
                     options={SEASON_KEYS.map(function (key) { return { value: key, label: rt["season_" + key] || key }; })}
                   />
                 </div>
-                <SeasonSpark coefs={SEASONALITY_PROFILES[seasonProfile].coefs} width={100} height={28} />
+                <div style={{ display: "flex", justifyContent: isMobile ? "flex-start" : "center" }}>
+                  <SeasonSpark coefs={SEASONALITY_PROFILES[seasonProfile].coefs} width={100} height={28} />
+                </div>
               </div>
             </div>
 
@@ -316,8 +322,8 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
               <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-muted)", marginBottom: "var(--sp-1)" }}>
                 {lk === "fr" ? "Croissance annuelle" : "Annual growth"}
               </label>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
-                <NumberField value={growthRate} onChange={setGrowthRate} min={-0.50} max={2} step={0.05} width="80px" pct />
+              <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", gap: "var(--sp-3)" }}>
+                <NumberField value={growthRate} onChange={setGrowthRate} min={-0.50} max={2} step={0.05} width={isMobile ? "100%" : "80px"} pct />
               </div>
               <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: "var(--sp-1)", lineHeight: 1.3 }}>
                 {lk === "fr" ? "Taux de croissance spécifique à ce flux. Par défaut, reprend le taux global." : "Growth rate specific to this stream. Defaults to the global rate."}
@@ -344,11 +350,11 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
             ) : null}
 
             {price > 0 && qty > 0 ? (
-              <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "baseline", gap: isMobile ? "var(--sp-2)" : "var(--sp-3)" }}>
                 <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{rt.modal_estimate || "Estimate"}</span>
-                <div>
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: isMobile ? "var(--sp-2)" : 0 }}>
                   <span style={{ fontSize: 18, fontWeight: 700, color: "var(--brand)", fontFamily: "'Bricolage Grotesque', sans-serif" }}>{eur(monthly)}{rt.per_month || "/m"}</span>
-                  <span style={{ fontSize: 12, color: "var(--text-faint)", marginLeft: "var(--sp-2)" }}>{eur(annual)}{rt.per_year || "/an"}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-faint)", marginLeft: isMobile ? 0 : "var(--sp-2)" }}>{eur(annual)}{rt.per_year || "/an"}</span>
                 </div>
               </div>
             ) : null}

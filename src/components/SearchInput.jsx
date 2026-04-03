@@ -4,9 +4,19 @@ export default function SearchInput({ value, onChange, placeholder, width, heigh
   var w = width || 200;
   var h = height || 40;
   var hasValue = value.length > 0;
+  var resolvedWidth = typeof w === "number" ? w + "px" : w;
+  var fillWidth = w === "100%";
 
   return (
-    <div style={{ position: "relative", display: w === "100%" ? "flex" : "inline-flex", alignItems: "center", width: w === "100%" ? "100%" : undefined }}>
+    <div style={{
+      position: "relative",
+      display: fillWidth ? "flex" : "inline-flex",
+      alignItems: "center",
+      width: fillWidth ? "100%" : resolvedWidth,
+      maxWidth: "100%",
+      minWidth: 0,
+      flexShrink: 1,
+    }}>
       <MagnifyingGlass size={16} weight="bold" style={{
         position: "absolute", left: 12, pointerEvents: "none",
         color: "var(--text-muted)",
@@ -17,7 +27,7 @@ export default function SearchInput({ value, onChange, placeholder, width, heigh
         onChange={function (e) { onChange(e.target.value); }}
         placeholder={placeholder || ""}
         style={{
-          height: h, width: w,
+          height: h, width: fillWidth ? "100%" : resolvedWidth, maxWidth: "100%", minWidth: 0,
           paddingLeft: 34, paddingRight: hasValue ? 32 : "var(--sp-3)",
           border: "1px solid var(--border)",
           borderRadius: "var(--r-md)",
@@ -25,6 +35,7 @@ export default function SearchInput({ value, onChange, placeholder, width, heigh
           color: "var(--text-primary)",
           fontSize: 13, fontFamily: "inherit",
           outline: "none",
+          boxSizing: "border-box",
           transition: "border-color 0.12s",
         }}
         onFocus={function (e) { e.currentTarget.style.borderColor = "var(--brand)"; }}

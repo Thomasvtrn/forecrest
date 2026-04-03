@@ -10,6 +10,7 @@ import { eur, eurShort, makeId, pct } from "../../utils";
 import { useT, useLang, useDevMode, useTheme } from "../../context";
 import { useLock } from "../../context/LockContext";
 import useEditLock from "../../hooks/useEditLock";
+import useBreakpoint from "../../hooks/useBreakpoint";
 import { PCMN_OPTS, COST_FREQUENCIES } from "../../constants/defaults";
 
 
@@ -270,6 +271,8 @@ function costAnnual(item) {
 function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaultCategory, initialLabel, cfg, streams }) {
   var t = useT().opex || {};
   var { dark: isDark } = useTheme();
+  var bp = useBreakpoint();
+  var isMobile = bp.isMobile;
   var isEdit = !!initialData;
 
   /* Resolve initial category from pcmn */
@@ -362,8 +365,8 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
   var annual = costAnnual({ a: amount, freq: freq, pu: perUser, u: units });
 
   return (
-    <Modal open onClose={onClose} size="lg" height={540} hideClose>
-      <div style={{ display: "flex", flex: 1, overflow: "hidden", minHeight: 0 }}>
+    <Modal open onClose={onClose} size="lg" height={540} hideClose mobileMode="dialog">
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", flex: 1, overflow: "hidden", minHeight: 0 }}>
         {/* LEFT — Category list */}
         <ModalSideNav
           title={t.modal_category || "Category"}
@@ -373,13 +376,14 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
           })}
           selected={selected}
           onSelect={handleSelect}
+          mobileLayout="top"
           width={220}
         />
 
         {/* RIGHT — Config panel */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
           {/* Header */}
-          <div style={{ padding: "var(--sp-4) var(--sp-5)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "var(--sp-3)", flexShrink: 0 }}>
+          <div style={{ padding: isMobile ? "var(--sp-4)" : "var(--sp-4) var(--sp-5)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: "var(--sp-3)", flexShrink: 0 }}>
             <div style={{ width: 32, height: 32, borderRadius: "var(--r-md)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-accordion)", border: "1px solid var(--border-light)" }}>
               <Icon size={16} weight="duotone" color="var(--text-secondary)" />
             </div>
@@ -394,7 +398,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
           </div>
 
           {/* Body */}
-          <div className="custom-scroll" style={{ flex: 1, paddingTop: 20, paddingBottom: 20, paddingLeft: 20, paddingRight: 20, overflowY: "auto", display: "flex", flexDirection: "column", gap: "var(--sp-4)", scrollbarWidth: "thin", scrollbarColor: "var(--border-strong) transparent" }}>
+          <div className="custom-scroll" style={{ flex: 1, padding: isMobile ? "var(--sp-4)" : 20, overflowY: "auto", display: "flex", flexDirection: "column", gap: "var(--sp-4)", scrollbarWidth: "thin", scrollbarColor: "var(--border-strong) transparent" }}>
             {/* Label */}
             <div>
               <label htmlFor="cost-label" style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>
@@ -430,7 +434,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
             ) : null}
 
             {/* Amount + Frequency */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--sp-3)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "var(--sp-3)" }}>
               <div>
                 <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>
                   {t.modal_amount || "Amount"} <span style={{ color: "var(--color-error)" }}>*</span>
@@ -454,7 +458,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
 
             {/* Per-user multiplier */}
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
+              <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", gap: "var(--sp-3)" }}>
                 <button type="button" onClick={function () { setPerUser(function (v) { return !v; }); }}
                   style={{
                     display: "flex", alignItems: "center", gap: 8,
@@ -487,7 +491,7 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
                 ) : null}
               </div>
               {perUser ? (
-                <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, paddingLeft: 2 }}>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, paddingLeft: isMobile ? 0 : 2 }}>
                   {(t.modal_per_user_hint || "Amount will be multiplied by") + " " + (units || 1) + " " + ((units || 1) > 1 ? (t.users_label || "users") : (t.user_label || "user"))}
                 </div>
               ) : null}
@@ -541,8 +545,8 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
                 <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>
                   {lk === "fr" ? "Croissance annuelle" : "Annual growth"}
                 </label>
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
-                  <NumberField value={linkedStream ? (linkedStreamRate != null ? linkedStreamRate : 0) : growthRate} onChange={setGrowthRate} min={-0.50} max={2} step={0.05} width="80px" pct disabled={!!linkedStream} />
+                <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", gap: "var(--sp-3)" }}>
+                  <NumberField value={linkedStream ? (linkedStreamRate != null ? linkedStreamRate : 0) : growthRate} onChange={setGrowthRate} min={-0.50} max={2} step={0.05} width={isMobile ? "100%" : "80px"} pct disabled={!!linkedStream} />
                 </div>
                 <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: "var(--sp-1)", lineHeight: 1.3 }}>
                   {linkedStream
@@ -571,11 +575,11 @@ function CostModal({ onAdd, onSave, onClose, lang, initialData, showPcmn, defaul
 
             {/* Estimation */}
             {amount > 0 ? (
-              <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "baseline", gap: isMobile ? "var(--sp-2)" : "var(--sp-3)" }}>
                 <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{t.modal_estimate || "Estimate"}</span>
-                <div>
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: isMobile ? "var(--sp-2)" : 0 }}>
                   <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", fontFamily: "'Bricolage Grotesque', sans-serif" }}>{eur(monthly)}{t.per_month_suffix || "/m"}</span>
-                  <span style={{ fontSize: 12, color: "var(--text-faint)", marginLeft: "var(--sp-2)" }}>{eur(annual)}{t.per_year_suffix || "/an"}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-faint)", marginLeft: isMobile ? 0 : "var(--sp-2)" }}>{eur(annual)}{t.per_year_suffix || "/an"}</span>
                 </div>
               </div>
             ) : null}
