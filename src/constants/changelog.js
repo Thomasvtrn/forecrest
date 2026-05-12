@@ -4,6 +4,13 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.46.0",
+    date: "2026-05-12",
+    entries: [
+      { type: "feature", key: "cl_commission_percent_mode" },
+    ],
+  },
+  {
     version: "0.1.45.2",
     date: "2026-05-12",
     entries: [
