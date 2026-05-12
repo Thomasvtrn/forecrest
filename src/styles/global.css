@@ -31,7 +31,6 @@ body {
     color: var(--text-primary);
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-variant-ligatures: contextual;
@@ -40,11 +39,14 @@ body {
     font-kerning: normal;
 }
 
+/* overflow: clip prevents horizontal overflow on mobile (tables, wide content)
+   without creating a scroll context like overflow-x: hidden would — required
+   so position: sticky descendants (e.g. Sidebar) still anchor to the viewport. */
 #root {
     min-height: 100vh;
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow: clip;
 }
 
 details summary::-webkit-details-marker {

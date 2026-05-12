@@ -146,6 +146,9 @@ export default {
     cl_forecrest_ui_tokens: "Amélioration : refresh de la couche UI Forecrest avec nouveaux tokens visuels, corners, ombres, focus states et harmonisation des composants partagés.",
     cl_shell_header_nav: "Amélioration : shell de navigation simplifié avec header nav Finance / Marketing / Outils, actions de collaboration dans le header et retrait du switch de modules dans la sidebar.",
 
+    // v0.1.45.2
+    cl_sidebar_sticky_restored: "Correction : la sidebar de gauche reste à nouveau collée lors du scroll de la page.",
+
     // v0.1.45.1
     cl_mobile_sidebar_scroll_lock: "Amélioration : le scroll en arrière-plan est bloqué quand le menu mobile est ouvert.",
     cl_mobile_header_safe_area: "Amélioration : le header mobile intègre les safe area insets pour les notch et barres système.",

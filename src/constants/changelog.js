@@ -4,6 +4,13 @@
  */
 export const CHANGELOG = [
   {
+    version: "0.1.45.2",
+    date: "2026-05-12",
+    entries: [
+      { type: "fix", key: "cl_sidebar_sticky_restored" },
+    ],
+  },
+  {
     version: "0.1.45.1",
     date: "2026-04-03",
     entries: [
