@@ -158,10 +158,16 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
   var [name, setName] = useState(isEdit ? initialData.l : (initialLabel || ""));
   var [price, setPrice] = useState(isEdit ? (initialData.price || 0) : 0);
   var [qty, setQty] = useState(isEdit ? (initialData.qty || 0) : 0);
+  var [commissionMode, setCommissionMode] = useState(isEdit ? (initialData.commissionMode || "fixed") : "fixed");
+  var [commissionPct, setCommissionPct] = useState(isEdit ? (initialData.commissionPct || 0) : 0);
+  var [avgTransaction, setAvgTransaction] = useState(isEdit ? (initialData.avgTransaction || 0) : 0);
   var defaultSeason = SEASONALITY_DEFAULT[businessType] || "flat";
   var [seasonProfile, setSeasonProfile] = useState(isEdit ? (initialData.seasonProfile || defaultSeason) : defaultSeason);
   var [tva, setTva] = useState(isEdit && initialData.tva !== undefined ? initialData.tva : null);
   var [growthRate, setGrowthRate] = useState(isEdit ? (initialData.growthRate || 0) : ((cfg && cfg.revenueGrowthRate) || 0.10));
+
+  var isCommissionPercent = selected === "commission" && commissionMode === "percent";
+  var effectivePrice = isCommissionPercent ? (commissionPct * avgTransaction) : price;
 
   var suggestions = (REVENUE_BEHAVIOR_TEMPLATES[businessType] || REVENUE_BEHAVIOR_TEMPLATES.other || []).filter(function (tpl) {
     return tpl.behavior === selected;
@@ -173,6 +179,9 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
       setName("");
       setPrice(0);
       setQty(0);
+      setCommissionMode("fixed");
+      setCommissionPct(0);
+      setAvgTransaction(0);
       setSeasonProfile(defaultSeason);
     }
   }
@@ -187,12 +196,17 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
       id: isEdit ? initialData.id : makeId("r"),
       l: name || BEHAVIOR_META[selected].label[lang === "en" ? "en" : "fr"],
       behavior: selected,
-      price: price,
+      price: selected === "commission" && commissionMode === "percent" ? (commissionPct * avgTransaction) : price,
       qty: qty,
       seasonProfile: seasonProfile,
       growthRate: growthRate,
       tva: tva,
     };
+    if (selected === "commission" && commissionMode === "percent") {
+      data.commissionMode = "percent";
+      data.commissionPct = commissionPct;
+      data.avgTransaction = avgTransaction;
+    }
     if (isEdit && onSave) {
       onSave(data);
     } else if (onAdd) {
@@ -203,9 +217,11 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
 
   var meta = BEHAVIOR_META[selected];
   var Icon = meta.icon;
-  var monthly = calcStreamMonthly({ behavior: selected, price: price, qty: qty });
-  var annual = calcStreamAnnual({ behavior: selected, price: price, qty: qty });
-  var canSubmit = name.trim().length > 0 && price > 0 && qty > 0;
+  var monthly = calcStreamMonthly({ behavior: selected, price: effectivePrice, qty: qty });
+  var annual = calcStreamAnnual({ behavior: selected, price: effectivePrice, qty: qty });
+  var canSubmit = name.trim().length > 0 && qty > 0 && (
+    isCommissionPercent ? (commissionPct > 0 && avgTransaction > 0) : price > 0
+  );
 
   return (
     <Modal open onClose={onClose} size="lg" height={540} hideClose mobileMode="dialog">
@@ -283,11 +299,53 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
               </div>
             ) : null}
 
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "var(--sp-3)" }}>
+            {selected === "commission" ? (
               <div>
-                <RequiredLabel text={rt.modal_unit_price || "Unit price"} htmlFor="stream-price" />
-                <CurrencyInput value={price} onChange={function (v) { setPrice(v); }} suffix={getPriceLabel(selected, lang)} width="100%" />
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: "var(--sp-1)" }}>
+                  {rt.commission_mode_label || (lk === "fr" ? "Mode de commission" : "Commission mode")}
+                </label>
+                <div role="tablist" style={{ display: "inline-flex", padding: 2, background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", gap: 2 }}>
+                  {["fixed", "percent"].map(function (m) {
+                    var active = commissionMode === m;
+                    return (
+                      <button key={m} type="button" role="tab" aria-selected={active}
+                        onClick={function () { setCommissionMode(m); }}
+                        style={{
+                          padding: "6px 12px", fontSize: 12, fontWeight: 600, fontFamily: "inherit",
+                          border: "none", borderRadius: "var(--r-sm)", cursor: "pointer",
+                          background: active ? "var(--bg-card)" : "transparent",
+                          color: active ? "var(--text-primary)" : "var(--text-muted)",
+                          boxShadow: active ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+                          transition: "background 0.15s ease, color 0.15s ease",
+                        }}>
+                        {m === "fixed"
+                          ? (rt.commission_mode_fixed || (lk === "fr" ? "Montant fixe" : "Fixed amount"))
+                          : (rt.commission_mode_percent || (lk === "fr" ? "Pourcentage" : "Percentage"))}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+            ) : null}
+
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : (isCommissionPercent ? "1fr 1fr 1fr" : "1fr 1fr"), gap: "var(--sp-3)" }}>
+              {isCommissionPercent ? (
+                <>
+                  <div>
+                    <RequiredLabel text={rt.field_commission_rate || (lk === "fr" ? "Taux de commission" : "Commission rate")} htmlFor="stream-pct" />
+                    <NumberField value={commissionPct} onChange={setCommissionPct} min={0} max={1} step={0.005} width="100%" pct />
+                  </div>
+                  <div>
+                    <RequiredLabel text={rt.field_avg_transaction || (lk === "fr" ? "Valeur moyenne par transaction" : "Average transaction value")} htmlFor="stream-avg" />
+                    <CurrencyInput value={avgTransaction} onChange={function (v) { setAvgTransaction(v); }} suffix="€" width="100%" />
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <RequiredLabel text={rt.modal_unit_price || "Unit price"} htmlFor="stream-price" />
+                  <CurrencyInput value={price} onChange={function (v) { setPrice(v); }} suffix={getPriceLabel(selected, lang)} width="100%" />
+                </div>
+              )}
               <div>
                 <RequiredLabel text={getDriverLabel(selected, lang)} htmlFor="stream-qty" />
                 <input id="stream-qty" type="number" value={qty || ""} min={0}
@@ -297,6 +355,14 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
                 />
               </div>
             </div>
+
+            {isCommissionPercent && commissionPct > 0 && avgTransaction > 0 ? (
+              <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: "calc(-1 * var(--sp-2))", lineHeight: 1.4 }}>
+                {(rt.commission_derived_hint || (lk === "fr" ? "Soit" : "Equivalent to")) + " "}
+                <strong style={{ color: "var(--text-secondary)" }}>{eur(effectivePrice)}</strong>{" "}
+                {getPriceLabel(selected, lang)}
+              </div>
+            ) : null}
 
             {/* Seasonality selector */}
             <div>
@@ -349,7 +415,7 @@ function StreamModal({ onAdd, onSave, onClose, businessType, lang, initialData, 
               </div>
             ) : null}
 
-            {price > 0 && qty > 0 ? (
+            {effectivePrice > 0 && qty > 0 ? (
               <div style={{ padding: "var(--sp-3) var(--sp-4)", background: "var(--bg-accordion)", borderRadius: "var(--r-md)", border: "1px solid var(--border-light)", display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "baseline", gap: isMobile ? "var(--sp-2)" : "var(--sp-3)" }}>
                 <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{rt.modal_estimate || "Estimate"}</span>
                 <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: isMobile ? "var(--sp-2)" : 0 }}>

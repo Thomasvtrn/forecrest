@@ -143,6 +143,9 @@ export default {
     cl_forecrest_ui_tokens: "Improvement: Forecrest UI layer refreshed with stronger visual tokens, corners, shadows, focus states and aligned shared components.",
     cl_shell_header_nav: "Improvement: navigation shell simplified with a Finance / Marketing / Tools header nav, collaboration actions moved into the header, and module switching removed from the sidebar.",
 
+    // v0.1.46.0
+    cl_commission_percent_mode: "New: commission revenue streams accept a percentage rate (rate × average transaction value) in addition to the fixed amount per transaction.",
+
     // v0.1.45.2
     cl_sidebar_sticky_restored: "Fix: the left sidebar sticks to the top again while scrolling the page.",
 
